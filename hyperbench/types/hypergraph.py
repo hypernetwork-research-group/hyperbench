@@ -23,7 +23,7 @@ class HIFHypergraph:
         self.edges = edges if edges is not None else []
 
     @classmethod
-    def from_hif(cls, data: Dict[str, Any]) -> "Hypergraph":
+    def from_hif(cls, data: Dict[str, Any]) -> "HIFHypergraph":
         """
         Create a Hypergraph from a HIF (Hypergraph Interchange Format).
 
