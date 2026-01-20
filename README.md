@@ -33,3 +33,14 @@ uvx ruff check
 
 uvx ruff format
 ```
+
+### Type checker
+
+Use Ty for type checking:
+
+```bash
+uvx ty check
+
+# In watch mode
+uvx ty check --watch
+```
