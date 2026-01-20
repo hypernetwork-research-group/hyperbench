@@ -2,31 +2,17 @@
 
 ## Commands
 
-### Virtual environment
+### Sync dependencies
 
-Create and activate a virtual environment:
-
-```bash
-uv venv .venv
-
-source .venv/bin/activate
-```
-
-Install dependencies:
+Use [uv](https://docs.astral.sh/uv/reference/cli/) to sync dependencies:
 
 ```bash
-uv pip install -r requirements.txt
-```
-
-Deactivate the virtual environment when done:
-
-```bash
-deactivate
+uv sync
 ```
 
 ### Linter
 
-Use Ruff for linting and formatting:
+Use [Ruff](https://github.com/charliermarsh/ruff) for linting and formatting:
 
 ```bash
 uvx ruff check
@@ -36,7 +22,7 @@ uvx ruff format
 
 ### Type checker
 
-Use Ty for type checking:
+Use [Ty](https://docs.astral.sh/ty/) for type checking:
 
 ```bash
 uvx ty check
