@@ -75,6 +75,9 @@ ipython_config.py
 # It is commonly ignored for libraries.
 uv.lock
 
+# Ruff
+.ruff_cache/
+
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
 

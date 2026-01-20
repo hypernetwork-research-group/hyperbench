@@ -23,3 +23,13 @@ Deactivate the virtual environment when done:
 ```bash
 deactivate
 ```
+
+### Linter
+
+Use Ruff for linting and formatting:
+
+```bash
+uvx ruff check
+
+uvx ruff format
+```
