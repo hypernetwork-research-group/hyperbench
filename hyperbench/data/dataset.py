@@ -3,39 +3,32 @@
 import json
 import gdown
 import tempfile
+import torch
 
-from typing import Any
 from enum import Enum
+from typing import Any
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
+from hyperbench.types.hdata import HData
 from hyperbench.utils.hif import validate_hif_json
 
 
 class DatasetNames(Enum):
     """
-    Enumeration of available datasets with their Google Drive file IDs.
+    Enumeration of available datasets.
     """
 
-    ALGEBRA = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
-    EMAIL_ENRON = "placeholder"
-    ARXIV = "placeholder"
+    ALGEBRA = "1"
+    EMAIL_ENRON = "2"
+    ARXIV = "3"
 
 
 class HIFConverter:
     @staticmethod
-    def get_dataset_from_hif(dataset_name: str) -> HIFHypergraph:
-        """Fetches and returns the HIF hypergraph for the specified dataset.
-
-        Args:
-            dataset_name: Name of the dataset to fetch.
-        Returns:
-            HIFHypergraph: The hypergraph representation of the dataset.
-        """
-
+    def load_from_hif(dataset_name: str, file_id: str) -> HIFHypergraph:
         if dataset_name not in DatasetNames.__members__:
             raise ValueError(f"Dataset '{dataset_name}' not found.")
 
-        file_id = DatasetNames[dataset_name].value
         url = f"https://drive.google.com/uc?id={file_id}"
 
         with tempfile.NamedTemporaryFile(
@@ -54,11 +47,73 @@ class HIFConverter:
 
 
 class Dataset(TorchDataset):
+    GDRIVE_FILE_ID = None
+    DATASET_NAME = None
+
     def __init__(self) -> None:
-        pass
+        self.hypergraph = None
 
     def __len__(self) -> int:
         pass
 
+    def download(self) -> HIFHypergraph:
+        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
+        return hypergraph
+
+    def process(self) -> HData:
+
+        if self.hypergraph is None:
+            raise ValueError("Hypergraph is not loaded. Call download() first.")
+
+        num_nodes = len(self.hypergraph.nodes)
+        num_edges = len(self.hypergraph.edges)
+
+        x = torch.arange(num_nodes, dtype=torch.float32).unsqueeze(1)
+
+        node_ids = []
+        edge_ids = []
+        for incidence in self.hypergraph.incidences:
+            node_id = int(incidence.get("node", 0))
+            edge_id = int(incidence.get("edge", 0))
+            node_ids.append(node_id)
+            edge_ids.append(edge_id)
+
+        edge_index = None
+        if node_ids:
+            # edge_index: shape [2, M] where M is number of incidences
+            # First row: node IDs, Second row: hyperedge IDs
+            edge_index = torch.tensor([node_ids, edge_ids], dtype=torch.long)
+
+        edge_attr = None
+        if self.hypergraph.edges and any(
+            "attrs" in edge for edge in self.hypergraph.edges
+        ):
+            edge_attrs = []
+            for edge in self.hypergraph.edges:
+                attrs = edge.get("attrs", {})
+                edge_attrs.append(len(attrs))
+            edge_attr = torch.tensor(edge_attrs, dtype=torch.float32).unsqueeze(1)
+
+        hdata = HData(x, edge_index, edge_attr, num_nodes, num_edges)
+
+        return hdata
+
     def __getitem__(self, index: int) -> Any:
         pass
+
+
+class AlgebraDataset(Dataset):
+    DATASET_NAME = "ALGEBRA"
+    GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.hypergraph = HIFConverter.load_from_hif(
+            self.DATASET_NAME, self.GDRIVE_FILE_ID
+        )
+
+    def __len__(self) -> int:
+        return len(self.hypergraph.nodes)
+
+    def __getitem__(self, index: int) -> Any:
+        return self.hypergraph.get_node(index)
