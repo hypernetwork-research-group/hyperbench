@@ -3,7 +3,7 @@ name = "hyperbench"
 version = "0.1.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "fastjsonschema>=2.21.2",
     "gdown>=5.2.1",
