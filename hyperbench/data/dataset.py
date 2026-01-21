@@ -3,8 +3,10 @@
 import json
 import gdown
 import tempfile
-from enum import Enum
 
+from typing import Any
+from enum import Enum
+from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
 from hyperbench.utils.hif import validate_hif_json
 
@@ -19,7 +21,7 @@ class DatasetNames(Enum):
     ARXIV = "placeholder"
 
 
-class DatasetConverter:
+class HIFConverter:
     @staticmethod
     def get_dataset_from_hif(dataset_name: str) -> HIFHypergraph:
         """Fetches and returns the HIF hypergraph for the specified dataset.
@@ -51,8 +53,12 @@ class DatasetConverter:
         return hypergraph
 
 
-if __name__ == "__main__":
-    dataset_ALGEBRA = DatasetConverter.get_dataset_from_hif(DatasetNames.ALGEBRA.name)
-    print(dataset_ALGEBRA.network_type)
-    print(f"Number of nodes: {len(dataset_ALGEBRA.nodes)}")
-    print(f"Number of edges: {len(dataset_ALGEBRA.edges)}")
+class Dataset(TorchDataset):
+    def __init__(self) -> None:
+        pass
+
+    def __len__(self) -> int:
+        pass
+
+    def __getitem__(self, index: int) -> Any:
+        pass

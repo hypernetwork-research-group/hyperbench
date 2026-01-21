@@ -1,3 +1,6 @@
-from .dataset import DatasetConverter, DatasetNames
+from .dataset import (
+    Dataset,
+    HIFConverter,
+)
 
 __all__ = []

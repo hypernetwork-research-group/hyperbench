@@ -1,19 +1,19 @@
-import pytest
-from unittest.mock import patch, mock_open, MagicMock
 import requests
+
+from unittest.mock import patch, mock_open, MagicMock
 from hyperbench.utils import validate_hif_json
 
 
 def test_validate_hif_json():
-    path_invalid = "tests/test_data/hif_not_compliant.json"
+    path_invalid = "tests/mock/hif_not_compliant.json"
     assert not validate_hif_json(path_invalid)
 
-    path_valid = "tests/test_data/hif_compliant.json"
+    path_valid = "tests/mock/hif_compliant.json"
     assert validate_hif_json(path_valid)
 
 
 def test_validate_hif_json_with_url_success():
-    path_valid = "tests/test_data/hif_compliant.json"
+    path_valid = "tests/mock/hif_compliant.json"
 
     with patch("hyperbench.utils.hif.requests.get") as mock_get:
         mock_response = MagicMock()
@@ -28,9 +28,7 @@ def test_validate_hif_json_with_url_success():
 
 
 def test_validate_hif_json_with_url_timeout_fallback():
-    path_valid = "tests/test_data/hif_compliant.json"
-
-    mock_schema = {"type": "object"}
+    path_valid = "tests/mock_data/hif_compliant.json"
 
     with (
         patch("hyperbench.utils.hif.requests.get") as mock_get,
@@ -44,7 +42,7 @@ def test_validate_hif_json_with_url_timeout_fallback():
 
 
 def test_validate_hif_json_with_url_request_exception_fallback():
-    path_valid = "tests/test_data/hif_compliant.json"
+    path_valid = "tests/mock_data/hif_compliant.json"
 
     with (
         patch("hyperbench.utils.hif.requests.get") as mock_get,

@@ -15,5 +15,5 @@ def validate_hif_json(filename):
     try:
         validator(hiftext)
         return True
-    except Exception as e:
+    except Exception:
         return False
