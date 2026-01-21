@@ -30,3 +30,13 @@ uvx ty check
 # In watch mode
 uvx ty check --watch
 ```
+
+### Tests
+
+Run tests with [pytest](https://docs.pytest.org/en/latest/):
+
+```bash
+uv run pytest tests/ --cov=hyperbench --cov-report=term-missing 
+# html report
+uv run pytest tests/ --cov=hyperbench --cov-report=html
+```
