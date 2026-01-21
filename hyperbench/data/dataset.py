@@ -42,8 +42,8 @@ class DatasetConverter:
         if not validate_hif_json(output):
             raise ValueError(f"Dataset '{dataset_name}' is not HIF-compliant.")
 
-        H = HIFHypergraph.from_hif(hiftext)
-        return H
+        hypergraph = HIFHypergraph.from_hif(hiftext)
+        return hypergraph
 
 if __name__ == "__main__":
     dataset_ALGEBRA = DatasetConverter.get_dataset_from_hif(DatasetNames.ALGEBRA.name)

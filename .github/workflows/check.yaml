@@ -1,0 +1,37 @@
+name: Standard Checks
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: ["3.9", "3.10", "3.11"]
+
+        steps:
+        - uses: actions/checkout@v4
+
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v4
+          with:
+              python-version: ${{ matrix.python-version }}
+
+        - name: Install uv
+          uses: astral-sh/setup-uv@v6
+        - name: Install dependencies
+          run: |
+              uv venv
+              uv pip install -e .
+
+        - name: Lint with ruff
+          run: |
+              uv run ruff check .
+
+        - name: Run tests with pytest
+          run: |
+              uv run pytest tests/
