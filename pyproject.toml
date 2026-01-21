@@ -9,3 +9,8 @@ dependencies = [
     "gdown>=5.2.1",
     "requests>=2.32.5",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.13",
+]

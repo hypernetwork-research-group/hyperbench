@@ -13,9 +13,8 @@ class HIFHypergraph:
         metadata: Optional[Dict[str, Any]] = None,
         incidences: Optional[List[Dict[str, Any]]] = None,
         nodes: Optional[List[Dict[str, Any]]] = None,
-        edges: Optional[List[Dict[str, Any]]] = None
+        edges: Optional[List[Dict[str, Any]]] = None,
     ):
-
         self.network_type = network_type
         self.metadata = metadata if metadata is not None else {}
         self.incidences = incidences if incidences is not None else []
@@ -44,5 +43,5 @@ class HIFHypergraph:
             metadata=metadata,
             incidences=incidences,
             nodes=nodes,
-            edges=edges
+            edges=edges,
         )
