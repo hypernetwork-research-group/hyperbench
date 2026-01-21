@@ -18,3 +18,12 @@ Commit messages should be structured in a way that can be read as if they were c
 > feat: add new authentication method to API
 
 Reads as *"If applied, this commit will add new authentication method to API"*.
+
+## Branch naming
+
+Branch names should be descriptive and use hyphens to separate words. They should also follow the same structure as commit messages, using the allowed structural elements. For example:
+- `feat/add-user-authentication`
+- `fix/issue-with-database-connection`
+- `chore/update-dependencies`
+- `refactor/improve-code-structure`
+- `docs/update-contributing-guidelines`
