@@ -4,6 +4,36 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
       - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args:
+          - --fix=lf
+      - id: name-tests-test
+        args:
+          - --pytest
+      - id: pretty-format-json
+        args:
+          - --autofix
+          - --indent=2
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: uvx-ruff-format
+        name: uvx ruff format
+        entry: bash -c 'uvx ruff format'
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
+  - repo: local
+    hooks:
+      - id: uvx-ty-check
+        name: uvx ty check
+        entry: bash -c 'uvx ty check'
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
