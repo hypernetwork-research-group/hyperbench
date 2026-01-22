@@ -36,11 +36,10 @@ uvx ty check --watch
 Run tests with [pytest](https://docs.pytest.org/en/latest/):
 
 ```bash
-uv run pytest tests/ --cov=hyperbench --cov-report=term-missing 
+uv run pytest --cov=hyperbench --cov-report=term-missing 
 # html report
-uv run pytest tests/ --cov=hyperbench --cov-report=html
+uv run pytest --cov=hyperbench --cov-report=html
 ```
-
 
 ### Utilities
 
@@ -51,5 +50,5 @@ uv sync && \
 uv pip install -e . && \
 uv run ruff format && \
 uvx ty check && \
-uv run pytest tests/ --cov=hyperbench --cov-report=term-missing
+uv run pytest --cov=hyperbench --cov-report=term-missing
 ```
