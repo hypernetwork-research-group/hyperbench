@@ -45,3 +45,13 @@ class HIFHypergraph:
             nodes=nodes,
             edges=edges,
         )
+
+    @property
+    def num_nodes(self) -> int:
+        """Return the number of nodes in the hypergraph."""
+        return len(self.nodes)
+
+    @property
+    def num_edges(self) -> int:
+        """Return the number of edges in the hypergraph."""
+        return len(self.edges)

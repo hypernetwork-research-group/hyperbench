@@ -1,5 +1,7 @@
 from .hypergraph import HIFHypergraph
+from .hdata import HData
 
 __all__ = [
-    "Hypergraph",
+    "HIFHypergraph",
+    "HData",
 ]
