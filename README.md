@@ -40,3 +40,16 @@ uv run pytest tests/ --cov=hyperbench --cov-report=term-missing
 # html report
 uv run pytest tests/ --cov=hyperbench --cov-report=html
 ```
+
+
+### Utilities
+
+Before committing code, run the following command to ensure code quality:
+
+```bash
+uv sync && \
+uv pip install -e . && \
+uv run ruff format && \
+uvx ty check && \
+uv run pytest tests/ --cov=hyperbench --cov-report=term-missing
+```

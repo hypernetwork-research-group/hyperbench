@@ -30,7 +30,11 @@ class HIFConverter:
     """
 
     @staticmethod
-    def load_from_hif(dataset_name: str, file_id: str) -> HIFHypergraph:
+    def load_from_hif(dataset_name: str | None, file_id: str | None) -> HIFHypergraph:
+        if dataset_name is None or file_id is None:
+            raise ValueError(
+                f"Dataset name (provided: {dataset_name}) and file ID (provided: {file_id}) must be provided."
+            )
         if dataset_name not in DatasetNames.__members__:
             raise ValueError(f"Dataset '{dataset_name}' not found.")
 
@@ -70,14 +74,20 @@ class Dataset(TorchDataset):
         self.hypergraph = None
 
     def __len__(self) -> int:
-        pass
+        if self.hypergraph is None:
+            return 0
+        return len(self.hypergraph.nodes)
 
     def download(self) -> HIFHypergraph:
         """
         Load the hypergraph from HIF format using HIFConverter class.
         """
-        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
-        return hypergraph
+        if self.hypergraph is not None:
+            return self.hypergraph
+        self.hypergraph = HIFConverter.load_from_hif(
+            self.DATASET_NAME, self.GDRIVE_FILE_ID
+        )
+        return self.hypergraph
 
     def process(self) -> HData:
         """
@@ -132,12 +142,3 @@ class AlgebraDataset(Dataset):
 
     def __init__(self) -> None:
         super().__init__()
-        self.hypergraph = HIFConverter.load_from_hif(
-            self.DATASET_NAME, self.GDRIVE_FILE_ID
-        )
-
-    def __len__(self) -> int:
-        return len(self.hypergraph.nodes)
-
-    def __getitem__(self, index: int) -> Any:
-        return self.hypergraph.get_node(index)
