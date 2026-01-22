@@ -36,4 +36,4 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          uv run pytest tests/ --cov=hyperbench --cov-report=term-missing
+          uv run pytest --cov=hyperbench --cov-report=term-missing
