@@ -113,10 +113,12 @@ class Dataset(TorchDataset):
             edge_ids.append(edge_id)
 
         edge_index = None
-        if node_ids:
-            # edge_index: shape [2, M] where M is number of incidences
-            # First row: node IDs, Second row: hyperedge IDs
-            edge_index = torch.tensor([node_ids, edge_ids])
+        if len(node_ids) < 1:
+            raise ValueError("Hypergraph has no incidences.")
+
+        # edge_index: shape [2, M] where M is number of incidences
+        # First row: node IDs, Second row: hyperedge IDs
+        edge_index = torch.tensor([node_ids, edge_ids])
 
         edge_attr = None
         if self.hypergraph.edges and any(
