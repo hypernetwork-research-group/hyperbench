@@ -1,5 +1,17 @@
 # HyperBench
 
+## Contribution guide
+
+### Pre-commit hooks
+
+Run the following command to install the pre-commit hook:
+
+```bash
+uv sync
+
+pre-commit install --config .github/hooks/.pre-commit-config.yaml --hook-type pre-commit --install-hooks --overwrite
+```
+
 ## Commands
 
 ### Sync dependencies
@@ -36,11 +48,10 @@ uvx ty check --watch
 Run tests with [pytest](https://docs.pytest.org/en/latest/):
 
 ```bash
-uv run pytest tests/ --cov=hyperbench --cov-report=term-missing 
+uv run pytest --cov=hyperbench --cov-report=term-missing
 # html report
-uv run pytest tests/ --cov=hyperbench --cov-report=html
+uv run pytest --cov=hyperbench --cov-report=html
 ```
-
 
 ### Utilities
 
@@ -51,5 +62,5 @@ uv sync && \
 uv pip install -e . && \
 uv run ruff format && \
 uvx ty check && \
-uv run pytest tests/ --cov=hyperbench --cov-report=term-missing
+uv run pytest --cov=hyperbench --cov-report=term-missing
 ```
