@@ -24,6 +24,11 @@ class DatasetNames(Enum):
 
 
 class HIFConverter:
+    """
+    Docstring for HIFConverter
+    A utility class to load hypergraphs from HIF format.
+    """
+
     @staticmethod
     def load_from_hif(dataset_name: str, file_id: str) -> HIFHypergraph:
         if dataset_name not in DatasetNames.__members__:
@@ -47,6 +52,17 @@ class HIFConverter:
 
 
 class Dataset(TorchDataset):
+    """
+    Base Dataset class for hypergraph datasets, extending PyTorch's Dataset.
+    Attributes:
+        GDRIVE_FILE_ID (str): Google Drive file ID for the dataset.
+        DATASET_NAME (str): Name of the dataset.
+        hypergraph (HIFHypergraph): Loaded hypergraph instance.
+    Methods:
+        download(): Downloads and loads the hypergraph from HIF.
+        process(): Processes the hypergraph into HData format.
+    """
+
     GDRIVE_FILE_ID = None
     DATASET_NAME = None
 
@@ -57,10 +73,18 @@ class Dataset(TorchDataset):
         pass
 
     def download(self) -> HIFHypergraph:
+        """
+        Load the hypergraph from HIF format using HIFConverter class.
+        """
         hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
         return hypergraph
 
     def process(self) -> HData:
+        """
+        Process the loaded hypergraph into HData format, mapping HIF structure to tensors.
+        Returns:
+            HData: Processed hypergraph data.
+        """
 
         if self.hypergraph is None:
             raise ValueError("Hypergraph is not loaded. Call download() first.")
@@ -68,7 +92,7 @@ class Dataset(TorchDataset):
         num_nodes = len(self.hypergraph.nodes)
         num_edges = len(self.hypergraph.edges)
 
-        x = torch.arange(num_nodes, dtype=torch.float32).unsqueeze(1)
+        x = torch.arange(num_nodes).unsqueeze(1)
 
         node_ids = []
         edge_ids = []
@@ -82,7 +106,7 @@ class Dataset(TorchDataset):
         if node_ids:
             # edge_index: shape [2, M] where M is number of incidences
             # First row: node IDs, Second row: hyperedge IDs
-            edge_index = torch.tensor([node_ids, edge_ids], dtype=torch.long)
+            edge_index = torch.tensor([node_ids, edge_ids])
 
         edge_attr = None
         if self.hypergraph.edges and any(
@@ -92,7 +116,7 @@ class Dataset(TorchDataset):
             for edge in self.hypergraph.edges:
                 attrs = edge.get("attrs", {})
                 edge_attrs.append(len(attrs))
-            edge_attr = torch.tensor(edge_attrs, dtype=torch.float32).unsqueeze(1)
+            edge_attr = torch.tensor(edge_attrs).unsqueeze(1)
 
         hdata = HData(x, edge_index, edge_attr, num_nodes, num_edges)
 
