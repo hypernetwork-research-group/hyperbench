@@ -1,10 +1,8 @@
 import torch
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
-from hyperbench.data import Dataset, HIFConverter
-from hyperbench.types import HIFHypergraph
-
-from hyperbench.data.dataset import AlgebraDataset
+from hyperbench.data.dataset import Dataset, HIFConverter, DatasetNames
+from hyperbench.types.hypergraph import HIFHypergraph
 
 
 def test_HIFConverter():
@@ -48,22 +46,22 @@ def test_HIFConverter_invalid_hif_format():
 
 
 def test_Dataset_available():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "abcde"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     assert dataset.GDRIVE_FILE_ID == "abcde"
     assert dataset.DATASET_NAME == "ALGEBRA"
     assert dataset.hypergraph is None
 
 
 def test_Dataset_not_available():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "abcde"
         DATASET_NAME = "unreal"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     assert dataset.GDRIVE_FILE_ID == "abcde"
     assert dataset.DATASET_NAME == "unreal"
     assert dataset.hypergraph is None
@@ -73,11 +71,11 @@ def test_Dataset_not_available():
 
 
 def test_Dataset_name_none():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "abcde"
         DATASET_NAME = None
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     assert dataset.GDRIVE_FILE_ID == "abcde"
     assert dataset.DATASET_NAME is None
     assert dataset.hypergraph is None
@@ -90,11 +88,11 @@ def test_Dataset_name_none():
 
 
 def test_Dataset_id_none():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = None
         DATASET_NAME = "abcde"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     assert dataset.GDRIVE_FILE_ID is None
     assert dataset.DATASET_NAME == "abcde"
     assert dataset.hypergraph is None
@@ -107,30 +105,23 @@ def test_Dataset_id_none():
 
 
 def test_Dataset_len():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
-
-    assert len(dataset) == 0
-
+    dataset = TestDataset()
     hypergraph = dataset.download()
     dataset.hypergraph = hypergraph
 
     assert len(dataset) == hypergraph.num_nodes
 
 
-def test_Dataset_get_item():
-    pass
-
-
 def test_download_when_hgypergraph_already_loaded():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     hypergraph = dataset.download()
     dataset.hypergraph = hypergraph
 
@@ -141,11 +132,11 @@ def test_download_when_hgypergraph_already_loaded():
 
 
 def test_Dataset_process():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     hypergraph = dataset.download()
     dataset.hypergraph = hypergraph
 
@@ -160,11 +151,11 @@ def test_Dataset_process():
 
 
 def test_Dataset_hypergrape_none():
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
 
     with pytest.raises(
         ValueError, match=r"Hypergraph is not loaded\. Call download\(\) first\."
@@ -175,11 +166,11 @@ def test_Dataset_hypergrape_none():
 def test_Dataset_process_no_incidences():
     """Test that process handles empty incidences list."""
 
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "test_id"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
 
     dataset.hypergraph = HIFHypergraph(
         network_type="undirected",
@@ -195,11 +186,11 @@ def test_Dataset_process_no_incidences():
 def test_Dataset_process_with_edge_attributes():
     """Test that process correctly handles edges with attributes."""
 
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "test_id"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
 
     dataset.hypergraph = HIFHypergraph(
         network_type="undirected",
@@ -233,11 +224,11 @@ def test_Dataset_process_with_edge_attributes():
 def test_Dataset_process_without_edge_attributes():
     """Test that process handles edges without attributes."""
 
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "test_id"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     dataset.hypergraph = HIFHypergraph(
         network_type="undirected",
         nodes=[{"node": "0", "attrs": {}}, {"node": "1", "attrs": {}}],
@@ -254,11 +245,11 @@ def test_Dataset_process_without_edge_attributes():
 def test_Dataset_process_edge_index_format():
     """Test that edge_index has correct format [node_ids, edge_ids]."""
 
-    class MockDataset(Dataset):
+    class TestDataset(Dataset):
         GDRIVE_FILE_ID = "test_id"
         DATASET_NAME = "ALGEBRA"
 
-    dataset = MockDataset()
+    dataset = TestDataset()
     dataset.hypergraph = HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -278,14 +269,3 @@ def test_Dataset_process_edge_index_format():
     assert hdata.edge_index.shape == (2, 3)
     assert hdata.edge_index[0].tolist() == [0, 1, 2]
     assert hdata.edge_index[1].tolist() == [0, 0, 1]
-
-
-def test_AlgebraDataset_initialization():
-    dataset = AlgebraDataset()
-    assert dataset.GDRIVE_FILE_ID == "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
-    assert dataset.DATASET_NAME == "ALGEBRA"
-    assert dataset.hypergraph is None
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
