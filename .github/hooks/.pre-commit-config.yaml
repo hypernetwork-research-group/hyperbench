@@ -12,8 +12,6 @@ repos:
         args:
           - --fix=lf
       - id: name-tests-test
-        args:
-          - --pytest
       - id: pretty-format-json
         args:
           - --autofix
