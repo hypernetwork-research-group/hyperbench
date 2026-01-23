@@ -1,3 +1,3 @@
-from .mock import MOCK_BASE_PATH
+from .mock import MOCK_BASE_PATH, MockDataset
 
-__all__ = ["MOCK_BASE_PATH"]
+__all__ = ["MOCK_BASE_PATH", "MockDataset"]
