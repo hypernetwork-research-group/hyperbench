@@ -6,9 +6,9 @@ MOCK_BASE_PATH = "hyperbench/tests/mock"
 
 
 class MockDataset(Dataset):
-    """Mock dataset for testing DataLoader."""
+    """Mock dataset for testing purposes."""
 
-    def __init__(self, data_list: List[Any]):
+    def __init__(self, data_list: list[Any]):
         super().__init__()
         self.data_list = data_list
         self.hypergraph = utils.empty_hifhypergraph()  # Not used in this mock
@@ -17,7 +17,9 @@ class MockDataset(Dataset):
     def __len__(self):
         return len(self.data_list)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int | List[int]) -> Any:
+        if isinstance(index, list):
+            return [self.data_list[i] for i in index]
         return self.data_list[index]
 
     def download(self):
