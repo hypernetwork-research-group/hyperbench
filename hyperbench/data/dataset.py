@@ -1,9 +1,11 @@
 """Example usage of the Hypergraph class with HIF data."""
 
 import json
+import os
 import gdown
 import tempfile
 import torch
+import zstandard as zstd
 
 from enum import Enum
 from torch.utils.data import Dataset as TorchDataset
@@ -37,13 +39,30 @@ class HIFConverter:
         if dataset_name not in DatasetNames.__members__:
             raise ValueError(f"Dataset '{dataset_name}' not found.")
 
-        url = f"https://drive.google.com/uc?id={file_id}"
+        dataset_name_lower = dataset_name.lower()
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        zst_filename = os.path.join(
+            current_dir, "datasets", f"{dataset_name_lower}.json.zst"
+        )
 
-        with tempfile.NamedTemporaryFile(
-            mode="w+", suffix=".json", delete=False
-        ) as tmp_file:
-            output = tmp_file.name
-            gdown.download(url=url, output=output, quiet=False, fuzzy=True)
+        if os.path.exists(zst_filename):
+            dctx = zstd.ZstdDecompressor()
+            with (
+                open(zst_filename, "rb") as input_f,
+                tempfile.NamedTemporaryFile(
+                    mode="wb", suffix=".json", delete=False
+                ) as tmp_file,
+            ):
+                dctx.copy_stream(input_f, tmp_file)
+                output = tmp_file.name
+        else:
+            url = f"https://drive.google.com/uc?id={file_id}"
+
+            with tempfile.NamedTemporaryFile(
+                mode="w+", suffix=".json", delete=False
+            ) as tmp_file:
+                output = tmp_file.name
+                gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
         with open(output, "r") as f:
             hiftext = json.load(f)
@@ -89,6 +108,9 @@ class Dataset(TorchDataset):
         return hypergraph
 
     def process(self) -> HData:
+        # TODO: id node from 0 to X-1
+        # TODO: edge index from 0 to Y-1
+
         """
         Process the loaded hypergraph into HData format, mapping HIF structure to tensors.
         Returns:
