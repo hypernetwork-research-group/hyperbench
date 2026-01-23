@@ -16,7 +16,7 @@ def test_validate_hif_json():
 def test_validate_hif_json_with_url_success():
     path_valid = f"{MOCK_BASE_PATH}/hif_compliant.json"
 
-    with patch("hyperbench.utils.hif.requests.get") as mock_get:
+    with patch("hyperbench.utils.hif_utils.requests.get") as mock_get:
         mock_response = MagicMock()
         mock_response.json.return_value = {"type": "object"}  # Minimal valid schema
         mock_get.return_value = mock_response
@@ -32,7 +32,7 @@ def test_validate_hif_json_with_url_timeout_fallback():
     path_valid = f"{MOCK_BASE_PATH}/hif_compliant.json"
 
     with (
-        patch("hyperbench.utils.hif.requests.get") as mock_get,
+        patch("hyperbench.utils.hif_utils.requests.get") as mock_get,
         patch("builtins.open", mock_open(read_data='{"type": "object"}')) as mock_file,
     ):
         mock_get.side_effect = requests.Timeout("Connection timeout")
@@ -46,7 +46,7 @@ def test_validate_hif_json_with_url_request_exception_fallback():
     path_valid = f"{MOCK_BASE_PATH}/hif_compliant.json"
 
     with (
-        patch("hyperbench.utils.hif.requests.get") as mock_get,
+        patch("hyperbench.utils.hif_utils.requests.get") as mock_get,
         patch("builtins.open", mock_open(read_data='{"type": "object"}')) as mock_file,
     ):
         mock_get.side_effect = requests.RequestException("Network error")

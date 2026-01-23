@@ -6,11 +6,10 @@ import tempfile
 import torch
 
 from enum import Enum
-from typing import Any
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
 from hyperbench.types.hdata import HData
-from hyperbench.utils.hif import validate_hif_json
+from hyperbench.utils.hif_utils import validate_hif_json
 
 
 class DatasetNames(Enum):
@@ -67,27 +66,27 @@ class Dataset(TorchDataset):
         process(): Processes the hypergraph into HData format.
     """
 
+    # TODO: move as input to __init__()? So that users can provide new ids and names of datasets formatted in HIF
     GDRIVE_FILE_ID = None
     DATASET_NAME = None
 
     def __init__(self) -> None:
-        self.hypergraph = None
+        self.hypergraph: HIFHypergraph = self.download()
+        self.hdata: HData = self.process()
 
     def __len__(self) -> int:
-        if self.hypergraph is None:
-            return 0
         return len(self.hypergraph.nodes)
+
+    def __getitem__(self, index: int) -> HData:
+        # TODO: implement sampling of nodes with given index
+        return self.hdata
 
     def download(self) -> HIFHypergraph:
         """
         Load the hypergraph from HIF format using HIFConverter class.
         """
-        if self.hypergraph is not None:
-            return self.hypergraph
-        self.hypergraph = HIFConverter.load_from_hif(
-            self.DATASET_NAME, self.GDRIVE_FILE_ID
-        )
-        return self.hypergraph
+        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
+        return hypergraph
 
     def process(self) -> HData:
         """
@@ -95,7 +94,6 @@ class Dataset(TorchDataset):
         Returns:
             HData: Processed hypergraph data.
         """
-
         if self.hypergraph is None:
             raise ValueError("Hypergraph is not loaded. Call download() first.")
 
@@ -116,7 +114,7 @@ class Dataset(TorchDataset):
         if len(node_ids) < 1:
             raise ValueError("Hypergraph has no incidences.")
 
-        # edge_index: shape [2, M] where M is number of incidences
+        # edge_index: shape [2, E] where E is number of incidences
         # First row: node IDs, Second row: hyperedge IDs
         edge_index = torch.tensor([node_ids, edge_ids])
 
@@ -130,12 +128,7 @@ class Dataset(TorchDataset):
                 edge_attrs.append(len(attrs))
             edge_attr = torch.tensor(edge_attrs).unsqueeze(1)
 
-        hdata = HData(x, edge_index, edge_attr, num_nodes, num_edges)
-
-        return hdata
-
-    def __getitem__(self, index: int) -> Any:
-        pass
+        return HData(x, edge_index, edge_attr, num_nodes, num_edges)
 
 
 class AlgebraDataset(Dataset):
