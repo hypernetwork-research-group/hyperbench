@@ -58,6 +58,7 @@ uv run pytest --cov=hyperbench --cov-report=html
 Before committing code, run the following command to ensure code quality:
 
 ```bash
+uv pip uninstall . && \
 uv sync && \
 uv pip install -e . && \
 uv run ruff format && \

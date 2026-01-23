@@ -1,8 +1,10 @@
 import torch
 import pytest
-from unittest.mock import patch, mock_open, MagicMock
-from hyperbench.data.dataset import Dataset, HIFConverter, DatasetNames
-from hyperbench.types.hypergraph import HIFHypergraph
+from unittest.mock import patch, mock_open
+from hyperbench.data import Dataset, HIFConverter
+from hyperbench.types import HIFHypergraph
+
+from hyperbench.data.dataset import AlgebraDataset
 
 
 def test_HIFConverter():
