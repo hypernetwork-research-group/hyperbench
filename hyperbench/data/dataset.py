@@ -108,9 +108,6 @@ class Dataset(TorchDataset):
         return hypergraph
 
     def process(self) -> HData:
-        # TODO: id node from 0 to X-1
-        # TODO: edge index from 0 to Y-1
-
         """
         Process the loaded hypergraph into HData format, mapping HIF structure to tensors.
         Returns:
@@ -124,13 +121,24 @@ class Dataset(TorchDataset):
 
         x = torch.arange(num_nodes).unsqueeze(1)
 
-        node_ids = []
-        edge_ids = []
-        for incidence in self.hypergraph.incidences:
-            node_id = int(incidence.get("node", 0))
-            edge_id = int(incidence.get("edge", 0))
-            node_ids.append(node_id)
-            edge_ids.append(edge_id)
+        node_set = []
+        edge_set = []
+        incidences_tuples = []
+
+        for inc in self.hypergraph.incidences:
+            node = inc.get("node", 0)
+            edge = inc.get("edge", 0)
+            if node not in node_set:
+                node_set.append(node)
+            if edge not in edge_set:
+                edge_set.append(edge)
+            incidences_tuples.append((node, edge))
+
+        node_id_mapping = {node_id: idx for idx, node_id in enumerate(node_set)}
+        edge_id_mapping = {edge_id: idx for idx, edge_id in enumerate(edge_set)}
+
+        node_ids = [node_id_mapping[node] for node, _ in incidences_tuples]
+        edge_ids = [edge_id_mapping[edge] for _, edge in incidences_tuples]
 
         edge_index = None
         if len(node_ids) < 1:

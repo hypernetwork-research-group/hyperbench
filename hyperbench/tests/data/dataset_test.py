@@ -117,7 +117,7 @@ def test_dataset_process_no_incidences():
         dataset.process()
 
 
-def test_Dataset_process_with_edge_attributes():
+def test_dataset_process_with_edge_attributes():
     """Test that process correctly handles edges with attributes."""
 
     dataset = AlgebraMockDataset()
@@ -193,3 +193,26 @@ def test_dataset_process_edge_index_format():
     assert hdata.edge_index.shape == (2, 3)
     assert hdata.edge_index[0].tolist() == [0, 1, 2]
     assert hdata.edge_index[1].tolist() == [0, 0, 1]
+
+
+def test_dataset_process_random_ids():
+    dataset = AlgebraMockDataset()
+
+    dataset.hypergraph = HIFHypergraph(
+        network_type="undirected",
+        nodes=[
+            {"node": "abc", "attrs": {}},
+            {"node": "ss", "attrs": {}},
+            {"node": "fewao", "attrs": {}},
+        ],
+        edges=[{"edge": "0", "attrs": {}}, {"edge": "1", "attrs": {}}],
+        incidences=[
+            {"node": "abc", "edge": "0"},
+            {"node": "ss", "edge": "0"},
+            {"node": "fewao", "edge": "1"},
+        ],
+    )
+    hdata = dataset.process()
+    print(hdata.x)
+    print(hdata.edge_index)
+    assert hdata.edge_index.shape == (2, 3)
