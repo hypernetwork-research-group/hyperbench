@@ -29,34 +29,3 @@ class MockDataset(Dataset):
     def process(self):
         # Not implemented for mock as we don't need it
         pass
-
-
-class AlgebraMockDataset(Dataset):
-    GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
-    DATASET_NAME = "ALGEBRA"
-
-
-class FakeMockDataset(MockDataset):
-    GDRIVE_FILE_ID = "fake_id"
-    DATASET_NAME = "FAKE"
-
-    def download(self) -> HIFHypergraph:
-        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
-        return hypergraph
-
-
-class FakeMockDataset2(MockDataset):
-    GDRIVE_FILE_ID = "fake_id"
-    DATASET_NAME = None
-
-    def download(self) -> HIFHypergraph:
-        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
-        return hypergraph
-
-
-class FakeMockDataset3(Dataset):
-    GDRIVE_FILE_ID = "fake_id"
-    DATASET_NAME = None
-
-    def download(self):
-        return None
