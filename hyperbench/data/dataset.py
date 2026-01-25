@@ -104,6 +104,8 @@ class Dataset(TorchDataset):
         """
         Load the hypergraph from HIF format using HIFConverter class.
         """
+        if hasattr(self, "hypergraph") and self.hypergraph is not None:
+            return self.hypergraph
         hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
         return hypergraph
 
@@ -113,8 +115,6 @@ class Dataset(TorchDataset):
         Returns:
             HData: Processed hypergraph data.
         """
-        if self.hypergraph is None:
-            raise ValueError("Hypergraph is not loaded. Call download() first.")
 
         num_nodes = len(self.hypergraph.nodes)
         num_edges = len(self.hypergraph.edges)
@@ -164,6 +164,3 @@ class Dataset(TorchDataset):
 class AlgebraDataset(Dataset):
     DATASET_NAME = "ALGEBRA"
     GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
-
-    def __init__(self) -> None:
-        super().__init__()
