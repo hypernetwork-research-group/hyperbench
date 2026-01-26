@@ -4,6 +4,7 @@ from .data_utils import (
     empty_edgeindex,
     empty_hdata,
     empty_hifhypergraph,
+    empty_nodefeatures,
     to_non_empty_edgeattr,
 )
 
