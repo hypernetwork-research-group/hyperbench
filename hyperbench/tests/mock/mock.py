@@ -2,11 +2,11 @@ from typing import Any, List
 from hyperbench.data import Dataset
 from hyperbench import utils
 
+
 MOCK_BASE_PATH = "hyperbench/tests/mock"
 
 
 class MockDataset(Dataset):
-    """Mock dataset for testing purposes."""
 
     def __init__(self, data_list: list[Any]):
         super().__init__()
