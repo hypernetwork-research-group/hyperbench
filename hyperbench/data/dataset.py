@@ -214,17 +214,17 @@ class Dataset(TorchDataset):
 
         # Find incidences where the node is in our sampled node set
         # Example: edge_index[0] = [0, 0, 1, 2, 3, 4], sampled_node_ids = [0, 3]
-        #          -> incidence_mask = [True, True, False, False, True, False]
+        #          -> node_incidence_mask = [True, True, False, False, True, False]
         node_incidence_mask = torch.isin(node_ids, sampled_node_ids)
 
         # Get unique hyperedges that have at least one sampled node
-        # Example: edge_index[1] = [0, 0, 0, 1, 2, 2], node_incidence_mask = [False, False, True, True, False, False]
-        #          -> sampled_edge_ids = [0, 1] as they connect to sampled nodes
+        # Example: edge_index[1] = [0, 0, 0, 1, 2, 2], node_incidence_mask = [True, True, False, False, True, False]
+        #          -> sampled_edge_ids = [0, 2] as they connect to sampled nodes
         sampled_edge_ids = edge_ids[node_incidence_mask].unique()
 
         # Find all incidences for sampled nodes belonging to relevant hyperedges
-        # Example: edge_index[1] = [0, 0, 0, 1, 2, 2], sampled_edge_ids = [0, 1]
-        #          -> edge_incidence_mask = [True, True, True, True, True, False]
+        # Example: edge_index[1] = [0, 0, 0, 1, 2, 2], sampled_edge_ids = [0, 2]
+        #          -> edge_incidence_mask = [True, True, True, False, True, True]
         edge_incidence_mask = torch.isin(edge_ids, sampled_edge_ids)
 
         # Incidence is kept if node is sampled AND hyperedge is relevant
@@ -232,10 +232,10 @@ class Dataset(TorchDataset):
 
         # Keep only the incidences that match our mask
         # Example: edge_index = [[0, 0, 1, 2, 3, 4],
-        #                        [0, 0, 0, 1, 1, 2]]
-        #          incidence_mask = [False, False, True, False, True, False]
-        #          -> sampled_edge_index = [[1, 3],
-        #                                   [0, 1]]
+        #                        [0, 0, 0, 1, 2, 2]],
+        #          incidence_mask = [True, True, False, False, True, False]
+        #          -> sampled_edge_index = [[0, 0, 3],
+        #                                   [0, 0, 2]]
         sampled_edge_index = edge_index[:, incidence_mask]
 
         return sampled_edge_index, sampled_node_ids, sampled_edge_ids
@@ -255,6 +255,11 @@ class Dataset(TorchDataset):
         Returns:
             New edge_index tensor with 0-based node and edge IDs.
         """
+        # Example: sampled_edge_index = [[1, 1, 3],
+        #                                [0, 2, 2]]
+        #          sampled_node_ids = [1, 3],
+        #          sampled_edge_ids = [0, 2]
+        #          -> new_node_ids = [0, 0, 1], new_edge_ids = [0, 1, 1]
         new_node_ids = self.__to_0based_ids(
             sampled_edge_index[0], sampled_node_ids, self.hdata.num_nodes
         )
@@ -263,8 +268,8 @@ class Dataset(TorchDataset):
         )
 
         # Example: new_node_ids = [0, 1], new_edge_ids = [0, 1]
-        #         -> new_edge_index = [[0, 1],
-        #                              [0, 1]]
+        #          -> new_edge_index = [[0, 1],
+        #                               [0, 1]]
         new_edge_index = torch.stack([new_node_ids, new_edge_ids], dim=0)
         return new_edge_index
 
@@ -277,10 +282,10 @@ class Dataset(TorchDataset):
         """
         Map original IDs to 0-based ids.
         Example:
-            original_ids: [1, 3]
+            original_ids: [1, 3, 3, 7]
             ids_to_keep: [3, 7]
-            n = 6
-            Returned 0-based IDs: [0, 1]
+            n = 8                            # total number of elements (nodes or edges) in the original hypergraph
+            Returned 0-based IDs: [0, 0, 1]  # the size is sum of occurrences of ids_to_keep in original_ids
         Args:
             original_ids: Tensor of original IDs.
             n: Total number of original IDs.
