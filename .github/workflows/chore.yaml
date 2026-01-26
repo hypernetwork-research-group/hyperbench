@@ -1,7 +1,10 @@
 name: Run tests and upload coverage
 
 on:
-  push
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
@@ -15,6 +18,8 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v4
+        with:
+          python-version: "3.14"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6

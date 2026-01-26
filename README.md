@@ -13,31 +13,58 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
+            <ul>
+                <li><a href="#sync-dependencies">Sync dependencies</a></li>
+            </ul>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
+    <li>
+        <a href="#contributing">Contributing</a>
+        <ul>
+            <li><a href="#pre-commit-hooks">Pre-commit hooks</a></li>
+            <li><a href="#linter">Linter</a></li>
+            <li><a href="#type-checker">Type checker</a></li>
+            <li><a href="#tests">Tests</a></li>
+            <li><a href="#utilities">Utilities</a></li>
+        </ul>
+    </li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
+## About The Project
 
 ## Getting Started
 
+WIP
 
-## Contribution guide
+## Prerequisites
+
+WIP
+
+## Installation
+
+### Sync dependencies
+
+Use [uv](https://docs.astral.sh/uv/reference/cli/) to sync dependencies:
+
+```bash
+uv sync
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ### Pre-commit hooks
 
@@ -47,16 +74,6 @@ Run the following command to install the pre-commit hook:
 uv sync
 
 pre-commit install --config .github/hooks/.pre-commit-config.yaml --hook-type pre-commit --install-hooks --overwrite
-```
-
-## Commands
-
-### Sync dependencies
-
-Use [uv](https://docs.astral.sh/uv/reference/cli/) to sync dependencies:
-
-```bash
-uv sync
 ```
 
 ### Linter
@@ -102,6 +119,18 @@ uv run ruff format && \
 uvx ty check && \
 uv run pytest --cov=hyperbench --cov-report=term-missing
 ```
+
+## License
+
+WIP
+
+## Contact
+
+WIP
+
+## Acknowledgments
+
+
 
 
 [contributors-shield]: https://img.shields.io/github/contributors/hypernetwork-research-group/hyperbench.svg?style=for-the-badge
