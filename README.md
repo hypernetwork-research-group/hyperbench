@@ -12,10 +12,10 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#about-the-project">About the project</a>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#getting-started">Getting started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
@@ -35,7 +35,6 @@
             <li><a href="#utilities">Utilities</a></li>
         </ul>
     </li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -46,21 +45,21 @@
 
 ## Getting Started
 
-WIP
-
-## Prerequisites
+### Prerequisites
 
 WIP
 
-## Installation
+### Installation
 
-### Sync dependencies
+#### Sync dependencies
 
 Use [uv](https://docs.astral.sh/uv/reference/cli/) to sync dependencies:
 
 ```bash
 uv sync
 ```
+
+## Usage
 
 ## Contributing
 
