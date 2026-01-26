@@ -12,8 +12,7 @@ repos:
         args:
           - --fix=lf
       - id: name-tests-test
-        args:
-          - --pytest
+        exclude: "hyperbench/tests/mock/"
       - id: pretty-format-json
         args:
           - --autofix

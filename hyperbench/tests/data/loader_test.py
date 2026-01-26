@@ -3,23 +3,8 @@ import torch
 
 from hyperbench.data import DataLoader
 from hyperbench.types import HData
+from hyperbench.tests import MockDataset
 from hyperbench import utils
-from hyperbench.data import Dataset
-from typing import Any, List
-
-
-class MockDataset(Dataset):
-    """Mock dataset for testing DataLoader."""
-
-    def __init__(self, data_list: List[Any]):
-        super().__init__()
-        self.data_list = data_list
-
-    def __len__(self):
-        return len(self.data_list)
-
-    def __getitem__(self, index):
-        return self.data_list[index]
 
 
 def test_initialization():
