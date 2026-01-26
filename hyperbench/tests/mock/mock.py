@@ -7,7 +7,6 @@ MOCK_BASE_PATH = "hyperbench/tests/mock"
 
 
 class MockDataset(Dataset):
-
     def __init__(self, data_list: list[Any]):
         super().__init__()
         self.data_list = data_list

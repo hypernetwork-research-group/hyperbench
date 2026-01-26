@@ -86,6 +86,7 @@ class Dataset(TorchDataset):
         download(): Downloads and loads the hypergraph from HIF.
         process(): Processes the hypergraph into HData format.
     """
+
     GDRIVE_FILE_ID = None
     DATASET_NAME = None
 
