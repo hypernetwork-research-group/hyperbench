@@ -8,7 +8,7 @@ import torch
 import zstandard as zstd
 
 from enum import Enum
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
@@ -98,6 +98,8 @@ class Dataset(TorchDataset):
         return len(self.hypergraph.nodes)
 
     def __getitem__(self, index: int | List[int]) -> HData:
+        if not isinstance(index, (int, list)):
+            raise TypeError("Index must be an integer or a list of integers.")
         sampled_node_ids_list = self.__get_node_ids_to_sample(index)
         self.__validate_node_ids(sampled_node_ids_list)
 
@@ -141,8 +143,36 @@ class Dataset(TorchDataset):
         num_nodes = len(self.hypergraph.nodes)
         num_edges = len(self.hypergraph.edges)
 
-        x = torch.arange(num_nodes).unsqueeze(1)
+        # x: shape [num_nodes, num_node_features]
+        all_attr_keys = set()
+        # collect unique numeric attribute keys across all nodes
+        for node in self.hypergraph.nodes:
+            attrs = node.get("attrs", {})
+            numeric_attrs = {
+                key: value
+                for key, value in attrs.items()
+                if isinstance(value, (int, float)) and not isinstance(value, bool)
+            }
+            all_attr_keys.update(numeric_attrs.keys())
 
+        sorted_attr_keys = sorted(all_attr_keys) if all_attr_keys else None
+
+        # Encode node attributes, using 0.0 when missing
+        node_attrs_list = []
+        for node in self.hypergraph.nodes:
+            attrs = node.get("attrs", {})
+            # encode_node_attrs can be overridden in subclasses for custom behavior of the dataset
+            feature_vector = self.encode_node_attrs(attrs, sorted_attr_keys)
+            node_attrs_list.append(feature_vector)
+
+        # Check if all nodes have attributes
+        if node_attrs_list and any(len(na) > 0 for na in node_attrs_list):
+            x = torch.stack(node_attrs_list)
+        else:
+            # Fallback to node indices if no numeric attributes
+            x = torch.arange(num_nodes, dtype=torch.float).unsqueeze(1)
+
+        # remap node and edge IDs to 0-based contiguous IDs
         node_set = []
         edge_set = []
         incidences_tuples = []
@@ -170,23 +200,114 @@ class Dataset(TorchDataset):
         # First row: node IDs, Second row: hyperedge IDs
         edge_index = torch.tensor([node_ids, edge_ids])
 
+        # edge-attr: shape [num_edges, num_edge_attributes]
+        # single attribute per edge is flattened to shape [num_edges]
+        # multiple attributes per edge is shape [num_edges, num_attributes]
         edge_attr = None
         if self.hypergraph.edges and any(
             "attrs" in edge for edge in self.hypergraph.edges
         ):
+            all_edge_attr_keys = set()
+            for edge in self.hypergraph.edges:
+                attrs = edge.get("attrs", {})
+                numeric_attrs = {
+                    key: value
+                    for key, value in attrs.items()
+                    if isinstance(value, (int, float)) and not isinstance(value, bool)
+                }
+                all_edge_attr_keys.update(numeric_attrs.keys())
+
+            sorted_edge_attr_keys = (
+                sorted(all_edge_attr_keys) if all_edge_attr_keys else None
+            )
+
             edge_attrs = []
             for edge in self.hypergraph.edges:
                 attrs = edge.get("attrs", {})
-                edge_attrs.append(len(attrs))
-            edge_attr = torch.tensor(edge_attrs).unsqueeze(1)
+                # Use encode_edge_attrs for extensibility (subclasses can override)
+                feature_vector = self.encode_edge_attrs(attrs, sorted_edge_attr_keys)
+                edge_attrs.append(feature_vector)
+
+            # Check if any edges have attributes
+            if edge_attrs and any(len(ea) > 0 for ea in edge_attrs):
+                edge_attr = torch.stack(edge_attrs)
+
+                # Flatten to 1D if only one attribute (PyTorch Geometric standard)
+                if edge_attr.shape[1] == 1:
+                    edge_attr = edge_attr.squeeze(1)
 
         return HData(x, edge_index, edge_attr, num_nodes, num_edges)
+
+    def encode_node_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        """
+        Extract and encode numeric node attributes to tensor.
+        Non-numeric attributes are discarded. Missing attributes are filled with 0.0.
+
+        Args:
+            attrs: Dictionary of node attributes
+            attr_keys: Optional list of attribute keys to encode. If provided, ensures
+                      consistent ordering and fill missing with 0.0.
+
+        Returns:
+            Tensor of numeric attribute values (sorted by key for consistency)
+        """
+        numeric_attrs = {
+            key: value
+            for key, value in attrs.items()
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
+        }
+
+        if attr_keys is not None:
+            values = [float(numeric_attrs.get(key, 0.0)) for key in attr_keys]
+            return torch.tensor(values, dtype=torch.float)
+
+        if not numeric_attrs:
+            return torch.tensor([], dtype=torch.float)
+
+        sorted_keys = sorted(numeric_attrs.keys())
+        values = [float(numeric_attrs[key]) for key in sorted_keys]
+
+        return torch.tensor(values, dtype=torch.float)
+
+    def encode_edge_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        """
+        Extract and encode numeric edge attributes to tensor.
+        Non-numeric attributes are discarded. Missing attributes are filled with 0.0.
+
+        Args:
+            attrs: Dictionary of edge attributes
+            attr_keys: Optional list of attribute keys to encode. If provided, ensures
+                      consistent ordering and fill missing with 0.0.
+
+        Returns:
+            Tensor of numeric attribute values (sorted by key for consistency)
+        """
+        numeric_attrs = {
+            key: value
+            for key, value in attrs.items()
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
+        }
+
+        if attr_keys is not None:
+            values = [float(numeric_attrs.get(key, 0.0)) for key in attr_keys]
+            return torch.tensor(values, dtype=torch.float)
+
+        if not numeric_attrs:
+            return torch.tensor([], dtype=torch.float)
+
+        sorted_keys = sorted(numeric_attrs.keys())
+        values = [float(numeric_attrs[key]) for key in sorted_keys]
+
+        return torch.tensor(values, dtype=torch.float)
 
     def __get_node_ids_to_sample(self, id: int | List[int]) -> List[int]:
         if isinstance(id, int):
             return [id]
-
-        if isinstance(id, list):
+        else:  # list of ints
             if len(id) < 1:
                 raise ValueError("Index list cannot be empty.")
             elif len(id) > self.__len__():
@@ -293,7 +414,7 @@ class Dataset(TorchDataset):
         Returns:
             Tensor of 0-based ids.
         """
-        id_to_0based_id = torch.zeros(n)
+        id_to_0based_id = torch.zeros(n, dtype=torch.long)
         n_ids_to_keep = len(ids_to_keep)
         id_to_0based_id[ids_to_keep] = torch.arange(n_ids_to_keep)
         return id_to_0based_id[original_ids]
