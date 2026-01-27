@@ -1,9 +1,5 @@
-"""Example usage of the Hypergraph class with HIF data."""
-
-from datetime import datetime
 import json
 import os
-import datetime
 import gdown
 import tempfile
 import torch
@@ -172,15 +168,15 @@ class Dataset(TorchDataset):
         if node_attr_keys:
             x = torch.stack(
                 [
-                    self.transform_attrs(
+                    self.transform_node_attrs(
                         node.get("attrs", {}), attr_keys=node_attr_keys
                     )
                     for node in self.hypergraph.nodes
                 ]
             )
         else:
-            # Fallback to node indices if no numeric attributes
-            x = torch.arange(num_nodes, dtype=torch.float).unsqueeze(1)
+            # Fallback to zeros if no numeric attributes
+            x = torch.zeros((num_nodes, 1), dtype=torch.float)
 
         # remap node and edge IDs to 0-based contiguous IDs
         # Use dict comprehension for faster lookups
@@ -219,7 +215,7 @@ class Dataset(TorchDataset):
 
             edge_attr = torch.stack(
                 [
-                    self.transform_attrs(
+                    self.transform_edge_attrs(
                         edge.get("attrs", {}), attr_keys=edge_attr_keys
                     )
                     for edge in self.hypergraph.edges
@@ -227,10 +223,20 @@ class Dataset(TorchDataset):
             )
 
             # Flatten to 1D if only one attribute (PyTorch Geometric standard)
-            if edge_attr.shape[1] == 1:
-                edge_attr = edge_attr.squeeze(1)
+            # if edge_attr.shape[1] == 1:
+            #     edge_attr = edge_attr.squeeze(1)
 
         return HData(x, edge_index, edge_attr, num_nodes, num_edges)
+
+    def transform_node_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        return self.transform_attrs(attrs, attr_keys)
+
+    def transform_edge_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        return self.transform_attrs(attrs, attr_keys)
 
     def transform_attrs(
         self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
@@ -393,20 +399,3 @@ class DBLPDataset(Dataset):
 class ThreadsMathsxDataset(Dataset):
     DATASET_NAME = "ThreadsMathsx"
     GDRIVE_FILE_ID = "1jS4FDs7ME-mENV6AJwCOb_glXKMT7YLQ"
-
-
-if __name__ == "__main__":
-    start = datetime.datetime.now()
-    dataset = ThreadsMathsxDataset()
-    print(dataset.hdata)
-    print(f"Number of nodes: {dataset.hdata.num_nodes}")
-    print(f"Number of edges: {dataset.hdata.num_edges}")
-    end = datetime.datetime.now()
-    print(f"Time taken: {end - start} seconds")
-    start = datetime.datetime.now()
-    dataset = DBLPDataset()
-    print(dataset.hdata)
-    print(f"Number of nodes: {dataset.hdata.num_nodes}")
-    print(f"Number of edges: {dataset.hdata.num_edges}")
-    end = datetime.datetime.now()
-    print(f"Time taken: {end - start} seconds")
