@@ -33,6 +33,7 @@ testpaths = ["hyperbench/tests"]
 [tool.coverage.run]
 source = ["hyperbench"]
 branch = true
+omit = ["hyperbench/tests/*"]
 
 [tool.coverage.report]
 precision = 2
