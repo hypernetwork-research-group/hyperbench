@@ -1,10 +1,12 @@
 # HyperBench
 
-[![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
+[![Contributors][contributors-shield]][contributors-url]
+
 [![Issues][issues-shield]][issues-url]
 [![project_license][license-shield]][license-url]
+
 [![codecov](https://codecov.io/github/hypernetwork-research-group/hyperbench/graph/badge.svg?token=XE0TB5JMOS)](https://codecov.io/github/hypernetwork-research-group/hyperbench)
 
 <!-- TABLE OF CONTENTS -->

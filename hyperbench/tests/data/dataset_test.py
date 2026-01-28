@@ -1,3 +1,4 @@
+import requests
 import torch
 import pytest
 from unittest.mock import patch, mock_open
@@ -154,9 +155,8 @@ def test_fixture(sample_hypergraph):
 def test_HIFConverter():
     """Test loading a known HIF dataset using HIFConverter."""
     dataset_name = "ALGEBRA"
-    file_id = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
 
-    hypergraph = HIFConverter.load_from_hif(dataset_name, file_id)
+    hypergraph = HIFConverter.load_from_hif(dataset_name)
 
     assert hypergraph is not None
     assert hasattr(hypergraph, "nodes")
@@ -172,35 +172,171 @@ def test_HIFConverter():
 def test_HIFConverter_invalid_dataset():
     """Test loading an invalid dataset"""
     dataset_name = "INVALID_DATASET"
-    file_id = "invalid_file_id"
 
     with pytest.raises(ValueError, match="Dataset 'INVALID_DATASET' not found"):
-        HIFConverter.load_from_hif(dataset_name, file_id)
+        HIFConverter.load_from_hif(dataset_name)
 
 
 def test_HIFConverter_invalid_hif_format():
     """Test loading an invalid HIF format dataset."""
-    dataset_name = "EMAIL_ENRON"
-    file_id = "test_file_id"
+    dataset_name = "ALGEBRA"
 
     invalid_hif_json = '{"network-type": "undirected", "nodes": []}'
 
     with (
-        patch("hyperbench.data.dataset.gdown.download") as mock_download,
-        patch("builtins.open", mock_open(read_data=invalid_hif_json)),
+        patch("hyperbench.data.dataset.requests.get") as mock_get,
         patch("hyperbench.data.dataset.validate_hif_json", return_value=False),
+        patch("builtins.open", mock_open(read_data=invalid_hif_json)),
+        patch("hyperbench.data.dataset.zstd.ZstdDecompressor"),
     ):
+        mock_response = mock_get.return_value
+        mock_response.status_code = 200
+        mock_response.content = b"mock_zst_content"
+
+        with pytest.raises(ValueError, match="Dataset 'algebra' is not HIF-compliant"):
+            HIFConverter.load_from_hif(dataset_name)
+
+
+def test_HIFConverter_save_on_disk():
+    """Test downloading dataset with save_on_disk=True."""
+    dataset_name = "ALGEBRA"
+
+    mock_hypergraph = HIFHypergraph(
+        network_type="undirected",
+        nodes=[{"node": "0"}, {"node": "1"}],
+        edges=[{"edge": "0"}],
+        incidences=[{"node": "0", "edge": "0"}],
+    )
+
+    mock_hif_json = {
+        "network-type": "undirected",
+        "nodes": [{"node": "0"}, {"node": "1"}],
+        "edges": [{"edge": "0"}],
+        "incidences": [{"node": "0", "edge": "0"}],
+    }
+
+    with (
+        patch("hyperbench.data.dataset.requests.get") as mock_get,
+        patch("hyperbench.data.dataset.os.path.exists", return_value=False),
+        patch("hyperbench.data.dataset.os.makedirs"),
+        patch("builtins.open", mock_open()) as mock_file,
+        patch("hyperbench.data.dataset.zstd.ZstdDecompressor") as mock_decomp,
+        patch("hyperbench.data.dataset.json.load", return_value=mock_hif_json),
+        patch("hyperbench.data.dataset.validate_hif_json", return_value=True),
+        patch.object(HIFHypergraph, "from_hif", return_value=mock_hypergraph),
+    ):
+        # Mock successful download
+        mock_response = mock_get.return_value
+        mock_response.status_code = 200
+        mock_response.content = b"mock_zst_content"
+
+        # Mock decompressor
+        mock_stream = mock_decomp.return_value.stream_reader.return_value
+        mock_stream.__enter__ = lambda self: mock_stream
+        mock_stream.__exit__ = lambda self, *args: None
+
+        hypergraph = HIFConverter.load_from_hif(dataset_name, save_on_disk=True)
+
+        assert hypergraph is not None
+        assert hypergraph.network_type == "undirected"
+        mock_get.assert_called_once()
+        # Verify file was written to disk (not temp file)
+        assert mock_file.call_count >= 2  # Once for write, once for read
+
+
+def test_HIFConverter_temp_file():
+    """Test downloading dataset with save_on_disk=False (uses temp file)."""
+    dataset_name = "ALGEBRA"
+
+    mock_hypergraph = HIFHypergraph(
+        network_type="undirected",
+        nodes=[{"node": "0"}, {"node": "1"}],
+        edges=[{"edge": "0"}],
+        incidences=[{"node": "0", "edge": "0"}],
+    )
+
+    mock_hif_json = {
+        "network-type": "undirected",
+        "nodes": [{"node": "0"}, {"node": "1"}],
+        "edges": [{"edge": "0"}],
+        "incidences": [{"node": "0", "edge": "0"}],
+    }
+
+    with (
+        patch("hyperbench.data.dataset.requests.get") as mock_get,
+        patch("hyperbench.data.dataset.os.path.exists", return_value=False),
+        patch("hyperbench.data.dataset.tempfile.NamedTemporaryFile") as mock_temp,
+        patch("builtins.open", mock_open()),
+        patch("hyperbench.data.dataset.zstd.ZstdDecompressor") as mock_decomp,
+        patch("hyperbench.data.dataset.json.load", return_value=mock_hif_json),
+        patch("hyperbench.data.dataset.validate_hif_json", return_value=True),
+        patch.object(HIFHypergraph, "from_hif", return_value=mock_hypergraph),
+    ):
+        # Mock successful download
+        mock_response = mock_get.return_value
+        mock_response.status_code = 200
+        mock_response.content = b"mock_zst_content"
+
+        # Mock temp file
+        mock_temp_file = mock_temp.return_value.__enter__.return_value
+        mock_temp_file.name = "/tmp/fake_temp.json.zst"
+
+        # Mock decompressor
+        mock_stream = mock_decomp.return_value.stream_reader.return_value
+        mock_stream.__enter__ = lambda self: mock_stream
+        mock_stream.__exit__ = lambda self, *args: None
+
+        hypergraph = HIFConverter.load_from_hif(dataset_name, save_on_disk=False)
+
+        assert hypergraph is not None
+        assert hypergraph.network_type == "undirected"
+        mock_get.assert_called_once()
+        # Verify temp file was used
+        assert mock_temp.call_count >= 1
+
+
+def test_HIFConverter_download_failure():
+    """Test handling of failed download from GitHub."""
+    dataset_name = "ALGEBRA"
+
+    with (
+        patch("hyperbench.data.dataset.requests.get") as mock_get,
+        patch("hyperbench.data.dataset.os.path.exists", return_value=False),
+    ):
+        # Mock failed download
+        mock_response = mock_get.return_value
+        mock_response.status_code = 404
+
         with pytest.raises(
-            ValueError, match="Dataset 'EMAIL_ENRON' is not HIF-compliant"
+            ValueError,
+            match=r"Failed to download dataset 'algebra' from GitHub\. Status code: 404",
         ):
-            HIFConverter.load_from_hif(dataset_name, file_id)
+            HIFConverter.load_from_hif(dataset_name)
+
+        mock_get.assert_called_once_with(
+            "https://github.com/hypernetwork-research-group/datasets/blob/main/algebra.json.zst?raw=true"
+        )
+
+
+def test_HIFConverter_network_error():
+    """Test handling of network errors during download."""
+    dataset_name = "ALGEBRA"
+
+    with (
+        patch("hyperbench.data.dataset.requests.get") as mock_get,
+        patch("hyperbench.data.dataset.os.path.exists", return_value=False),
+    ):
+        # Mock network error
+        mock_get.side_effect = requests.RequestException("Network error")
+
+        with pytest.raises(requests.RequestException, match="Network error"):
+            HIFConverter.load_from_hif(dataset_name)
 
 
 def test_dataset_not_available():
     """Test loading an unavailable dataset."""
 
     class FakeMockDataset(Dataset):
-        GDRIVE_FILE_ID = "fake_id"
         DATASET_NAME = "FAKE"
 
     with pytest.raises(ValueError, match=r"Dataset 'FAKE' not found"):
@@ -220,7 +356,6 @@ def test_AlgebraDataset_available():
     with patch.object(HIFConverter, "load_from_hif", return_value=mock_hypergraph):
         dataset = AlgebraDataset()
 
-        assert dataset.GDRIVE_FILE_ID == "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
         assert dataset.DATASET_NAME == "ALGEBRA"
         assert dataset.hypergraph is not None
         assert dataset.__len__() == dataset.hypergraph.num_nodes
@@ -246,12 +381,11 @@ def test_dataset_name_none():
     """Test that ValueError is raised if DATASET_NAME is None."""
 
     class FakeMockDataset(Dataset):
-        GDRIVE_FILE_ID = "fake_id"
         DATASET_NAME = None
 
     with pytest.raises(
         ValueError,
-        match=r"Dataset name \(provided: None\) and file ID \(provided: fake_id\) must be provided\.",
+        match=r"Dataset name \(provided: None\) must be provided\.",
     ):
         FakeMockDataset()
 
@@ -553,7 +687,6 @@ def test_transform_attrs_empty_attrs():
 
         class TestDataset(Dataset):
             DATASET_NAME = "TEST"
-            GDRIVE_FILE_ID = "test_id"
 
         dataset = TestDataset()
 
@@ -586,7 +719,6 @@ def test_process_with_inconsistent_node_attributes():
 
         class TestDataset(Dataset):
             DATASET_NAME = "TEST"
-            GDRIVE_FILE_ID = "test_id"
 
         dataset = TestDataset()
 
@@ -621,7 +753,6 @@ def test_process_with_no_node_attributes_fallback():
 
         class TestDataset(Dataset):
             DATASET_NAME = "TEST"
-            GDRIVE_FILE_ID = "test_id"
 
         dataset = TestDataset()
 
@@ -650,7 +781,6 @@ def test_process_with_single_node_attribute():
 
         class TestDataset(Dataset):
             DATASET_NAME = "TEST"
-            GDRIVE_FILE_ID = "test_id"
 
         dataset = TestDataset()
 
@@ -683,7 +813,6 @@ def test_getitem_preserves_node_attributes():
 
         class TestDataset(Dataset):
             DATASET_NAME = "TEST"
-            GDRIVE_FILE_ID = "test_id"
 
         dataset = TestDataset()
 
@@ -713,7 +842,6 @@ def test_transform_attrs_with_attr_keys_padding():
 
         class TestDataset(Dataset):
             DATASET_NAME = "TEST"
-            GDRIVE_FILE_ID = "test_id"
 
         dataset = TestDataset()
 
