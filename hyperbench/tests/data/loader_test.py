@@ -145,6 +145,7 @@ def test_collate_three_samples():
     )
 
     dataset = MagicMock(spec=Dataset)
+    # TODO check that mock return value is local and not global
     dataset.__len__.return_value = 3
     dataset.__getitem__.side_effect = lambda idx: [sample0, sample1, sample2][idx]
 

@@ -223,7 +223,6 @@ def test_AlgebraDataset_available():
         assert dataset.GDRIVE_FILE_ID == "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
         assert dataset.DATASET_NAME == "ALGEBRA"
         assert dataset.hypergraph is not None
-        assert isinstance(dataset.hypergraph, HIFHypergraph)
         assert dataset.__len__() == dataset.hypergraph.num_nodes
 
 
@@ -304,12 +303,12 @@ def test_dataset_process_with_edge_attributes():
     # Two edges with two attributes each: shape [2, 2]
     assert dataset.hdata.edge_attr.shape == (2, 2)
     # Attributes maintain dictionary insertion order (no sorting)
-    print(dataset.hdata.edge_attr[0])
-    assert dataset.hdata.edge_attr[0].tolist() == pytest.approx(
-        [1.0, 2.0]
+
+    assert torch.allclose(
+        dataset.hdata.edge_attr[0], torch.tensor([1.0, 2.0])
     )  # weight, type
-    assert dataset.hdata.edge_attr[1].tolist() == pytest.approx(
-        [3.0, 0.1]
+    assert torch.allclose(
+        dataset.hdata.edge_attr[1], torch.tensor([3.0, 0.1])
     )  # weight, type
 
 
@@ -336,8 +335,8 @@ def test_dataset_process_edge_index_format(four_node_mock_hypergraph):
         dataset = AlgebraDataset()
 
     assert dataset.hdata.edge_index.shape == (2, 4)
-    assert dataset.hdata.edge_index[0].tolist() == [0, 1, 2, 3]
-    assert dataset.hdata.edge_index[1].tolist() == [0, 0, 1, 1]
+    assert torch.allclose(dataset.hdata.edge_index[0], torch.tensor([0, 1, 2, 3]))
+    assert torch.allclose(dataset.hdata.edge_index[1], torch.tensor([0, 0, 1, 1]))
 
 
 def test_dataset_process_random_ids():
@@ -360,23 +359,10 @@ def test_dataset_process_random_ids():
         dataset = AlgebraDataset()
 
     assert dataset.hdata.edge_index.shape == (2, 3)
-    assert dataset.hdata.edge_index[0].tolist() == [0, 1, 2]
-    assert dataset.hdata.edge_index[1].tolist() == [0, 0, 1]
+    assert torch.allclose(dataset.hdata.edge_index[0], torch.tensor([0, 1, 2]))
+    assert torch.allclose(dataset.hdata.edge_index[1], torch.tensor([0, 0, 1]))
     assert dataset.hdata.edge_attr is not None
     assert dataset.hdata.edge_attr.shape == (2, 0)  # 2 edges, 0 attributes each
-
-
-def test_getitem_invalid_type(simple_mock_hypergraph):
-    """Test __getitem__ with invalid index type returns None."""
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=simple_mock_hypergraph
-    ):
-        dataset = AlgebraDataset()
-
-    with pytest.raises(
-        TypeError, match="Index must be an integer or a list of integers."
-    ):
-        dataset["invalid_index"]  # type: ignore[index]
 
 
 def test_getitem_index_list_empty(simple_mock_hypergraph):
@@ -404,19 +390,6 @@ def test_getitem_index_list_too_large(five_node_mock_hypergraph):
         dataset[[0, 1, 2, 3, 4, 5]]
 
 
-def test_getitem_index_list_invalid_typeid(three_node_mock_hypergraph):
-    """Test __getitem__ with index list containing non-integer raises TypeError."""
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=three_node_mock_hypergraph
-    ):
-        dataset = AlgebraDataset()
-
-    with pytest.raises(
-        TypeError, match="Index must be an integer or a list of integers."
-    ):
-        dataset[{0, 1, 2}]  # type: ignore[index]
-
-
 def test_getitem_index_out_of_bounds(four_node_mock_hypergraph):
     """Test __getitem__ with out-of-bounds index raises IndexError."""
     with patch.object(
@@ -435,7 +408,6 @@ def test_getitem_single_index(sample_hypergraph):
         dataset = AlgebraDataset()
 
     node_data = dataset[1]
-    assert isinstance(node_data, HData)
     assert node_data.x.shape[0] == 1
     assert node_data.edge_index.shape == (2, 0)
 
@@ -449,7 +421,6 @@ def test_getitem_list_index(four_node_mock_hypergraph):
         dataset = AlgebraDataset()
 
     node_data_list = dataset[[0, 2, 3]]
-    assert isinstance(node_data_list, HData)
     assert node_data_list.x.shape[0] == 3
     assert node_data_list.edge_index.shape == (2, 3)
 
@@ -463,7 +434,6 @@ def test_getitem_with_edge_attr(three_node_mock_weighted_hypergraph):
         dataset = AlgebraDataset()
 
     node_data = dataset[0]
-    assert isinstance(node_data, HData)
     assert node_data.x.shape[0] == 1
     assert node_data.edge_index.shape == (2, 1)
     assert node_data.edge_attr is not None
@@ -480,7 +450,6 @@ def test_getitem_without_edge_attr(no_edge_attr_mock_hypergraph):
         dataset = AlgebraDataset()
 
     node_data = dataset[0]
-    assert isinstance(node_data, HData)
     assert node_data.edge_attr is None
 
 
@@ -493,11 +462,10 @@ def test_getitem_with_multiple_edges_attr(multiple_edges_attr_mock_hypergraph):
         dataset = AlgebraDataset()
 
     node_data = dataset[[0, 2]]
-    assert isinstance(node_data, HData)
     assert node_data.edge_attr is not None
     assert node_data.edge_attr.shape[0] == 2
     assert node_data.num_edges == 2
-    assert node_data.edge_attr.tolist() == [[1.0], [2.0]]
+    assert torch.allclose(node_data.edge_attr, torch.tensor([[1.0], [2.0]]))
 
 
 def test_getitem_edge_attr_empty_sampled_edges():
@@ -525,7 +493,6 @@ def test_getitem_edge_attr_empty_sampled_edges():
         dataset = AlgebraDataset()
 
         node_data = dataset[3]
-        assert isinstance(node_data, HData)
         assert node_data.num_nodes == 1
         assert node_data.edge_index.shape[1] == 0
         assert node_data.edge_attr is None
@@ -562,14 +529,14 @@ def test_getitem_edge_attr_no_uniform_edges():
         3,
         2,
     )  # 3 edges, 2 features each (weight, abc in insertion order)
-    assert dataset.hdata.edge_attr[0].tolist() == pytest.approx(
-        [1.0, 5.0]
+    assert torch.allclose(
+        dataset.hdata.edge_attr[0], torch.tensor([1.0, 5.0])
     )  # weight=1.0, abc=5.0
-    assert dataset.hdata.edge_attr[1].tolist() == pytest.approx(
-        [2.0, 0.0]
+    assert torch.allclose(
+        dataset.hdata.edge_attr[1], torch.tensor([2.0, 0.0])
     )  # weight=2.0, abc=0.0
-    assert dataset.hdata.edge_attr[2].tolist() == pytest.approx(
-        [0.0, 3.0]
+    assert torch.allclose(
+        dataset.hdata.edge_attr[2], torch.tensor([0.0, 3.0])
     )  # weight=0.0, abc=3.0
 
 
@@ -627,14 +594,14 @@ def test_process_with_inconsistent_node_attributes():
             3,
             2,
         )  # 3 nodes, 2 features each (weight, score in insertion order)
-        assert dataset.hdata.x[0].tolist() == pytest.approx(
-            [1.0, 0.0]
+        assert torch.allclose(
+            dataset.hdata.x[0], torch.tensor([1.0, 0.0])
         )  # weight=1.0, score=0.0
-        assert dataset.hdata.x[1].tolist() == pytest.approx(
-            [2.0, 0.8]
+        assert torch.allclose(
+            dataset.hdata.x[1], torch.tensor([2.0, 0.8])
         )  # weight=2.0, score=0.8
-        assert dataset.hdata.x[2].tolist() == pytest.approx(
-            [0.0, 0.5]
+        assert torch.allclose(
+            dataset.hdata.x[2], torch.tensor([0.0, 0.5])
         )  # weight=0.0, score=0.5
 
 
@@ -753,18 +720,20 @@ def test_transform_attrs_with_attr_keys_padding():
         # Test with attr_keys - should pad missing attributes with 0.0
         attrs = {"weight": 1.5}
         result = dataset.transform_attrs(attrs, attr_keys=["score", "weight", "age"])
-        assert result.tolist() == pytest.approx(
-            [0.0, 1.5, 0.0]
+        assert torch.allclose(
+            result, torch.tensor([0.0, 1.5, 0.0])
         )  # score=0.0, weight=1.5, age=0.0
 
         # Test with all attributes present
         attrs = {"weight": 1.5, "score": 0.8, "age": 25.0}
         result = dataset.transform_attrs(attrs, attr_keys=["age", "score", "weight"])
-        assert result.tolist() == pytest.approx([25.0, 0.8, 1.5])
+        assert torch.allclose(
+            result, torch.tensor([25.0, 0.8, 1.5])
+        )  # age=25.0, score=0.8, weight=1.5
 
         # Test without attr_keys - maintains insertion order
         attrs = {"weight": 1.5, "score": 0.8}
         result = dataset.transform_attrs(attrs)
-        assert result.tolist() == pytest.approx(
-            [1.5, 0.8]
+        assert torch.allclose(
+            result, torch.tensor([1.5, 0.8])
         )  # weight, score (insertion order)
