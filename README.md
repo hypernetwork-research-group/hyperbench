@@ -9,15 +9,7 @@
 
 [![codecov](https://codecov.io/github/hypernetwork-research-group/hyperbench/graph/badge.svg?token=XE0TB5JMOS)](https://codecov.io/github/hypernetwork-research-group/hyperbench)
 
-## About the project
-
-WIP
-
-## Getting started
-
-### Prerequisites
-
-WIP
+For documentation, please visit [here][docs].
 
 ### Installation
 
