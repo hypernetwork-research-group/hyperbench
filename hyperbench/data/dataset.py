@@ -4,6 +4,7 @@ import tempfile
 import torch
 import zstandard as zstd
 import requests
+import requests
 
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -19,6 +20,24 @@ class DatasetNames(Enum):
     Enumeration of available datasets.
     """
 
+    ALGEBRA = "algebra"
+    AMAZON = "amazon"
+    CONTACT_HIGH_SCHOOL = "contact-high-school"
+    CONTACT_PRIMARY_SCHOOL = "contact-primary-school"
+    DBLP = "dblp"
+    EMAIL_ENRON = "email-Enron"
+    EMAIL_W3C = "email-W3C"
+    GEOMETRY = "geometry"
+    GOT = "got"
+    MUSIC_BLUES_REVIEWS = "music-blues-reviews"
+    NBA = "nba"
+    NDC_CLASSES = "NDC-classes"
+    NDC_SUBSTANCES = "NDC-substances"
+    RESTAURANT_REVIEWS = "restaurant-reviews"
+    THREADS_ASK_UBUNTU = "threads-ask-ubuntu"
+    THREADS_MATH_SX = "threads-math-sx"
+    TWITTER = "twitter"
+    VEGAS_BARS_REVIEWS = "vegas-bars-reviews"
     ALGEBRA = "algebra"
     AMAZON = "amazon"
     CONTACT_HIGH_SCHOOL = "contact-high-school"
