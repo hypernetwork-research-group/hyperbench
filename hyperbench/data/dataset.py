@@ -23,7 +23,7 @@ class DatasetNames(Enum):
     EMAIL_ENRON = "2"
     ARXIV = "3"
     DBLP = "4"
-    ThreadsMathsx = "5"
+    THREADSMATHSX = "5"
 
 
 class HIFConverter:
@@ -98,8 +98,6 @@ class Dataset(TorchDataset):
         return len(self.hypergraph.nodes)
 
     def __getitem__(self, index: int | List[int]) -> HData:
-        if not isinstance(index, (int, list)):
-            raise TypeError("Index must be an integer or a list of integers.")
         sampled_node_ids_list = self.__get_node_ids_to_sample(index)
         self.__validate_node_ids(sampled_node_ids_list)
 
@@ -397,5 +395,5 @@ class DBLPDataset(Dataset):
 
 
 class ThreadsMathsxDataset(Dataset):
-    DATASET_NAME = "ThreadsMathsx"
+    DATASET_NAME = "THREADSMATHSX"
     GDRIVE_FILE_ID = "1jS4FDs7ME-mENV6AJwCOb_glXKMT7YLQ"
