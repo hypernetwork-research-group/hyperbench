@@ -132,22 +132,6 @@ class Dataset(TorchDataset):
         hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, self.GDRIVE_FILE_ID)
         return hypergraph
 
-    def __collect_attr_keys(self, attr_keys: List[Dict[str, Any]]) -> List[str]:
-        """
-        Collect unique numeric attribute keys from a list of attribute dictionaries.
-        Args:
-            attrs_list: List of attribute dictionaries.
-        Returns:
-            List of unique numeric attribute keys.
-        """
-        unique_keys = []
-        for attrs in attr_keys:
-            for key, value in attrs.items():
-                if key not in unique_keys and isinstance(value, (int, float)):
-                    unique_keys.append(key)
-
-        return unique_keys
-
     def process(self) -> HData:
         """
         Process the loaded hypergraph into HData format, mapping HIF structure to tensors.
@@ -266,6 +250,22 @@ class Dataset(TorchDataset):
 
         values = [float(value) for value in numeric_attrs.values()]
         return torch.tensor(values, dtype=torch.float)
+
+    def __collect_attr_keys(self, attr_keys: List[Dict[str, Any]]) -> List[str]:
+        """
+        Collect unique numeric attribute keys from a list of attribute dictionaries.
+        Args:
+            attrs_list: List of attribute dictionaries.
+        Returns:
+            List of unique numeric attribute keys.
+        """
+        unique_keys = []
+        for attrs in attr_keys:
+            for key, value in attrs.items():
+                if key not in unique_keys and isinstance(value, (int, float)):
+                    unique_keys.append(key)
+
+        return unique_keys
 
     def __get_node_ids_to_sample(self, id: int | List[int]) -> List[int]:
         if isinstance(id, int):
