@@ -1,5 +1,3 @@
-"""Example usage of the Hypergraph class with HIF data."""
-
 import json
 import os
 import gdown
@@ -8,7 +6,7 @@ import torch
 import zstandard as zstd
 
 from enum import Enum
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
@@ -24,6 +22,8 @@ class DatasetNames(Enum):
     ALGEBRA = "1"
     EMAIL_ENRON = "2"
     ARXIV = "3"
+    DBLP = "4"
+    THREADSMATHSX = "5"
 
 
 class HIFConverter:
@@ -141,46 +141,131 @@ class Dataset(TorchDataset):
         num_nodes = len(self.hypergraph.nodes)
         num_edges = len(self.hypergraph.edges)
 
-        x = torch.arange(num_nodes).unsqueeze(1)
+        # x: shape [num_nodes, num_node_features]
+        # collect all attribute keys to have tensors of same size
+        node_attr_keys = self.__collect_attr_keys(
+            [node.get("attrs", {}) for node in self.hypergraph.nodes]
+        )
 
-        node_set = []
-        edge_set = []
-        incidences_tuples = []
+        if node_attr_keys:
+            x = torch.stack(
+                [
+                    self.transform_node_attrs(
+                        node.get("attrs", {}), attr_keys=node_attr_keys
+                    )
+                    for node in self.hypergraph.nodes
+                ]
+            )
+        else:
+            # Fallback to zeros if no numeric attributes
+            x = torch.zeros((num_nodes, 1), dtype=torch.float)
+
+        # remap node and edge IDs to 0-based contiguous IDs
+        # Use dict comprehension for faster lookups
+        node_set = {}
+        edge_set = {}
+        node_ids = []
+        edge_ids = []
 
         for inc in self.hypergraph.incidences:
             node = inc.get("node", 0)
             edge = inc.get("edge", 0)
+
             if node not in node_set:
-                node_set.append(node)
+                node_set[node] = len(node_set)
             if edge not in edge_set:
-                edge_set.append(edge)
-            incidences_tuples.append((node, edge))
+                edge_set[edge] = len(edge_set)
 
-        node_id_mapping = {node_id: idx for idx, node_id in enumerate(node_set)}
-        edge_id_mapping = {edge_id: idx for idx, edge_id in enumerate(edge_set)}
+            node_ids.append(node_set[node])
+            edge_ids.append(edge_set[edge])
 
-        node_ids = [node_id_mapping[node] for node, _ in incidences_tuples]
-        edge_ids = [edge_id_mapping[edge] for _, edge in incidences_tuples]
-
-        edge_index = None
         if len(node_ids) < 1:
             raise ValueError("Hypergraph has no incidences.")
 
         # edge_index: shape [2, E] where E is number of incidences
-        # First row: node IDs, Second row: hyperedge IDs
-        edge_index = torch.tensor([node_ids, edge_ids])
+        edge_index = torch.tensor([node_ids, edge_ids], dtype=torch.long)
 
+        # edge-attr: shape [num_edges, num_edge_attributes]
         edge_attr = None
         if self.hypergraph.edges and any(
             "attrs" in edge for edge in self.hypergraph.edges
         ):
-            edge_attrs = []
-            for edge in self.hypergraph.edges:
-                attrs = edge.get("attrs", {})
-                edge_attrs.append(len(attrs))
-            edge_attr = torch.tensor(edge_attrs).unsqueeze(1)
+            # collect all attribute keys to have tensors of same size
+            edge_attr_keys = self.__collect_attr_keys(
+                [edge.get("attrs", {}) for edge in self.hypergraph.edges]
+            )
+
+            edge_attr = torch.stack(
+                [
+                    self.transform_edge_attrs(
+                        edge.get("attrs", {}), attr_keys=edge_attr_keys
+                    )
+                    for edge in self.hypergraph.edges
+                ]
+            )
+
+            # Flatten to 1D if only one attribute (PyTorch Geometric standard)
+            # if edge_attr.shape[1] == 1:
+            #     edge_attr = edge_attr.squeeze(1)
 
         return HData(x, edge_index, edge_attr, num_nodes, num_edges)
+
+    def transform_node_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        return self.transform_attrs(attrs, attr_keys)
+
+    def transform_edge_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        return self.transform_attrs(attrs, attr_keys)
+
+    def transform_attrs(
+        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+    ) -> Tensor:
+        """
+        Extract and encode numeric node attributes to tensor.
+        Non-numeric attributes are discarded. Missing attributes are filled with 0.0.
+
+        Args:
+            attrs: Dictionary of node attributes
+            attr_keys: Optional list of attribute keys to encode. If provided, ensures
+                      consistent ordering and fill missing with 0.0.
+
+        Returns:
+            Tensor of numeric attribute values
+        """
+        numeric_attrs = {
+            key: value
+            for key, value in attrs.items()
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
+        }
+
+        if attr_keys is not None:
+            values = [float(numeric_attrs.get(key, 0.0)) for key in attr_keys]
+            return torch.tensor(values, dtype=torch.float)
+
+        if not numeric_attrs:
+            return torch.tensor([], dtype=torch.float)
+
+        values = [float(value) for value in numeric_attrs.values()]
+        return torch.tensor(values, dtype=torch.float)
+
+    def __collect_attr_keys(self, attr_keys: List[Dict[str, Any]]) -> List[str]:
+        """
+        Collect unique numeric attribute keys from a list of attribute dictionaries.
+        Args:
+            attrs_list: List of attribute dictionaries.
+        Returns:
+            List of unique numeric attribute keys.
+        """
+        unique_keys = []
+        for attrs in attr_keys:
+            for key, value in attrs.items():
+                if key not in unique_keys and isinstance(value, (int, float)):
+                    unique_keys.append(key)
+
+        return unique_keys
 
     def __get_node_ids_to_sample(self, id: int | List[int]) -> List[int]:
         if isinstance(id, int):
@@ -293,7 +378,7 @@ class Dataset(TorchDataset):
         Returns:
             Tensor of 0-based ids.
         """
-        id_to_0based_id = torch.zeros(n)
+        id_to_0based_id = torch.zeros(n, dtype=torch.long)
         n_ids_to_keep = len(ids_to_keep)
         id_to_0based_id[ids_to_keep] = torch.arange(n_ids_to_keep)
         return id_to_0based_id[original_ids]
@@ -302,3 +387,13 @@ class Dataset(TorchDataset):
 class AlgebraDataset(Dataset):
     DATASET_NAME = "ALGEBRA"
     GDRIVE_FILE_ID = "1-H21_mZTcbbae4U_yM3xzXX19VhbCZ9C"
+
+
+class DBLPDataset(Dataset):
+    DATASET_NAME = "DBLP"
+    GDRIVE_FILE_ID = "1oiXQWdybAAUvhiYbFY1R9Qd0jliMSSQh"
+
+
+class ThreadsMathsxDataset(Dataset):
+    DATASET_NAME = "THREADSMATHSX"
+    GDRIVE_FILE_ID = "1jS4FDs7ME-mENV6AJwCOb_glXKMT7YLQ"
