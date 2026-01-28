@@ -11,7 +11,7 @@ from hyperbench.tests.mock import *
 
 # Reusable fixture for hypergraph instances used in multiple tests
 @pytest.fixture
-def sample_hypergraph():
+def mock_sample_hypergraph():
     return HIFHypergraph(
         network_type="undirected",
         nodes=[{"node": "0"}, {"node": "1"}],
@@ -21,7 +21,7 @@ def sample_hypergraph():
 
 
 @pytest.fixture
-def simple_mock_hypergraph():
+def mock_simple_hypergraph():
     """Simple hypergraph with 2 nodes for basic tests."""
     return HIFHypergraph(
         network_type="undirected",
@@ -32,22 +32,7 @@ def simple_mock_hypergraph():
 
 
 @pytest.fixture
-def three_node_mock_hypergraph():
-    """Hypergraph with 3 nodes for validation tests."""
-    return HIFHypergraph(
-        network_type="undirected",
-        nodes=[
-            {"node": "0", "attrs": {}},
-            {"node": "1", "attrs": {}},
-            {"node": "2", "attrs": {}},
-        ],
-        edges=[{"edge": "0", "attrs": {}}],
-        incidences=[{"node": "0", "edge": "0"}],
-    )
-
-
-@pytest.fixture
-def three_node_mock_weighted_hypergraph():
+def mock_three_node_weighted_hypergraph():
     return HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -68,7 +53,7 @@ def three_node_mock_weighted_hypergraph():
 
 
 @pytest.fixture
-def four_node_mock_hypergraph():
+def mock_four_node_hypergraph():
     """Hypergraph with 4 nodes and 2 edges for sampling tests."""
     return HIFHypergraph(
         network_type="undirected",
@@ -89,7 +74,7 @@ def four_node_mock_hypergraph():
 
 
 @pytest.fixture
-def five_node_mock_hypergraph():
+def mock_five_node_hypergraph():
     """Hypergraph with 5 nodes for duplicate testing."""
     return HIFHypergraph(
         network_type="undirected",
@@ -106,7 +91,7 @@ def five_node_mock_hypergraph():
 
 
 @pytest.fixture
-def no_edge_attr_mock_hypergraph():
+def mock_no_edge_attr_hypergraph():
     return HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -122,7 +107,7 @@ def no_edge_attr_mock_hypergraph():
 
 
 @pytest.fixture
-def multiple_edges_attr_mock_hypergraph():
+def mock_multiple_edges_attr_hypergraph():
     return HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -145,11 +130,11 @@ def multiple_edges_attr_mock_hypergraph():
     )
 
 
-def test_fixture(sample_hypergraph):
-    assert sample_hypergraph.network_type == "undirected"
-    assert len(sample_hypergraph.nodes) == 2
-    assert len(sample_hypergraph.edges) == 1
-    assert len(sample_hypergraph.incidences) == 1
+def test_fixture(mock_sample_hypergraph):
+    assert mock_sample_hypergraph.network_type == "undirected"
+    assert len(mock_sample_hypergraph.nodes) == 2
+    assert len(mock_sample_hypergraph.edges) == 1
+    assert len(mock_sample_hypergraph.incidences) == 1
 
 
 def test_HIFConverter():
@@ -446,11 +431,11 @@ def test_dataset_process_with_edge_attributes():
     )  # weight, type
 
 
-def test_dataset_process_without_edge_attributes(no_edge_attr_mock_hypergraph):
+def test_dataset_process_without_edge_attributes(mock_no_edge_attr_hypergraph):
     """Test that process handles edges without attributes."""
 
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=no_edge_attr_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_no_edge_attr_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -460,11 +445,11 @@ def test_dataset_process_without_edge_attributes(no_edge_attr_mock_hypergraph):
     assert dataset.hdata.edge_attr is None
 
 
-def test_dataset_process_edge_index_format(four_node_mock_hypergraph):
+def test_dataset_process_edge_index_format(mock_four_node_hypergraph):
     """Test that edge_index has correct format [node_ids, edge_ids]."""
 
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=four_node_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -499,10 +484,10 @@ def test_dataset_process_random_ids():
     assert dataset.hdata.edge_attr.shape == (2, 0)  # 2 edges, 0 attributes each
 
 
-def test_getitem_index_list_empty(simple_mock_hypergraph):
+def test_getitem_index_list_empty(mock_simple_hypergraph):
     """Test __getitem__ with empty index list raises ValueError."""
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=simple_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_simple_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -510,10 +495,10 @@ def test_getitem_index_list_empty(simple_mock_hypergraph):
         dataset[[]]
 
 
-def test_getitem_index_list_too_large(five_node_mock_hypergraph):
+def test_getitem_index_list_too_large(mock_five_node_hypergraph):
     """Test __getitem__ with index list larger than number of nodes raises ValueError."""
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=five_node_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_five_node_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -524,10 +509,10 @@ def test_getitem_index_list_too_large(five_node_mock_hypergraph):
         dataset[[0, 1, 2, 3, 4, 5]]
 
 
-def test_getitem_index_out_of_bounds(four_node_mock_hypergraph):
+def test_getitem_index_out_of_bounds(mock_four_node_hypergraph):
     """Test __getitem__ with out-of-bounds index raises IndexError."""
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=four_node_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -535,10 +520,12 @@ def test_getitem_index_out_of_bounds(four_node_mock_hypergraph):
         dataset[4]
 
 
-def test_getitem_single_index(sample_hypergraph):
+def test_getitem_single_index(mock_sample_hypergraph):
     """Test __getitem__ with a single index."""
 
-    with patch.object(HIFConverter, "load_from_hif", return_value=sample_hypergraph):
+    with patch.object(
+        HIFConverter, "load_from_hif", return_value=mock_sample_hypergraph
+    ):
         dataset = AlgebraDataset()
 
     node_data = dataset[1]
@@ -546,11 +533,11 @@ def test_getitem_single_index(sample_hypergraph):
     assert node_data.edge_index.shape == (2, 0)
 
 
-def test_getitem_list_index(four_node_mock_hypergraph):
+def test_getitem_list_index(mock_four_node_hypergraph):
     """Test __getitem__ with a list of indices."""
 
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=four_node_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -559,11 +546,11 @@ def test_getitem_list_index(four_node_mock_hypergraph):
     assert node_data_list.edge_index.shape == (2, 3)
 
 
-def test_getitem_with_edge_attr(three_node_mock_weighted_hypergraph):
+def test_getitem_with_edge_attr(mock_three_node_weighted_hypergraph):
     """Test __getitem__ returns correct edge_attr when present."""
 
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=three_node_mock_weighted_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_three_node_weighted_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -575,11 +562,11 @@ def test_getitem_with_edge_attr(three_node_mock_weighted_hypergraph):
     assert node_data.edge_attr[0].item() == 1
 
 
-def test_getitem_without_edge_attr(no_edge_attr_mock_hypergraph):
+def test_getitem_without_edge_attr(mock_no_edge_attr_hypergraph):
     """Test __getitem__ returns None for edge_attr when not present."""
 
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=no_edge_attr_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_no_edge_attr_hypergraph
     ):
         dataset = AlgebraDataset()
 
@@ -587,11 +574,11 @@ def test_getitem_without_edge_attr(no_edge_attr_mock_hypergraph):
     assert node_data.edge_attr is None
 
 
-def test_getitem_with_multiple_edges_attr(multiple_edges_attr_mock_hypergraph):
+def test_getitem_with_multiple_edges_attr(mock_multiple_edges_attr_hypergraph):
     """Test __getitem__ correctly filters edge_attr for sampled edges."""
 
     with patch.object(
-        HIFConverter, "load_from_hif", return_value=multiple_edges_attr_mock_hypergraph
+        HIFConverter, "load_from_hif", return_value=mock_multiple_edges_attr_hypergraph
     ):
         dataset = AlgebraDataset()
 

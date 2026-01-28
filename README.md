@@ -9,47 +9,7 @@
 
 [![codecov](https://codecov.io/github/hypernetwork-research-group/hyperbench/graph/badge.svg?token=XE0TB5JMOS)](https://codecov.io/github/hypernetwork-research-group/hyperbench)
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About the project</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-            <ul>
-                <li><a href="#sync-dependencies">Sync dependencies</a></li>
-            </ul>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li>
-        <a href="#contributing">Contributing</a>
-        <ul>
-            <li><a href="#pre-commit-hooks">Pre-commit hooks</a></li>
-            <li><a href="#linter">Linter</a></li>
-            <li><a href="#type-checker">Type checker</a></li>
-            <li><a href="#tests">Tests</a></li>
-            <li><a href="#utilities">Utilities</a></li>
-        </ul>
-    </li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-## About The Project
-
-## Getting Started
-
-### Prerequisites
-
-WIP
+For documentation, please visit [here][docs].
 
 ### Installation
 
@@ -144,3 +104,4 @@ WIP
 [issues-url]: https://github.com/hypernetwork-research-group/hyperbench/issues
 [license-shield]: https://img.shields.io/github/license/hypernetwork-research-group/hyperbench.svg?style=for-the-badge
 [license-url]: https://github.com/hypernetwork-research-group/hyperbench/blob/master/LICENSE.txt
+[docs]: https://hypernetwork-research-group.github.io/hyperbench/

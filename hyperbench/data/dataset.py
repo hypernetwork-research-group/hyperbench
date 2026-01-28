@@ -6,7 +6,7 @@ import zstandard as zstd
 import requests
 
 from enum import Enum
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
@@ -47,7 +47,7 @@ class HIFConverter:
 
     @staticmethod
     def load_from_hif(
-        dataset_name: str | None, save_on_disk: bool = False
+        dataset_name: Optional[str], save_on_disk: bool = False
     ) -> HIFHypergraph:
         if dataset_name is None:
             raise ValueError(
@@ -235,17 +235,17 @@ class Dataset(TorchDataset):
         return HData(x, edge_index, edge_attr, num_nodes, num_edges)
 
     def transform_node_attrs(
-        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+        self, attrs: Dict[str, Any], attr_keys: Optional[List[str]] = None
     ) -> Tensor:
         return self.transform_attrs(attrs, attr_keys)
 
     def transform_edge_attrs(
-        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+        self, attrs: Dict[str, Any], attr_keys: Optional[List[str]] = None
     ) -> Tensor:
         return self.transform_attrs(attrs, attr_keys)
 
     def transform_attrs(
-        self, attrs: Dict[str, Any], attr_keys: List[str] | None = None
+        self, attrs: Dict[str, Any], attr_keys: Optional[List[str]] = None
     ) -> Tensor:
         """
         Extract and encode numeric node attributes to tensor.
@@ -291,7 +291,7 @@ class Dataset(TorchDataset):
 
         return unique_keys
 
-    def __get_node_ids_to_sample(self, id: int | List[int]) -> List[int]:
+    def __get_node_ids_to_sample(self, id: Union[int, List[int]]) -> List[int]:
         if isinstance(id, int):
             return [id]
 
