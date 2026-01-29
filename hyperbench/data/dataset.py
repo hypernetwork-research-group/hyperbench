@@ -291,10 +291,7 @@ class Dataset(TorchDataset):
 
         return unique_keys
 
-    def __get_node_ids_to_sample(self, id: Union[int, List[int]]) -> List[int]:
-        if isinstance(id, int):
-            return [id]
-
+    def __get_node_ids_to_sample(self, id: int | List[int]) -> List[int]:
         if isinstance(id, list):
             if len(id) < 1:
                 raise ValueError("Index list cannot be empty.")
@@ -303,6 +300,8 @@ class Dataset(TorchDataset):
                     "Index list length cannot exceed number of nodes in the hypergraph."
                 )
             return list(set(id))
+
+        return [id]
 
     def __validate_node_ids(self, node_ids: List[int]) -> None:
         for id in node_ids:
