@@ -1,6 +1,6 @@
 import torch
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from torch import Tensor
 from torch.utils.data import DataLoader as TorchDataLoader
 from hyperbench.data import Dataset
@@ -9,7 +9,11 @@ from hyperbench.types import HData
 
 class DataLoader(TorchDataLoader):
     def __init__(
-        self, dataset: Dataset, batch_size: int = 1, shuffle: bool = False, **kwargs
+        self,
+        dataset: Dataset,
+        batch_size: int = 1,
+        shuffle: Optional[bool] = False,
+        **kwargs,
     ) -> None:
         super().__init__(
             dataset=dataset,
@@ -101,7 +105,7 @@ class DataLoader(TorchDataLoader):
 
         return batched_node_features, total_nodes
 
-    def __batch_edges(self, batch: List[HData]) -> Tuple[Tensor, Tensor | None, int]:
+    def __batch_edges(self, batch: List[HData]) -> Tuple[Tensor, Optional[Tensor], int]:
         """Batches hyperedge indices and attributes, adjusting indices for concatenated nodes.
         Hyperedge indices must be offset so they point to the correct nodes in the batched node tensor.
 

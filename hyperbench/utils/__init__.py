@@ -11,6 +11,9 @@ from .data_utils import (
 __all__ = [
     "empty_edgeattr",
     "empty_edgeindex",
-    "to_non_empty_edgeattr",
+    "empty_hdata",
+    "empty_hifhypergraph",
+    "empty_nodefeatures",
     "validate_hif_json",
+    "to_non_empty_edgeattr",
 ]
