@@ -1,10 +1,12 @@
 # HyperBench
 
-[![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
+[![Contributors][contributors-shield]][contributors-url]
+
 [![Issues][issues-shield]][issues-url]
 [![project_license][license-shield]][license-url]
+
 [![codecov](https://codecov.io/github/hypernetwork-research-group/hyperbench/graph/badge.svg?token=XE0TB5JMOS)](https://codecov.io/github/hypernetwork-research-group/hyperbench)
 
 ## About the project
@@ -95,3 +97,4 @@ WIP
 [issues-url]: https://github.com/hypernetwork-research-group/hyperbench/issues
 [license-shield]: https://img.shields.io/github/license/hypernetwork-research-group/hyperbench.svg?style=for-the-badge
 [license-url]: https://github.com/hypernetwork-research-group/hyperbench/blob/master/LICENSE.txt
+[docs]: https://hypernetwork-research-group.github.io/hyperbench/
