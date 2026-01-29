@@ -1,8 +1,10 @@
 from torch import Tensor
+from typing import Optional
 
 
 class HData:
-    """Container for hypergraph data.
+    """
+    Container for hypergraph data.
 
     Attributes:
         x (Tensor): Node feature matrix of shape [num_nodes, num_features].
@@ -28,15 +30,15 @@ class HData:
         self,
         x: Tensor,
         edge_index: Tensor,
-        edge_attr: Tensor | None = None,
-        num_nodes: int | None = None,
-        num_edges: int | None = None,
+        edge_attr: Optional[Tensor] = None,
+        num_nodes: Optional[int] = None,
+        num_edges: Optional[int] = None,
     ):
         self.x: Tensor = x
 
         self.edge_index: Tensor = edge_index
 
-        self.edge_attr: Tensor | None = edge_attr
+        self.edge_attr: Optional[Tensor] = edge_attr
 
         self.num_nodes: int = num_nodes if num_nodes is not None else x.size(0)
 
