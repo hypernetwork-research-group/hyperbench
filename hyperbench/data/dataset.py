@@ -417,15 +417,3 @@ class DBLPDataset(Dataset):
 
 class ThreadsMathsxDataset(Dataset):
     DATASET_NAME = "THREADSMATHSX"
-
-
-if __name__ == "__main__":
-    for dataset in DatasetNames:
-        print(f"Processing dataset: {dataset.value}")
-        if dataset == DatasetNames.EMAIL_ENRON:
-            load_hif = HIFConverter.load_from_hif(dataset.name, save_on_disk=True)
-            continue
-        load_hif = HIFConverter.load_from_hif(dataset.name)
-        print(
-            f"Loaded HIF hypergraph with {len(load_hif.nodes)} nodes and {len(load_hif.edges)} edges."
-        )
