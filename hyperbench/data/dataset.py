@@ -4,7 +4,6 @@ import tempfile
 import torch
 import zstandard as zstd
 import requests
-import requests
 
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
