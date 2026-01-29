@@ -136,6 +136,17 @@ def test_fit_all_with_no_models(_):
         multi_model_trainer.fit_all(verbose=False)
 
 
+@patch("hyperbench.train.trainer.L.Trainer", return_value=None)
+def test_fit_all_raises_when_None_trainer(_, mock_model_configs):
+    multi_model_trainer = MultiModelTrainer(mock_model_configs)
+
+    with pytest.raises(
+        ValueError,
+        match=f"Trainer not defined for model {mock_model_configs[0].full_model_name()}.",
+    ):
+        multi_model_trainer.fit_all(verbose=False)
+
+
 @patch(
     "hyperbench.train.trainer.L.Trainer",
     side_effect=lambda *args, **kwargs: new_mock_trainer(),
@@ -175,6 +186,17 @@ def test_test_all_with_no_models(_):
     multi_model_trainer = MultiModelTrainer([])
 
     with pytest.raises(ValueError, match="No models to test."):
+        multi_model_trainer.test_all(verbose=False)
+
+
+@patch("hyperbench.train.trainer.L.Trainer", return_value=None)
+def test_test_all_raises_when_None_trainer(_, mock_model_configs):
+    multi_model_trainer = MultiModelTrainer(mock_model_configs)
+
+    with pytest.raises(
+        ValueError,
+        match=f"Trainer not defined for model {mock_model_configs[0].full_model_name()}.",
+    ):
         multi_model_trainer.test_all(verbose=False)
 
 

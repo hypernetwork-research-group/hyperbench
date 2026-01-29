@@ -174,7 +174,11 @@ class MultiModelTrainer:
             raise ValueError("No models to fit.")
 
         for i, config in enumerate(self.model_configs):
-            assert config.trainer is not None
+            if config.trainer is None:
+                raise ValueError(
+                    f"Trainer not defined for model {config.full_model_name()}."
+                )
+
             if verbose:
                 log.info(
                     f"Fit model {config.full_model_name()} [{i + 1}/{len(self.model_configs)}]\n"
@@ -202,7 +206,11 @@ class MultiModelTrainer:
         test_results: Dict[str, TestResult] = {}
 
         for i, config in enumerate(self.model_configs):
-            assert config.trainer is not None
+            if config.trainer is None:
+                raise ValueError(
+                    f"Trainer not defined for model {config.full_model_name()}."
+                )
+
             if verbose:
                 log.info(
                     f"Test model {config.full_model_name()} [{i + 1}/{len(self.model_configs)}]\n"
