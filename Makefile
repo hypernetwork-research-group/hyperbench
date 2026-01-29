@@ -26,7 +26,7 @@ typecheck:
 
 test:
 	@echo '=== Tests ==='
-	$(UV) run $(PYTEST)
+	$(UV) run $(PYTEST) --cov=hyperbench --cov-report=term-missing
 
 clean:
 	@echo '=== Cleaning up ==='
