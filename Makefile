@@ -1,4 +1,4 @@
-.PHONY: all test lint check clean help
+.PHONY: all setup check lint typecheck test clean help
 
 UV=uv
 UVX=uvx
@@ -35,10 +35,10 @@ clean:
 help:
     @echo "Usage: make [target]"
     @echo "Targets:"
-	@echo "  all      - Setup, lint, typecheck, test"
-	@echo "  setup    - Install dependencies"
-	@echo "  lint     - Run linter"
-	@echo "  typecheck- Run type checker"
-	@echo "  test     - Run tests"
-	@echo "  check    - Run lint and typecheck"
-	@echo "  clean    - Remove build/test artifacts"
+	@echo "  all       - Setup, lint, typecheck, test"
+	@echo "  setup     - Install dependencies"
+	@echo "  lint      - Run linter"
+	@echo "  typecheck - Run type checker"
+	@echo "  test      - Run tests"
+	@echo "  check     - Run lint and typecheck"
+	@echo "  clean     - Remove build/test artifacts"
