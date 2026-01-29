@@ -9,76 +9,73 @@
 
 [![codecov](https://codecov.io/github/hypernetwork-research-group/hyperbench/graph/badge.svg?token=XE0TB5JMOS)](https://codecov.io/github/hypernetwork-research-group/hyperbench)
 
-For documentation, please visit [here][docs].
+## About the project
+
+WIP
+
+## Getting started
+
+### Prerequisites
+
+WIP
 
 ### Installation
 
-#### Sync dependencies
-
-Use [uv](https://docs.astral.sh/uv/reference/cli/) to sync dependencies:
-
-```bash
-uv sync
-```
+WIP
 
 ## Usage
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributing to the project.
+
+### Build
+
+To build the project, run:
+
+```bash
+make
+```
+
+### Linter and type checker
+
+Use [Ruff](https://github.com/charliermarsh/ruff) for linting and formatting:
+
+```bash
+make lint
+```
+
+Use [Ty](https://docs.astral.sh/ty/) for type checking:
+
+```bash
+make typecheck
+```
+
+Use the `check` target to run both linter and type checker:
+
+```bash
+make check
+```
+
+### Tests
+
+Use [pytest](https://docs.pytest.org/en/latest/) to run the test suite:
+
+```bash
+make test
+
+# Run tests with HTML report
+uv run pytest --cov=hyperbench --cov-report=html
+```
 
 ### Pre-commit hooks
 
 Run the following command to install the pre-commit hook:
 
 ```bash
-uv sync
+make setup
 
 pre-commit install --config .github/hooks/.pre-commit-config.yaml --hook-type pre-commit --install-hooks --overwrite
-```
-
-### Linter
-
-Use [Ruff](https://github.com/charliermarsh/ruff) for linting and formatting:
-
-```bash
-uvx ruff check
-
-uvx ruff format
-```
-
-### Type checker
-
-Use [Ty](https://docs.astral.sh/ty/) for type checking:
-
-```bash
-uvx ty check
-
-# In watch mode
-uvx ty check --watch
-```
-
-### Tests
-
-Run tests with [pytest](https://docs.pytest.org/en/latest/):
-
-```bash
-uv run pytest --cov=hyperbench --cov-report=term-missing
-# html report
-uv run pytest --cov=hyperbench --cov-report=html
-```
-
-### Utilities
-
-Before committing code, run the following command to ensure code quality:
-
-```bash
-uv pip uninstall . && \
-uv sync && \
-uv pip install -e . && \
-uv run ruff format && \
-uvx ty check && \
-uv run pytest --cov=hyperbench --cov-report=term-missing
 ```
 
 ## License
@@ -89,11 +86,7 @@ WIP
 
 WIP
 
-## Acknowledgments
-
-
-
-
+<!-- LINKS -->
 [contributors-shield]: https://img.shields.io/github/contributors/hypernetwork-research-group/hyperbench.svg?style=for-the-badge
 [contributors-url]: https://github.com/hypernetwork-research-group/hyperbench/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/hypernetwork-research-group/hyperbench.svg?style=for-the-badge
