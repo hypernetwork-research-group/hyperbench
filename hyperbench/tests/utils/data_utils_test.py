@@ -97,7 +97,3 @@ def test_empty_hifhypergraph():
     assert result.edges == []
     assert result.incidences == []
     assert result.metadata == {}
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

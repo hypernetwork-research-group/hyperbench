@@ -217,7 +217,3 @@ def test_test_all_with_verbose_true_prints(_, mock_model_configs, caplog):
         record.message for record in caplog.records if "Test model" in record.message
     ]
     assert len(logs) == len(mock_model_configs)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
