@@ -44,3 +44,14 @@ class HData:
 
         max_edge_id = edge_index[1].max().item() if edge_index.size(1) > 0 else -1
         self.num_edges: int = num_edges if num_edges is not None else max_edge_id + 1
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(\n"
+            f"    num_nodes={self.num_nodes},\n"
+            f"    num_edges={self.num_edges},\n"
+            f"    x_shape={self.x.shape},\n"
+            f"    edge_index_shape={self.edge_index.shape},\n"
+            f"    edge_attr_shape={self.edge_attr.shape if self.edge_attr is not None else None}\n"
+            f")"
+        )
