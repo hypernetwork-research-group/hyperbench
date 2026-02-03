@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from hyperbench.train import RandomNegativeSampler, NegativeSampler
+from hyperbench.train import NegativeSampler, RandomNegativeSampler
 from hyperbench.types import HData
 
 
