@@ -71,13 +71,14 @@ class RandomNegativeSampler(NegativeSampler):
         sampled_edge_indexes: List[Tensor] = []
         sampled_edge_attrs: List[Tensor] = []
 
+        device = data.x.device
         new_edge_id_offset = data.num_edges
         for new_edge_id in range(self.num_negative_samples):
             # Sample with multinomial without replacement to ensure unique node ids
             # and assign each node id equal probability of being selected by setting all of them to 1
             # Example: num_nodes_per_sample=3, max_node_id=5
             #          -> possible output: [2, 0, 4]
-            equal_probabilities = torch.ones(data.num_nodes)
+            equal_probabilities = torch.ones(data.num_nodes, device=device)
             sampled_node_ids = torch.multinomial(
                 equal_probabilities, self.num_nodes_per_sample, replacement=False
             )
@@ -86,7 +87,9 @@ class RandomNegativeSampler(NegativeSampler):
             #          -> edge_index = [[2, 0, 4],
             #                           [3, 3, 3]]
             sampled_edge_id_tensor = torch.full(
-                (self.num_nodes_per_sample,), new_edge_id + new_edge_id_offset
+                (self.num_nodes_per_sample,),
+                new_edge_id + new_edge_id_offset,
+                device=device,
             )
             sampled_edge_index = torch.stack(
                 [sampled_node_ids, sampled_edge_id_tensor], dim=0

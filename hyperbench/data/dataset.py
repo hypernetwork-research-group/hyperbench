@@ -6,7 +6,7 @@ import zstandard as zstd
 import requests
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types.hypergraph import HIFHypergraph
@@ -318,7 +318,7 @@ class Dataset(TorchDataset):
         node_ids = edge_index[0]
         edge_ids = edge_index[1]
 
-        sampled_node_ids = torch.tensor(sampled_node_ids_list)
+        sampled_node_ids = torch.tensor(sampled_node_ids_list, device=node_ids.device)
 
         # Find incidences where the node is in our sampled node set
         # Example: edge_index[0] = [0, 0, 1, 2, 3, 4], sampled_node_ids = [0, 3]
@@ -401,9 +401,11 @@ class Dataset(TorchDataset):
         Returns:
             Tensor of 0-based ids.
         """
-        id_to_0based_id = torch.zeros(n, dtype=torch.long)
+        device = original_ids.device
+
+        id_to_0based_id = torch.zeros(n, dtype=torch.long, device=device)
         n_ids_to_keep = len(ids_to_keep)
-        id_to_0based_id[ids_to_keep] = torch.arange(n_ids_to_keep)
+        id_to_0based_id[ids_to_keep] = torch.arange(n_ids_to_keep, device=device)
         return id_to_0based_id[original_ids]
 
 
