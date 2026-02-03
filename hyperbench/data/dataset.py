@@ -133,14 +133,14 @@ class Dataset(TorchDataset):
             sampled_edge_index, sampled_node_ids, sampled_edge_ids
         )
 
-        new_node_features = self.hdata.x[sampled_node_ids]
+        new_x = self.hdata.x[sampled_node_ids]
 
         new_edge_attr = None
         if self.hdata.edge_attr is not None and len(sampled_edge_ids) > 0:
             new_edge_attr = self.hdata.edge_attr[sampled_edge_ids]
 
         return HData(
-            x=new_node_features,
+            x=new_x,
             edge_index=new_edge_index,
             edge_attr=new_edge_attr,
             num_nodes=len(sampled_node_ids),
