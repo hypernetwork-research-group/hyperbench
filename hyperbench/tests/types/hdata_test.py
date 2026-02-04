@@ -58,3 +58,25 @@ def test_hdata_to_cuda_handles_none_edge_attr(mock_hdata):
     assert mock_hdata.x.device.type == "cuda"
     assert mock_hdata.edge_index.device.type == "cuda"
     assert mock_hdata.edge_attr is None
+
+
+@pytest.mark.skipif(not torch.mps.is_available(), reason="MPS not available")
+def test_hdata_to_mps(mock_hdata):
+    returned = mock_hdata.to("mps")
+
+    assert returned is mock_hdata
+    assert mock_hdata.x.device.type == "mps"
+    assert mock_hdata.edge_index.device.type == "mps"
+    assert mock_hdata.edge_attr is not None
+    assert mock_hdata.edge_attr.device.type == "mps"
+
+
+@pytest.mark.skipif(not torch.mps.is_available(), reason="MPS not available")
+def test_hdata_to_mps_handles_none_edge_attr(mock_hdata):
+    mock_hdata.edge_attr = None
+    returned = mock_hdata.to("mps")
+
+    assert returned is mock_hdata
+    assert mock_hdata.x.device.type == "mps"
+    assert mock_hdata.edge_index.device.type == "mps"
+    assert mock_hdata.edge_attr is None
