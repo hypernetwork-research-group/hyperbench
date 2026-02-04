@@ -180,8 +180,7 @@ class Dataset(TorchDataset):
                 ]
             )
         else:
-            # Fallback to ones if no node features, 1 is better as it can help during
-            # training (e.g., avoid zero multiplication), especially in first epochs
+            # Fallback to ones if no numeric attributes
             x = torch.ones((num_nodes, 1), dtype=torch.float)
 
         # remap node and edge IDs to 0-based contiguous IDs
