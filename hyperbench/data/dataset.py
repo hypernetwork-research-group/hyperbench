@@ -9,8 +9,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
-from hyperbench.types.hypergraph import HIFHypergraph
-from hyperbench.types.hdata import HData
+from hyperbench.types import HData, HIFHypergraph
 from hyperbench.utils.hif_utils import validate_hif_json
 
 
@@ -181,8 +180,9 @@ class Dataset(TorchDataset):
                 ]
             )
         else:
-            # Fallback to zeros if no numeric attributes
-            x = torch.zeros((num_nodes, 1), dtype=torch.float)
+            # Fallback to ones if no node features, 1 is better as it can help during
+            # training (e.g., avoid zero multiplication), especially in first epochs
+            x = torch.ones((num_nodes, 1), dtype=torch.float)
 
         # remap node and edge IDs to 0-based contiguous IDs
         # Use dict comprehension for faster lookups

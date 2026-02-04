@@ -725,7 +725,7 @@ def test_process_with_inconsistent_node_attributes():
 
 
 def test_process_with_no_node_attributes_fallback():
-    """Test process() falls back to torch zeros when no numeric attributes."""
+    """Test process() falls back to torch ones when no node features."""
     mock_hypergraph = HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -744,7 +744,7 @@ def test_process_with_no_node_attributes_fallback():
         dataset = TestDataset()
 
         assert dataset.hdata.x.shape == (2, 1)
-        assert torch.allclose(dataset.hdata.x, torch.tensor([[0.0], [0.0]]))
+        assert torch.allclose(dataset.hdata.x, torch.tensor([[1.0], [1.0]]))
 
 
 def test_process_with_single_node_attribute():
