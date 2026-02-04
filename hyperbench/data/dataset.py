@@ -181,8 +181,8 @@ class Dataset(TorchDataset):
                 ]
             )
         else:
-            # Fallback to zeros if no numeric attributes
-            x = torch.zeros((num_nodes, 1), dtype=torch.float)
+            # Fallback to ones if no numeric attributes
+            x = torch.ones((num_nodes, 1), dtype=torch.float)
 
         # remap node and edge IDs to 0-based contiguous IDs
         # Use dict comprehension for faster lookups
