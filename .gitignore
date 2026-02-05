@@ -121,3 +121,6 @@ cython_debug/
 
 # MacOS
 .DS_Store
+
+# Datasets
+data/datasets/*.zst
