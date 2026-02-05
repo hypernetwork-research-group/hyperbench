@@ -22,11 +22,14 @@ class DatasetNames(Enum):
     AMAZON = "amazon"
     CONTACT_HIGH_SCHOOL = "contact-high-school"
     CONTACT_PRIMARY_SCHOOL = "contact-primary-school"
+    CORA = "cora"
+    COURSERA = "coursera"
     DBLP = "dblp"
     EMAIL_ENRON = "email-Enron"
     EMAIL_W3C = "email-W3C"
     GEOMETRY = "geometry"
     GOT = "got"
+    IMBD = "imdb"
     MUSIC_BLUES_REVIEWS = "music-blues-reviews"
     NBA = "nba"
     NDC_CLASSES = "NDC-classes"
@@ -36,6 +39,7 @@ class DatasetNames(Enum):
     THREADS_MATH_SX = "threads-math-sx"
     TWITTER = "twitter"
     VEGAS_BARS_REVIEWS = "vegas-bars-reviews"
+    PATENT = "patent"
 
 
 class HIFConverter:
@@ -419,3 +423,19 @@ class DBLPDataset(Dataset):
 
 class ThreadsMathsxDataset(Dataset):
     DATASET_NAME = "THREADSMATHSX"
+
+
+class PatentDataset(Dataset):
+    DATASET_NAME = "PATENT"
+
+
+class CourseraDataset(Dataset):
+    DATASET_NAME = "COURSERA"
+
+
+class IMDBDataset(Dataset):
+    DATASET_NAME = "IMDB"
+
+
+class CoraDataset(Dataset):
+    DATASET_NAME = "CORA"
