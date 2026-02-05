@@ -2,9 +2,7 @@
 
 Complete API documentation for all Hyperbench modules.
 
-## Core Modules
-
-### Data Module
+## Data Module
 
 ::: hyperbench.data.dataset
     options:
@@ -12,6 +10,29 @@ Complete API documentation for all Hyperbench modules.
       show_source: true
       members_order: source
       show_submodules: true
+
+::: hyperbench.data.loader
+    options:
+      show_root_heading: true
+      show_source: true
+      members_order: source
+      show_submodules: true
+
+## Train Module
+
+### Trainer
+
+::: hyperbench.train.trainer
+    options:
+      show_root_heading: true
+      show_source: true
+
+### Negative Sampler
+
+::: hyperbench.train.negative_sampler
+    options:
+      show_root_heading: true
+      show_source: true
 
 ## Types Module
 
@@ -29,6 +50,13 @@ Complete API documentation for all Hyperbench modules.
       show_root_heading: true
       show_source: true
 
+### Model
+
+::: hyperbench.types.model
+    options:
+      show_root_heading: true
+      show_source: true
+
 ## Utils Module
 
 ### Data Utils
@@ -41,13 +69,6 @@ Complete API documentation for all Hyperbench modules.
 ### HIF Utils
 
 ::: hyperbench.utils.hif_utils
-    options:
-      show_root_heading: true
-      show_source: true
-
-## Data Loader
-
-::: hyperbench.data.loader
     options:
       show_root_heading: true
       show_source: true

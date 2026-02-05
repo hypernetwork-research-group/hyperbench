@@ -26,10 +26,16 @@ jobs:
           uv venv
           uv pip install -e .
 
-      - name: Run tests
-        run: uv run pytest --cov --cov-branch --cov-report=xml
+      - name: Test with pytest
+        run: |
+          uv run pytest --cov --junitxml=junit.xml
 
-      - name: Upload results to Codecov
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

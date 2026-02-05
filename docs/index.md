@@ -11,3 +11,7 @@ Welcome to Hyperbench - A comprehensive benchmarking framework for hypergraph ne
 ## Overview
 
 Hyperbench provides tools for working with hypergraph data in machine learning contexts. It supports loading datasets in HIF format, transforming them into PyTorch tensors, and preparing them for training hypergraph neural networks.
+
+## Architecture
+
+![Architecture Diagram](design.png)
