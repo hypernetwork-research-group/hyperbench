@@ -20,6 +20,7 @@ See the [Documentation][docs] for more details.
 ### Prerequisites
 
 - [uv](https://github.com/astral-sh/uv)
+- [make](https://www.gnu.org/software/make/)
 
 ### Installation
 
