@@ -2,6 +2,18 @@
 
 The project main language is English.
 
+## Pre-commit hooks
+
+Run the following command to install the pre-commit hook:
+
+```bash
+make setup
+
+pre-commit install --config .github/hooks/.pre-commit-config.yaml --hook-type pre-commit --install-hooks --overwrite
+```
+
+This will ensure that your code adheres to the project's coding standards before each commit.
+
 ## Commit message style
 
 Commit messages should follow the [conventional commit specification](https://www.conventionalcommits.org/en/v1.0.0/).
