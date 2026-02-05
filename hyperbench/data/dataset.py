@@ -23,6 +23,7 @@ class DatasetNames(Enum):
     AMAZON = "amazon"
     CONTACT_HIGH_SCHOOL = "contact-high-school"
     CONTACT_PRIMARY_SCHOOL = "contact-primary-school"
+    CORA = "cora"
     COURSERA = "coursera"
     DBLP = "dblp"
     EMAIL_ENRON = "email-Enron"
@@ -432,3 +433,7 @@ class CourseraDataset(Dataset):
 
 class IMDBDataset(Dataset):
     DATASET_NAME = "IMDB"
+
+
+class CoraDataset(Dataset):
+    DATASET_NAME = "CORA"

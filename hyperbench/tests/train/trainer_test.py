@@ -20,8 +20,8 @@ def mock_model_configs():
         model_config.version = f"{i}"
         model_config.model = model
         model_config.trainer = None
-        model_config.full_model_name = (
-            lambda self=model_config: f"{self.name}:{self.version}"
+        model_config.full_model_name = lambda self=model_config: (
+            f"{self.name}:{self.version}"
         )
 
         model_configs.append(model_config)
