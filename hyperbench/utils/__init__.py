@@ -1,4 +1,3 @@
-from .hif_utils import validate_hif_json
 from .data_utils import (
     empty_edgeattr,
     empty_edgeindex,
@@ -7,6 +6,8 @@ from .data_utils import (
     empty_nodefeatures,
     to_non_empty_edgeattr,
 )
+from .hif_utils import validate_hif_json
+from .sparse_utils import sparse_dropout
 
 __all__ = [
     "empty_edgeattr",
@@ -14,6 +15,7 @@ __all__ = [
     "empty_hdata",
     "empty_hifhypergraph",
     "empty_nodefeatures",
-    "validate_hif_json",
+    "sparse_dropout",
     "to_non_empty_edgeattr",
+    "validate_hif_json",
 ]
