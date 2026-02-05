@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - [uv](https://github.com/astral-sh/uv)
+- [make](https://www.gnu.org/software/make/)
 
 ## Build
 To build the project, run:
