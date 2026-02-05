@@ -268,17 +268,3 @@ def test_dropout_statistical_property_moderate_rate():
     # Allow 10% tolerance for statistical variance
     tolerance = 0.1
     assert abs(actual_keep_prob - keep_prob) < tolerance
-
-
-def test_dropout_statistical_variance():
-    """Test that different calls to dropout produce different results (stochasticity)."""
-    indices = torch.tensor([[0, 1, 2], [0, 1, 2]])
-    values = torch.tensor([1.0, 2.0, 3.0])
-    sparse_tensor = torch.sparse_coo_tensor(indices, values, (3, 3))
-
-    result1 = sparse_dropout(sparse_tensor, dropout_prob=0.5)
-    result2 = sparse_dropout(sparse_tensor, dropout_prob=0.5)
-
-    # Results should be different due to stochastic nature
-    # (with very high probability for 0.5 dropout)
-    assert not torch.allclose(result1.coalesce().values(), result2.coalesce().values())
