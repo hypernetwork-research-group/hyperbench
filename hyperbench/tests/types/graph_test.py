@@ -5,11 +5,6 @@ from hyperbench.types.graph import Graph
 
 
 @pytest.fixture
-def mock_empty_graph():
-    return Graph([])
-
-
-@pytest.fixture
 def mock_single_edge_graph():
     return Graph([[0, 1]])
 
@@ -30,30 +25,38 @@ def mock_graph_with_one_self_loop():
     return Graph([[0, 1], [1, 1], [2, 3]])
 
 
-def test_init_empty_edges(mock_empty_graph):
-    assert mock_empty_graph.edges == []
-
-
-def test_init_single_edge(mock_single_edge_graph):
-    assert mock_single_edge_graph.edges == [[0, 1]]
-
-
-def test_init_multiple_edges(mock_linear_graph):
-    assert mock_linear_graph.edges == [[0, 1], [1, 2], [2, 3]]
+@pytest.mark.parametrize(
+    "graph, expected_edges",
+    [
+        pytest.param(Graph([]), [], id="empty_graph"),
+        pytest.param(Graph([[0, 1]]), [[0, 1]], id="single_edge"),
+        pytest.param(
+            Graph([[0, 1], [1, 2], [2, 3]]),
+            [[0, 1], [1, 2], [2, 3]],
+            id="linear_graph",
+        ),
+    ],
+)
+def test_init_edges(graph, expected_edges):
+    assert graph.edges == expected_edges
 
 
 @pytest.mark.parametrize(
     "graph, expected_num_nodes",
     [
-        (Graph([]), 0),  # Empty graph
-        (Graph([[0, 1]]), 2),  # Single edge
-        (Graph([[0, 0]]), 1),  # Single edge, self-loop
-        (Graph([[0, 1], [1, 2], [2, 3]]), 4),  # Linear graph
-        (Graph([[0, 0], [1, 1]]), 2),  # Graph with only self-loops
-        (Graph([[0, 1], [1, 1], [2, 3]]), 4),  # Graph with one self-loop
-        (Graph([[0, 1], [2, 3]]), 4),  # Disconnected graph
-        (Graph([[0, 1], [0, 1], [1, 2]]), 3),  # Graph with duplicate edges
-        (Graph([[0, 1], [0, 2], [1, 2]]), 3),  # Complete graph
+        pytest.param(Graph([]), 0, id="empty_graph"),
+        pytest.param(Graph([[0, 1]]), 2, id="single_edge"),
+        pytest.param(Graph([[0, 0]]), 1, id="single_edge_self_loop"),
+        pytest.param(Graph([[0, 1], [1, 2], [2, 3]]), 4, id="linear_graph"),
+        pytest.param(Graph([[0, 0], [1, 1]]), 2, id="only_self_loops"),
+        pytest.param(Graph([[0, 1], [1, 1], [2, 3]]), 4, id="one_self_loop"),
+        pytest.param(Graph([[0, 1], [2, 3]]), 4, id="disconnected_graph"),
+        pytest.param(
+            Graph([[0, 1], [0, 1], [1, 2]]),
+            3,
+            id="duplicate_edges",
+        ),
+        pytest.param(Graph([[0, 1], [0, 2], [1, 2]]), 3, id="complete_graph"),
     ],
 )
 def test_num_nodes(graph, expected_num_nodes):
@@ -63,15 +66,19 @@ def test_num_nodes(graph, expected_num_nodes):
 @pytest.mark.parametrize(
     "graph, expected_num_edges",
     [
-        (Graph([]), 0),  # Empty graph
-        (Graph([[0, 1]]), 1),  # Single edge
-        (Graph([[0, 0]]), 1),  # Single edge, self-loop
-        (Graph([[0, 1], [1, 2], [2, 3]]), 3),  # Linear graph
-        (Graph([[0, 0], [1, 1]]), 2),  # Graph with only self-loops
-        (Graph([[0, 1], [1, 1], [2, 3]]), 3),  # Graph with one self-loop
-        (Graph([[0, 1], [2, 3]]), 2),  # Disconnected graph
-        (Graph([[0, 1], [0, 1], [1, 2]]), 3),  # Graph with duplicate edges
-        (Graph([[0, 1], [0, 2], [1, 2]]), 3),  # Complete graph
+        pytest.param(Graph([]), 0, id="empty_graph"),
+        pytest.param(Graph([[0, 1]]), 1, id="single_edge"),
+        pytest.param(Graph([[0, 0]]), 1, id="single_edge_self_loop"),
+        pytest.param(Graph([[0, 1], [1, 2], [2, 3]]), 3, id="linear_graph"),
+        pytest.param(Graph([[0, 0], [1, 1]]), 2, id="only_self_loops"),
+        pytest.param(Graph([[0, 1], [1, 1], [2, 3]]), 3, id="one_self_loop"),
+        pytest.param(Graph([[0, 1], [2, 3]]), 2, id="disconnected_graph"),
+        pytest.param(
+            Graph([[0, 1], [0, 1], [1, 2]]),
+            3,
+            id="duplicate_edges",
+        ),
+        pytest.param(Graph([[0, 1], [0, 2], [1, 2]]), 3, id="complete_graph"),
     ],
 )
 def test_num_edges(graph, expected_num_edges):
@@ -81,20 +88,34 @@ def test_num_edges(graph, expected_num_edges):
 @pytest.mark.parametrize(
     "graph, expected_edges_after_removal",
     [
-        (Graph([]), []),  # Empty graph
-        (Graph([[0, 1], [2, 3]]), [[0, 1], [2, 3]]),  # No self-loops
-        (Graph([[0, 0]]), []),  # One edge, one self-loop
-        (Graph([[0, 1], [1, 1]]), [[0, 1]]),  # One self-loop
-        (Graph([[0, 0], [1, 1], [2, 2]]), []),  # All self-loops
-        (Graph([[0, 1], [1, 2], [2, 2]]), [[0, 1], [1, 2]]),  # Mixed edges
-        (
+        pytest.param(Graph([]), [], id="empty_graph"),
+        pytest.param(
+            Graph([[0, 1], [2, 3]]),
+            [[0, 1], [2, 3]],
+            id="no_self_loops",
+        ),
+        pytest.param(Graph([[0, 0]]), [], id="one_edge_one_self_loop"),
+        pytest.param(Graph([[0, 1], [1, 1]]), [[0, 1]], id="one_self_loop"),
+        pytest.param(
+            Graph([[0, 0], [1, 1], [2, 2]]),
+            [],
+            id="all_self_loops",
+        ),
+        pytest.param(
+            Graph([[0, 1], [1, 2], [2, 2]]),
+            [[0, 1], [1, 2]],
+            id="mixed_edges",
+        ),
+        pytest.param(
             Graph([[0, 0], [0, 1], [1, 1], [1, 2]]),
             [[0, 1], [1, 2]],
-        ),  # Mixed edges with multiple self-loops
-        (
+            id="mixed_edges_multiple_self_loops",
+        ),
+        pytest.param(
             Graph([[0, 0], [1, 1], [2, 2], [3, 4]]),
             [[3, 4]],
-        ),  # Multiple consecutive self-loops
+            id="multiple_consecutive_self_loops",
+        ),
     ],
 )
 def test_remove_self_loops(graph, expected_edges_after_removal):
@@ -112,24 +133,36 @@ def test_remove_self_loops_preserves_order():
 @pytest.mark.parametrize(
     "graph, expected_edge_index",
     [
-        (Graph([]), torch.empty((2, 0), dtype=torch.long)),  # Empty graph
-        (Graph([[0, 1]]), torch.tensor([[0], [1]], dtype=torch.long)),  # Single edge
-        (
+        pytest.param(
+            Graph([]),
+            torch.empty((2, 0), dtype=torch.long),
+            id="empty_graph",
+        ),
+        pytest.param(
+            Graph([[0, 1]]),
+            torch.tensor([[0], [1]], dtype=torch.long),
+            id="single_edge",
+        ),
+        pytest.param(
             Graph([[0, 1], [1, 2]]),
             torch.tensor([[0, 1], [1, 2]], dtype=torch.long),
-        ),  # Multiple edges
-        (
+            id="multiple_edges",
+        ),
+        pytest.param(
             Graph([[0, 1], [1, 2], [2, 3]]),
             torch.tensor([[0, 1, 2], [1, 2, 3]], dtype=torch.long),
-        ),  # Linear graph
-        (
+            id="linear_graph",
+        ),
+        pytest.param(
             Graph([[0, 0], [1, 1]]),
             torch.tensor([[0, 1], [0, 1]], dtype=torch.long),
-        ),  # Graph with only self-loops
-        (
+            id="only_self_loops",
+        ),
+        pytest.param(
             Graph([[0, 1], [0, 1], [1, 2]]),
             torch.tensor([[0, 0, 1], [1, 1, 2]], dtype=torch.long),
-        ),  # Graph with duplicate edges
+            id="duplicate_edges",
+        ),
     ],
 )
 def test_to_edge_index(graph, expected_edge_index):
