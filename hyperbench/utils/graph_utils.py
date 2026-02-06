@@ -14,11 +14,11 @@ def get_sparse_adjacency_matrix(edge_index: Tensor, num_nodes: int) -> Tensor:
 
 
     Args:
-        edge_index: Edge index tensor of shape (2, |E|).
+        edge_index: Edge index tensor of shape ``(2, |E|)``.
         num_nodes: The number of nodes in the graph.
 
     Returns:
-        The sparse adjacency matrix of shape (num_nodes, num_nodes).
+        The sparse adjacency matrix of shape ``(num_nodes, num_nodes)``.
     """
     src, dest = edge_index
 
@@ -43,6 +43,16 @@ def get_sparse_adjacency_matrix(edge_index: Tensor, num_nodes: int) -> Tensor:
 
 
 def get_sparse_normalized_degree_matrix(edge_index: Tensor, num_nodes: int) -> Tensor:
+    """
+    Compute the sparse normalized degree matrix D^-1/2 from a graph edge index.
+
+    Args:
+        edge_index: Edge index tensor of shape ``(2, |E|)``.
+        num_nodes: The number of nodes in the graph.
+
+    Returns:
+        The sparse normalized degree matrix D^-1/2 of shape ``(num_nodes, num_nodes)``.
+    """
     device = edge_index.device
     src, _ = edge_index
 
@@ -92,14 +102,16 @@ def get_sparse_normalized_laplacian(
     where A_hat = A + I (adjacency with self-loops) and D_hat is the degree matrix of A_hat.
 
     Args:
-        edge_index: Edge index tensor of shape (2, |E|).
+        edge_index: Edge index tensor of shape ``(2, |E|)``.
         num_nodes: The number of nodes in the graph. If ``None``,
             it will be inferred from ``edge_index`` as ``edge_index.max().item() + 1``
 
     Returns:
-        The sparse symmetrically normalized Laplacian matrix of shape (num_nodes, num_nodes).
+        The sparse symmetrically normalized Laplacian matrix of shape ``(num_nodes, num_nodes)``.
     """
-    undirected_edge_index = to_undirected_edge_index(edge_index, with_selfloops=True)
+    undirected_edge_index = Graph.from_directed_to_undirected_edge_index(
+        edge_index=edge_index, with_selfloops=True
+    )
 
     # num_nodes assumes that the node indices in edge_index are in the range [0, num_nodes-1],
     # as this is the default logic in the library dataset preprocessing.
@@ -122,7 +134,7 @@ def get_sparse_normalized_laplacian(
     return normalized_laplacian_matrix.coalesce()
 
 
-def reduce_to_graph_edge_index(
+def reduce_to_graph_edge_index_on_random_direction(
     x: Tensor,
     edge_index: Tensor,
     with_mediators: bool = False,
@@ -177,7 +189,7 @@ def reduce_to_graph_edge_index(
 
     graph = Graph(edges=graph_edges)
     if remove_selfloops:
-        graph.remove_self_loops()
+        graph.remove_selfloops()
 
     return graph.to_edge_index()
 
@@ -201,45 +213,3 @@ def smoothing_with_gcn_laplacian_matrix(
     if drop_rate > 0.0:
         laplacian_matrix = sparse_dropout(laplacian_matrix, drop_rate)
     return laplacian_matrix.matmul(x)
-
-
-def to_undirected_edge_index(
-    edge_index: Tensor, with_selfloops: bool = False
-) -> Tensor:
-    """
-    Convert a directed edge index to an undirected edge index by adding reverse edges.
-
-    Args:
-        edge_index: Edge index tensor of shape (2, |E|).
-        with_selfloops: Whether to add self-loops to each node. Defaults to ``False``.
-
-    Returns:
-        The undirected edge index tensor of shape (2, |E'|). If ``with_selfloops`` is ``True``, self-loops are added.
-    """
-    src, dest = edge_index[0], edge_index[1]
-    src, dest = torch.cat([src, dest]), torch.cat([dest, src])
-
-    # Example: edge_index = [[0, 1, 2],
-    #                        [1, 0, 3]]
-    #          -> after torch.stack([...], dim=0):
-    #             undirected_edge_index = [[0, 1, 2, 1, 0, 3],
-    #                                      [1, 0, 3, 0, 1, 2]]
-    #          -> after torch.unique(..., dim=1):
-    #             undirected_edge_index = [[0, 1, 2, 3],
-    #                                      [1, 0, 3, 2]]
-    undirected_edge_index = torch.stack([src, dest], dim=0)
-    undirected_edge_index = torch.unique(undirected_edge_index, dim=1)
-
-    if with_selfloops:
-        # num_nodes assumes that the node indices in edge_index are in the range [0, num_nodes-1],
-        # as this is the default logic in the library dataset preprocessing.
-        num_nodes = int(undirected_edge_index.max().item()) + 1
-        src, dest = undirected_edge_index[0], undirected_edge_index[1]
-
-        # Add self-loops: A_hat = A + I (works as we assume node indices are in [0, num_nodes-1])
-        self_loop_indices = torch.arange(num_nodes, device=edge_index.device)
-        src = torch.cat([src, self_loop_indices])
-        dest = torch.cat([dest, self_loop_indices])
-        undirected_edge_index = torch.stack([src, dest], dim=0)
-
-    return undirected_edge_index
