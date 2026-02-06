@@ -1,11 +1,35 @@
 import pytest
 import torch
+import warnings
 
 from hyperbench.utils import (
     get_sparse_adjacency_matrix,
     get_sparse_normalized_degree_matrix,
+    get_sparse_normalized_laplacian,
     reduce_to_graph_edge_index,
 )
+
+
+@pytest.fixture(autouse=True)
+def suppress_sparse_csr_warning():
+    """
+    Suppress PyTorch sparse CSR beta warning.
+    It could be avoided by doing sparse @ dense, as it doesn't trigger CSR warning.
+    However, it's inefficient for large graphs.
+
+    Example:
+        ```
+        AD = torch.sparse.mm(A, D.to_dense())
+        L = torch.sparse.mm(D, AD).to_sparse_coo()
+        ```
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="Sparse CSR tensor support is in beta state",
+            category=UserWarning,
+        )
+        yield
 
 
 @pytest.fixture(autouse=True)
@@ -231,6 +255,112 @@ def test_get_sparse_normalized_degree_matrix_preserves_device():
     result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=2)
 
     assert result.device == edge_index.device
+
+
+def test_get_sparse_normalized_laplacian_returns_sparse_tensor():
+    edge_index = torch.tensor([[0, 1], [1, 0]])
+
+    result = get_sparse_normalized_laplacian(edge_index)
+
+    assert result.is_sparse
+
+
+@pytest.mark.parametrize(
+    "edge_index, num_nodes",
+    [
+        pytest.param(torch.tensor([[0, 1], [1, 0]]), 2, id="2_nodes"),
+        pytest.param(torch.tensor([[0, 1, 2], [1, 2, 0]]), 4, id="4_nodes"),
+        pytest.param(torch.tensor([[0, 1], [1, 0]]), None, id="2_nodes_inferred"),
+    ],
+)
+def test_get_sparse_normalized_laplacian_shape(edge_index, num_nodes):
+    result = get_sparse_normalized_laplacian(edge_index, num_nodes=num_nodes)
+    expected_num_nodes = num_nodes if num_nodes else edge_index.max().item() + 1
+
+    assert result.shape == (expected_num_nodes, expected_num_nodes)
+
+
+def test_get_sparse_normalized_laplacian_is_symmetric():
+    """GCN Laplacian L = D^-1/2 * A * D^-1/2 is symmetric."""
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+
+    result = get_sparse_normalized_laplacian(edge_index)
+    dense = result.to_dense()
+
+    assert torch.allclose(dense, dense.T, atol=1e-6)
+
+
+def test_get_sparse_normalized_laplacian_self_loop_diagonal():
+    """Single node graph has diagonal value 1 (self-loop normalized)."""
+    edge_index = torch.tensor([[0], [0]])
+
+    result = get_sparse_normalized_laplacian(edge_index, num_nodes=1)
+    dense = result.to_dense()
+
+    # Self-loop only: degree = 1, so D^-1/2 * A * D^-1/2 = 1 * 1 * 1 = 1
+    assert torch.isclose(dense[0, 0], torch.tensor(1.0), atol=1e-6)
+
+
+@pytest.mark.parametrize(
+    "edge_index, num_nodes, expected_row_sum",
+    [
+        pytest.param(
+            torch.tensor([[0, 1], [1, 0]]),
+            2,
+            1.0,  # Each node has degree 2 (edge + self-loop), diagonal = 1/2 each
+            id="connected_graph",
+        ),
+        pytest.param(
+            torch.tensor([[0, 1, 2], [1, 2, 0]]),
+            3,
+            1.0,  # Triangle: each node degree 3 (2 edges + self-loop), diag = 1/3 each
+            id="triangle_graph",
+        ),
+    ],
+)
+def test_get_sparse_normalized_laplacian_row_sum(
+    edge_index, num_nodes, expected_row_sum
+):
+    """
+    For connected graphs with self-loops, GCN normalization makes the
+    laplacian matrix row-stochastic: every row sums to 1.0.
+    """
+    result = get_sparse_normalized_laplacian(edge_index, num_nodes=num_nodes)
+    dense = result.to_dense()
+
+    # Each row should sum to 1 for connected graphs with self-loops
+    for i in range(num_nodes):
+        assert torch.isclose(dense[i].sum(), torch.tensor(expected_row_sum), atol=1e-6)
+
+
+def test_get_sparse_normalized_laplacian_preserves_device():
+    edge_index = torch.tensor([[0, 1], [1, 0]], device="cpu")
+
+    result = get_sparse_normalized_laplacian(edge_index)
+
+    assert result.device == edge_index.device
+
+
+def test_get_sparse_normalized_laplacian_no_nan_or_inf():
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+
+    result = get_sparse_normalized_laplacian(edge_index, num_nodes=4)
+    dense = result.to_dense()
+
+    assert not torch.any(torch.isnan(dense))
+    assert not torch.any(torch.isinf(dense))
+
+
+def test_get_sparse_normalized_laplacian_has_0_for_isolated_nodes():
+    edge_index = torch.tensor([[0], [1]])
+
+    result = get_sparse_normalized_laplacian(edge_index, num_nodes=4)
+    dense = result.to_dense()
+
+    assert torch.all(dense[2, :] == 0)
+    assert torch.all(dense[:, 2] == 0)
+    assert torch.all(dense[3, :] == 0)
+    assert torch.all(dense[:, 3] == 0)
 
 
 @pytest.mark.parametrize(
