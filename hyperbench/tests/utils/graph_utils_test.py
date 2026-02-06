@@ -8,6 +8,7 @@ from hyperbench.utils import (
     get_sparse_normalized_laplacian,
     reduce_to_graph_edge_index,
     smoothing_with_gcn_laplacian_matrix,
+    to_undirected_edge_index,
 )
 
 
@@ -724,3 +725,155 @@ def test_smoothing_with_gcn_laplacian_isolated_nodes_have_zero_features():
 
     # Node 2 is isolated, so its output should be zero
     assert torch.allclose(result[2], torch.zeros(2), atol=1e-6)
+
+
+def test_to_undirected_edge_index_single_directed_edge():
+    """A single directed edge (0 -> 1) should produce bidirectional edges."""
+    edge_index = torch.tensor([[0], [1]])
+
+    result = to_undirected_edge_index(edge_index)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    # Should contain both (0, 1) and (1, 0)
+    assert (0, 1) in edges
+    assert (1, 0) in edges
+    assert len(edges) == 2
+
+
+def test_to_undirected_edge_index_already_undirected_does_not_create_duplicates():
+    edge_index = torch.tensor([[0, 1], [1, 0]])
+
+    result = to_undirected_edge_index(edge_index)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    assert edges == {(0, 1), (1, 0)}
+
+
+def test_to_undirected_edge_index_removes_duplicate_edges():
+    edge_index = torch.tensor([[0, 0, 1], [1, 1, 0]])
+
+    result = to_undirected_edge_index(edge_index)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    assert edges == {(0, 1), (1, 0)}
+
+
+def test_to_undirected_edge_index_triangle_directed():
+    """
+    A directed triangle should become a bidirectional triangle.
+
+    Example:
+        Directed cycle: 0 -> 1 -> 2 -> 0
+        Bidirectional traingle: 0 <-> 1 <-> 2 <-> 0
+    """
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+
+    result = to_undirected_edge_index(edge_index)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    bidirectional_triangle = {(0, 1), (1, 0), (1, 2), (2, 1), (2, 0), (0, 2)}
+    assert edges == bidirectional_triangle
+
+
+def test_to_undirected_edge_index_preserves_self_loops_in_input():
+    edge_index = torch.tensor([[0, 1, 1], [1, 0, 1]])  # (1, 1) is a self-loop
+
+    result = to_undirected_edge_index(edge_index)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    assert (1, 1) in edges
+
+
+def test_to_undirected_edge_index_empty_edge_index_returns_empty_tensor():
+    edge_index = torch.tensor([[], []])
+
+    result = to_undirected_edge_index(edge_index)
+
+    assert result.shape == (2, 0)
+
+
+def test_to_undirected_edge_index_with_self_loops_adds_all_self_loops():
+    edge_index = torch.tensor([[0, 1], [1, 2]])
+
+    result = to_undirected_edge_index(edge_index, with_selfloops=True)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    # Should have self-loops for nodes 0, 1, 2 (inferred from max index)
+    assert (0, 0) in edges
+    assert (1, 1) in edges
+    assert (2, 2) in edges
+
+
+def test_to_undirected_edge_index_with_self_loops_does_not_duplicate_self_loops():
+    edge_index = torch.tensor([[0, 1], [1, 1]])  # (1, 1) is already a self-loop
+
+    result = to_undirected_edge_index(edge_index, with_selfloops=True)
+    edges = list(zip(result[0].tolist(), result[1].tolist()))
+
+    assert (0, 0) in edges
+    assert (1, 1) in edges
+
+
+@pytest.mark.parametrize(
+    "with_self_loops",
+    [
+        pytest.param(True, id="with_self_loops"),
+        pytest.param(False, id="without_self_loops"),
+    ],
+)
+def test_to_undirected_edge_index_preserves_device(with_self_loops):
+    edge_index = torch.tensor([[0], [1]], device="cpu")
+
+    result = to_undirected_edge_index(edge_index, with_selfloops=with_self_loops)
+
+    assert result.device == edge_index.device
+
+
+def test_to_undirected_edge_index_disconnected_components():
+    # Two disconnected components: (0, 1) and (2, 3)
+    edge_index = torch.tensor([[0, 2], [1, 3]])
+
+    result = to_undirected_edge_index(edge_index)
+    edges = set(zip(result[0].tolist(), result[1].tolist()))
+
+    expected = {(0, 1), (1, 0), (2, 3), (3, 2)}
+    assert edges == expected
+
+
+@pytest.mark.parametrize(
+    "edge_index, expected_num_undirected_edges",
+    [
+        pytest.param(
+            torch.tensor([[0], [1]]),
+            2,
+            id="single_edge_becomes_two",
+        ),
+        pytest.param(
+            torch.tensor([[0, 1], [1, 0]]),
+            2,
+            id="bidirectional_stays_two",
+        ),
+        pytest.param(
+            torch.tensor([[0, 1, 2], [1, 2, 0]]),
+            6,
+            id="directed_triangle_becomes_six",
+        ),
+        pytest.param(
+            torch.tensor([[0, 0], [1, 2]]),
+            4,
+            id="star_two_edges_becomes_four",
+        ),
+    ],
+)
+def test_to_undirected_edge_index_edge_count(edge_index, expected_num_undirected_edges):
+    result = to_undirected_edge_index(edge_index)
+
+    assert result.shape[1] == expected_num_undirected_edges
+
+
+def test_to_undirected_edge_index_dtype_preserved():
+    edge_index = torch.tensor([[0, 1], [1, 2]], dtype=torch.long)
+
+    result = to_undirected_edge_index(edge_index)
+
+    assert result.dtype == edge_index.dtype

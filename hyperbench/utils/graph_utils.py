@@ -99,7 +99,7 @@ def get_sparse_normalized_laplacian(
     Returns:
         The sparse symmetrically normalized Laplacian matrix of shape (num_nodes, num_nodes).
     """
-    undirected_edge_index = to_undirected_edge_index(edge_index, with_self_loops=True)
+    undirected_edge_index = to_undirected_edge_index(edge_index, with_selfloops=True)
 
     # num_nodes assumes that the node indices in edge_index are in the range [0, num_nodes-1],
     # as this is the default logic in the library dataset preprocessing.
@@ -204,17 +204,17 @@ def smoothing_with_gcn_laplacian_matrix(
 
 
 def to_undirected_edge_index(
-    edge_index: Tensor, with_self_loops: bool = False
+    edge_index: Tensor, with_selfloops: bool = False
 ) -> Tensor:
     """
     Convert a directed edge index to an undirected edge index by adding reverse edges.
 
     Args:
         edge_index: Edge index tensor of shape (2, |E|).
-        with_self_loops: Whether to add self-loops to each node. Defaults to ``False``.
+        with_selfloops: Whether to add self-loops to each node. Defaults to ``False``.
 
     Returns:
-        The undirected edge index tensor of shape (2, |E'|). If ``with_self_loops`` is ``True``, self-loops are added.
+        The undirected edge index tensor of shape (2, |E'|). If ``with_selfloops`` is ``True``, self-loops are added.
     """
     src, dest = edge_index[0], edge_index[1]
     src, dest = torch.cat([src, dest]), torch.cat([dest, src])
@@ -230,7 +230,7 @@ def to_undirected_edge_index(
     undirected_edge_index = torch.stack([src, dest], dim=0)
     undirected_edge_index = torch.unique(undirected_edge_index, dim=1)
 
-    if with_self_loops:
+    if with_selfloops:
         # num_nodes assumes that the node indices in edge_index are in the range [0, num_nodes-1],
         # as this is the default logic in the library dataset preprocessing.
         num_nodes = int(undirected_edge_index.max().item()) + 1

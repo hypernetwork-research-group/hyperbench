@@ -12,6 +12,7 @@ from .graph_utils import (
     get_sparse_adjacency_matrix,
     get_sparse_normalized_degree_matrix,
     get_sparse_normalized_laplacian,
+    to_undirected_edge_index,
 )
 from .hif_utils import validate_hif_json
 from .sparse_utils import sparse_dropout
@@ -29,5 +30,6 @@ __all__ = [
     "get_sparse_normalized_degree_matrix",
     "get_sparse_normalized_laplacian",
     "to_non_empty_edgeattr",
+    "to_undirected_edge_index",
     "validate_hif_json",
 ]
