@@ -7,6 +7,7 @@ from hyperbench.utils import (
     get_sparse_normalized_degree_matrix,
     get_sparse_normalized_laplacian,
     reduce_to_graph_edge_index,
+    smoothing_with_gcn_laplacian_matrix,
 )
 
 
@@ -529,3 +530,197 @@ def test_reduce_to_graph_raises_on_single_node_hyperedge():
         ValueError, match="The number of vertices in an hyperedge must be >= 2."
     ):
         reduce_to_graph_edge_index(x, edge_index)
+
+
+@pytest.mark.parametrize(
+    "num_nodes, num_features",
+    [
+        pytest.param(2, 2, id="2x2"),
+        pytest.param(3, 4, id="3x4"),
+        pytest.param(5, 1, id="5x1"),
+        pytest.param(10, 8, id="10x8"),
+    ],
+)
+def test_smoothing_with_gcn_laplacian_output_shape_matches_x_shape(
+    num_nodes, num_features
+):
+    """Output shape should match input node feature matrix X shape (|V|, C)."""
+    x = torch.randn(num_nodes, num_features)
+    edge_index = torch.tensor([[i, (i + 1) % num_nodes] for i in range(num_nodes)]).T
+
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=num_nodes)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    assert result.shape == x.shape
+
+
+def test_smoothing_with_gcn_laplacian_with_identity_laplacian_returns_original_x():
+    """Smoothing with identity laplacian should return the original features."""
+    num_nodes = 3
+    x = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+
+    # Create identity matrix as sparse tensor
+    indices = torch.arange(num_nodes).unsqueeze(0).repeat(2, 1)
+    values = torch.ones(num_nodes)
+    identity_laplacian = torch.sparse_coo_tensor(
+        indices, values, size=(num_nodes, num_nodes)
+    )
+
+    result = smoothing_with_gcn_laplacian_matrix(x, identity_laplacian)
+
+    assert torch.allclose(result, x, atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_zero_features():
+    """Zero features should remain zero after smoothing."""
+    x = torch.zeros(3, 2)
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=3)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+    print(result)
+
+    assert torch.allclose(result, torch.zeros_like(x), atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_single_node_returns_original_x():
+    """Single node with self-loop should return the original features."""
+    x = torch.tensor([[1.0, 2.0]])
+    edge_index = torch.tensor([[0], [0]])  # Self-loop
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=1)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+    print(laplacian.to_dense(), result)
+
+    # Single node with self-loop has L[0,0] = 1, so result = 1 * x = x
+    # as the laplacian is [[1.0]], so:
+    # result = L @ x = [[1.0]] @ [[1.0, 2.0]] = [[1.0 * 1.0, 1.0 * 2.0]] = [[1.0, 2.0]] = x
+    assert torch.allclose(result, x, atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_preserves_x_device():
+    device = torch.device("cpu")
+
+    x = torch.tensor([[1.0, 0.0], [0.0, 1.0]], device=device)
+    edge_index = torch.tensor([[0, 1], [1, 0]], device=device)
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=2)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    assert result.device == x.device
+
+
+def test_smoothing_with_gcn_laplacian_preserves_x_dtype():
+    x = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
+    edge_index = torch.tensor([[0, 1], [1, 0]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=2)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    assert result.dtype == x.dtype
+
+
+def test_smoothing_with_gcn_laplacian_no_nan_or_inf():
+    x = torch.randn(5, 3)
+    edge_index = torch.tensor([[0, 1, 2, 3], [1, 2, 3, 4]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=5)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    assert not torch.any(torch.isnan(result))
+    assert not torch.any(torch.isinf(result))
+
+
+def test_smoothing_with_gcn_laplacian_returns_expected_x():
+    x = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+    edge_index = torch.tensor([[0, 1], [1, 0]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=2)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    # For 2 nodes with bidirectional edge, GCN adds self-loops, so each node has degree 2.
+    # The GCN Laplacian L = D^-1/2 * A_hat * D^-1/2 = [[0.5, 0.5],
+    #                                                  [0.5, 0.5]]
+    # L @ x = [[0.5*1 + 0.5*3, 0.5*2 + 0.5*4],
+    #          [0.5*1 + 0.5*3, 0.5*2 + 0.5*4]]
+    #       = [[2.0, 3.0],
+    #          [2.0, 3.0]]
+    expected = torch.tensor([[2.0, 3.0], [2.0, 3.0]])
+
+    assert torch.allclose(result, expected, atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_is_equal_for_zero_and_no_drop_rate():
+    """drop_rate=0 should produce the same result as no dropout."""
+    x = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=3)
+
+    result_no_dropout = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+    result_zero_dropout = smoothing_with_gcn_laplacian_matrix(
+        x, laplacian, drop_rate=0.0
+    )
+
+    assert torch.allclose(result_no_dropout, result_zero_dropout, atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_nonzero_drop_rate_changes_output():
+    torch.manual_seed(123)
+    x = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=3)
+
+    result_no_dropout = smoothing_with_gcn_laplacian_matrix(
+        x, laplacian.clone(), drop_rate=0.0
+    )
+    result_with_dropout = smoothing_with_gcn_laplacian_matrix(
+        x, laplacian.clone(), drop_rate=0.7
+    )
+
+    assert not torch.allclose(result_no_dropout, result_with_dropout, atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_drop_rate_stochastic():
+    """Different seeds should produce different outputs with dropout."""
+    x = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+    edge_index = torch.tensor([[0, 1, 2], [1, 2, 0]])
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=3)
+
+    torch.manual_seed(42)
+    result1 = smoothing_with_gcn_laplacian_matrix(x, laplacian.clone(), drop_rate=0.5)
+
+    torch.manual_seed(99)
+    result2 = smoothing_with_gcn_laplacian_matrix(x, laplacian.clone(), drop_rate=0.5)
+
+    # Different random seeds should produce different dropout masks
+    assert not torch.allclose(result1, result2, atol=1e-6)
+
+
+def test_smoothing_with_gcn_laplacian_influences_connected_nodes():
+    """
+    Features of connected nodes should be aggregated.
+    For a connected graph with GCN normalization, smoothing should mix features from neighbors.
+    """
+    # Two connected nodes with distinct features
+    x = torch.tensor([[1.0, 0.0], [0.0, 1.0]])
+    edge_index = torch.tensor([[0, 1], [1, 0]])  # Bidirectional edge
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=2)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    # After smoothing, node 0 should have some of node 1's features and vice versa
+    # Row sum of GCN laplacian is 1 for connected graphs, so features are mixed
+    assert result[0, 1] > 0  # Node 0 now has some of feature dimension 1 from node 1
+    assert result[1, 0] > 0  # Node 1 now has some of feature dimension 0 from node 0
+
+
+def test_smoothing_with_gcn_laplacian_isolated_nodes_have_zero_features():
+    x = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+    edge_index = torch.tensor([[0], [1]])  # Only nodes 0 and 1 connected
+    laplacian = get_sparse_normalized_laplacian(edge_index, num_nodes=3)
+
+    result = smoothing_with_gcn_laplacian_matrix(x, laplacian)
+
+    # Node 2 is isolated, so its output should be zero
+    assert torch.allclose(result[2], torch.zeros(2), atol=1e-6)
