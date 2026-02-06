@@ -6,6 +6,11 @@ from .data_utils import (
     empty_nodefeatures,
     to_non_empty_edgeattr,
 )
+from .graph_utils import (
+    reduce_to_graph_edge_index,
+    smoothing_with_gcn_laplacian_matrix,
+    get_sparse_normalized_laplacian,
+)
 from .hif_utils import validate_hif_json
 from .sparse_utils import sparse_dropout
 
@@ -15,7 +20,10 @@ __all__ = [
     "empty_hdata",
     "empty_hifhypergraph",
     "empty_nodefeatures",
+    "reduce_to_graph_edge_index",
+    "smoothing_with_gcn_laplacian_matrix",
     "sparse_dropout",
+    "get_sparse_normalized_laplacian",
     "to_non_empty_edgeattr",
     "validate_hif_json",
 ]
