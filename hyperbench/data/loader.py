@@ -97,13 +97,13 @@ class DataLoader(TorchDataLoader):
         Returns:
             Tensor: Concatenated node features with shape (total_nodes, num_features).
         """
-        per_sample_node_features = [data.x for data in batch]
+        per_sample_x = [data.x for data in batch]
 
         # Stack all nodes along the node dimension from all samples into a single tensor
-        batched_node_features = torch.cat(per_sample_node_features, dim=0)
-        total_nodes = batched_node_features.size(0)
+        batched_x = torch.cat(per_sample_x, dim=0)
+        total_nodes = batched_x.size(0)
 
-        return batched_node_features, total_nodes
+        return batched_x, total_nodes
 
     def __batch_edges(self, batch: List[HData]) -> Tuple[Tensor, Optional[Tensor], int]:
         """Batches hyperedge indices and attributes, adjusting indices for concatenated nodes.

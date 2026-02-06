@@ -14,7 +14,7 @@ from hyperbench.types import CkptStrategy, ModelConfig, TestResult
 
 
 class MultiModelTrainer:
-    """
+    r"""
     A trainer class to handle training multiple models with individual trainers.
 
     Args:
@@ -83,7 +83,7 @@ class MultiModelTrainer:
 
         enable_checkpointing: If ``True``, enable checkpointing.
             It will configure a default ModelCheckpoint callback if there is no user-defined ModelCheckpoint in
-            :paramref:`~lightning.pytorch.trainer.trainer.Trainer.callbacks`.
+            :paramref:`~hyperbench.train.MultiModelTrainer.callbacks`.
             Default: ``True``.
 
         enable_progress_bar: Whether to enable the progress bar by default.

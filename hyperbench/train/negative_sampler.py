@@ -71,13 +71,14 @@ class RandomNegativeSampler(NegativeSampler):
         sampled_edge_indexes: List[Tensor] = []
         sampled_edge_attrs: List[Tensor] = []
 
+        device = data.x.device
         new_edge_id_offset = data.num_edges
         for new_edge_id in range(self.num_negative_samples):
             # Sample with multinomial without replacement to ensure unique node ids
             # and assign each node id equal probability of being selected by setting all of them to 1
             # Example: num_nodes_per_sample=3, max_node_id=5
             #          -> possible output: [2, 0, 4]
-            equal_probabilities = torch.ones(data.num_nodes)
+            equal_probabilities = torch.ones(data.num_nodes, device=device)
             sampled_node_ids = torch.multinomial(
                 equal_probabilities, self.num_nodes_per_sample, replacement=False
             )
@@ -86,7 +87,9 @@ class RandomNegativeSampler(NegativeSampler):
             #          -> edge_index = [[2, 0, 4],
             #                           [3, 3, 3]]
             sampled_edge_id_tensor = torch.full(
-                (self.num_nodes_per_sample,), new_edge_id + new_edge_id_offset
+                (self.num_nodes_per_sample,),
+                new_edge_id + new_edge_id_offset,
+                device=device,
             )
             sampled_edge_index = torch.stack(
                 [sampled_node_ids, sampled_edge_id_tensor], dim=0
@@ -102,7 +105,7 @@ class RandomNegativeSampler(NegativeSampler):
                 random_edge_attr = torch.randn_like(data.edge_attr[0])
                 sampled_edge_attrs.append(random_edge_attr)
 
-        negative_node_features = data.x[sorted(negative_node_ids)]
+        negative_x = data.x[sorted(negative_node_ids)]
         negative_edge_index = self.__new_negative_edge_index(sampled_edge_indexes)
         negative_edge_attr = (
             torch.stack(sampled_edge_attrs, dim=0)
@@ -111,7 +114,7 @@ class RandomNegativeSampler(NegativeSampler):
         )
 
         return HData(
-            x=negative_node_features,
+            x=negative_x,
             edge_index=negative_edge_index,
             edge_attr=negative_edge_attr,
             num_nodes=len(negative_node_ids),
@@ -137,31 +140,3 @@ class RandomNegativeSampler(NegativeSampler):
         #                                                 [3, 4, 4, 3, 4, 3]]
         negative_edge_index = negative_edge_index[:, node_ids_order]
         return negative_edge_index
-
-
-if __name__ == "__main__":
-    edge_index = torch.tensor([[0, 1, 2], [0, 1, 2]])
-    x = torch.randn(3, 2)
-    edge_attr = torch.randn(3, 3)
-    print(f"Original node features:\n{x}")
-    print(f"Original edge_attr:\n{edge_attr}")
-
-    sampler = RandomNegativeSampler(num_negative_samples=4, num_nodes_per_sample=2)
-    negative_hdata = sampler.sample(
-        HData(x=x, edge_index=edge_index, edge_attr=edge_attr)
-    )
-    print(f"HData: {negative_hdata}")
-
-    try:
-        RandomNegativeSampler(num_negative_samples=-1, num_nodes_per_sample=2)
-    except ValueError as e:
-        print(f"Caught expected exception: {e}")
-    try:
-        RandomNegativeSampler(num_negative_samples=2, num_nodes_per_sample=-1)
-    except ValueError as e:
-        print(f"Caught expected exception: {e}")
-    try:
-        s = RandomNegativeSampler(num_negative_samples=2, num_nodes_per_sample=10)
-        s.sample(HData(x=x, edge_index=edge_index, edge_attr=edge_attr))
-    except ValueError as e:
-        print(f"Caught expected exception: {e}")

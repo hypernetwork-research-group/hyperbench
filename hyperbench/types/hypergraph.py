@@ -1,3 +1,4 @@
+from torch import Tensor
 from typing import Optional, List, Dict, Any, Literal
 
 
@@ -55,3 +56,46 @@ class HIFHypergraph:
     def num_edges(self) -> int:
         """Return the number of edges in the hypergraph."""
         return len(self.edges)
+
+
+class Hypergraph:
+    """
+    A simple hypergraph data structure using edge list representation.
+    """
+
+    def __init__(self, edges: List[List[int]]):
+        self.edges = edges
+
+    @property
+    def num_nodes(self) -> int:
+        """Return the number of nodes in the hypergraph."""
+        nodes = set()
+        for edge in self.edges:
+            nodes.update(edge)
+        return len(nodes)
+
+    @property
+    def num_edges(self) -> int:
+        """Return the number of edges in the hypergraph."""
+        return len(self.edges)
+
+    @classmethod
+    def from_edge_index(cls, edge_index: Tensor) -> "Hypergraph":
+        """
+        Create a Hypergraph from an edge index representation.
+
+        Args:
+            edge_index: Tensor of shape (2, |E|) representing hyperedges, where each column is (node, hyperedge).
+
+        Returns:
+            Hypergraph instance
+        """
+        if edge_index.size(1) < 1:
+            return cls(edges=[])
+
+        max_edge_id = int(edge_index[1].max().item())
+        edges = [
+            edge_index[0, edge_index[1] == edge_id].tolist()
+            for edge_id in range(max_edge_id + 1)
+        ]
+        return cls(edges=edges)

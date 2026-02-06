@@ -1,4 +1,3 @@
-from .hif_utils import validate_hif_json
 from .data_utils import (
     empty_edgeattr,
     empty_edgeindex,
@@ -7,6 +6,15 @@ from .data_utils import (
     empty_nodefeatures,
     to_non_empty_edgeattr,
 )
+from .graph_utils import (
+    reduce_to_graph_edge_index_on_random_direction,
+    smoothing_with_gcn_laplacian_matrix,
+    get_sparse_adjacency_matrix,
+    get_sparse_normalized_degree_matrix,
+    get_sparse_normalized_laplacian,
+)
+from .hif_utils import validate_hif_json
+from .sparse_utils import sparse_dropout
 
 __all__ = [
     "empty_edgeattr",
@@ -14,6 +22,12 @@ __all__ = [
     "empty_hdata",
     "empty_hifhypergraph",
     "empty_nodefeatures",
-    "validate_hif_json",
+    "reduce_to_graph_edge_index_on_random_direction",
+    "smoothing_with_gcn_laplacian_matrix",
+    "sparse_dropout",
+    "get_sparse_adjacency_matrix",
+    "get_sparse_normalized_degree_matrix",
+    "get_sparse_normalized_laplacian",
     "to_non_empty_edgeattr",
+    "validate_hif_json",
 ]
