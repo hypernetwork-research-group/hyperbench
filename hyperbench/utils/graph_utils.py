@@ -49,13 +49,16 @@ def get_sparse_normalized_degree_matrix(edge_index: Tensor, num_nodes: int) -> T
     # Compute degree for each node, initially degree matrix D has all zeros
     degrees: Tensor = torch.zeros(num_nodes, device=device)
 
-    # Example: src = [0, 1, 2, 1], degree_matrix = [0, 0, 0, 0]
-    #          -> degree_matrix[0] += 1 = degree_matrix = [1,0,0,0]
-    #          -> degree_matrix[1] += 1 = degree_matrix = [1,1,0,0]
-    #          -> degree_matrix[2] += 1 = degree_matrix = [1,1,1,0]
-    #          -> degree_matrix[1] += 1 = degree_matrix = [1,2,1,0]
-    #          -> final degree_matrix = [1,2,1,0]
-    degrees.scatter_add_(dim=0, index=src, src=torch.ones(src.size(0), device=device))
+    # Example: src = [0, 1, 2, 1], degrees = [0, 0, 0, 0]
+    #          -> degrees[0] += 1 = degrees = [1,0,0,0]
+    #          -> degrees[1] += 1 = degrees = [1,1,0,0]
+    #          -> degrees[2] += 1 = degrees = [1,1,1,0]
+    #          -> degrees[1] += 1 = degrees = [1,2,1,0]
+    #          -> final degrees = [1,2,1,0]
+    degree_initial_values = torch.ones(
+        src.size(0), device=device
+    )  # Each edge contributes 1 to the degree of the source node
+    degrees.scatter_add_(dim=0, index=src, src=degree_initial_values)
 
     # Compute D^-1/2 == D^-0.5
     degree_inv_sqrt: Tensor = degrees.pow(-0.5)

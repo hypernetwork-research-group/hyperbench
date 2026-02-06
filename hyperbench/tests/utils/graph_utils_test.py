@@ -1,8 +1,11 @@
 import pytest
 import torch
 
-from hyperbench.utils import reduce_to_graph_edge_index
-from hyperbench.utils.graph_utils import get_sparse_adjacency_matrix
+from hyperbench.utils import (
+    get_sparse_adjacency_matrix,
+    get_sparse_normalized_degree_matrix,
+    reduce_to_graph_edge_index,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -125,6 +128,109 @@ def test_get_sparse_adjacency_matrix_isolated_nodes(
     for node in isolated_nodes:
         assert torch.all(dense[node, :] == 0)
         assert torch.all(dense[:, node] == 0)
+
+
+def test_get_sparse_normalized_degree_matrix_returns_sparse_tensor():
+    edge_index = torch.tensor([[0, 1], [1, 0]])
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=2)
+
+    assert result.is_sparse
+
+
+@pytest.mark.parametrize(
+    "edge_index, num_nodes",
+    [
+        pytest.param(torch.tensor([[0, 1], [1, 0]]), 2, id="2_nodes"),
+        pytest.param(torch.tensor([[0, 1, 2], [1, 2, 0]]), 4, id="4_nodes_3_edges"),
+        pytest.param(
+            torch.tensor([[], []], dtype=torch.long), 5, id="5_nodes_no_edges"
+        ),
+    ],
+)
+def test_get_sparse_normalized_degree_matrix_shape(edge_index, num_nodes):
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=num_nodes)
+
+    assert result.shape == (num_nodes, num_nodes)
+
+
+def test_get_sparse_normalized_degree_matrix_is_diagonal():
+    """All non-zero entries are on the diagonal."""
+    edge_index = torch.tensor([[0, 1, 1, 2], [1, 0, 2, 1]])
+
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=3)
+    dense = result.to_dense()
+
+    # Off-diagonal entries should be zero
+    for i in range(3):
+        for j in range(3):
+            if i != j:
+                assert dense[i, j] == 0
+
+
+@pytest.mark.parametrize(
+    "edge_index, num_nodes, expected_diagonal",
+    [
+        pytest.param(
+            torch.tensor([[0, 1], [1, 0]]),
+            2,
+            [1.0, 1.0],  # degree 1 -> 1^-0.5 = 1
+            id="degree_1_each",
+        ),
+        pytest.param(
+            torch.tensor([[0, 0, 1], [1, 2, 0]]),
+            3,
+            # degrees [2, 1, 0] -> [2**-0.5 == 1 / 2**0.5, 1.0, 0] -> [0.707, 1, 0]
+            [1 / (2**0.5), 1.0, 0.0],
+            id="mixed_degrees",
+        ),
+        pytest.param(
+            torch.tensor([[0, 0, 0, 0], [1, 2, 3, 4]]),
+            5,
+            [0.5, 0.0, 0.0, 0.0, 0.0],  # degree 4 -> 4^-0.5 = 0.5, others are isolated
+            id="single_hub_node",
+        ),
+    ],
+)
+def test_get_sparse_normalized_degree_matrix_diagonal_values(
+    edge_index, num_nodes, expected_diagonal
+):
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=num_nodes)
+    dense = result.to_dense()
+
+    for i, expected_val in enumerate(expected_diagonal):
+        assert torch.isclose(dense[i, i], torch.tensor(expected_val), atol=1e-6)
+
+
+def test_get_sparse_normalized_degree_matrix_isolated_nodes_are_zero():
+    """Isolated nodes (degree 0) have 0 on diagonal, not inf."""
+    edge_index = torch.tensor([[0], [1]])
+
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=4)
+    dense = result.to_dense()
+
+    # Nodes 2 and 3 are isolated
+    assert dense[2, 2] == 0
+    assert dense[3, 3] == 0
+    # No inf values
+    assert not torch.any(torch.isinf(dense))
+
+
+def test_get_sparse_normalized_degree_matrix_empty_edge_index():
+    """Empty edge_index produces all-zero matrix (all nodes isolated)."""
+    edge_index = torch.tensor([[], []], dtype=torch.long)
+
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=3)
+    dense = result.to_dense()
+
+    assert torch.all(dense == 0)
+
+
+def test_get_sparse_normalized_degree_matrix_preserves_device():
+    edge_index = torch.tensor([[0], [1]], device="cpu")
+
+    result = get_sparse_normalized_degree_matrix(edge_index, num_nodes=2)
+
+    assert result.device == edge_index.device
 
 
 @pytest.mark.parametrize(
