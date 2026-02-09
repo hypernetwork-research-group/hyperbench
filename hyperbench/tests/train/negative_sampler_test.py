@@ -34,14 +34,10 @@ def test_negative_sampler_is_abstract(mock_hdata_no_attr):
 
 
 def test_random_negative_sampler_invalid_args():
-    with pytest.raises(
-        ValueError, match="num_negative_samples must be positive, got 0"
-    ):
+    with pytest.raises(ValueError, match="num_negative_samples must be positive, got 0"):
         RandomNegativeSampler(num_negative_samples=0, num_nodes_per_sample=2)
 
-    with pytest.raises(
-        ValueError, match="num_nodes_per_sample must be positive, got 0"
-    ):
+    with pytest.raises(ValueError, match="num_nodes_per_sample must be positive, got 0"):
         RandomNegativeSampler(num_negative_samples=2, num_nodes_per_sample=0)
 
 
@@ -61,9 +57,7 @@ def test_random_negative_sampler_with_edge_attr(mock_hdata_with_attr):
     assert result.num_edges == 2
     assert result.x.shape[0] <= mock_hdata_with_attr.x.shape[0]
     assert result.edge_index.shape[0] == 2
-    assert (
-        result.edge_index.shape[1] == 4
-    )  # 2 negative hyperedges * 2 nodes per negative hyperedge
+    assert result.edge_index.shape[1] == 4  # 2 negative hyperedges * 2 nodes per negative hyperedge
     assert result.edge_attr is not None
     assert result.edge_attr.shape[0] == 2
 
@@ -75,9 +69,7 @@ def test_random_negative_sampler_sample_no_edge_attr(mock_hdata_no_attr):
     assert result.num_edges == 1
     assert result.x.shape[0] <= mock_hdata_no_attr.x.shape[0]
     assert result.edge_index.shape[0] == 2
-    assert (
-        result.edge_index.shape[1] == 2
-    )  # 1 negative hyperedge * 2 nodes per negative hyperedge
+    assert result.edge_index.shape[1] == 2  # 1 negative hyperedge * 2 nodes per negative hyperedge
     assert result.edge_attr is None
 
 

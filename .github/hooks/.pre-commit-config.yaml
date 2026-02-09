@@ -23,6 +23,7 @@ repos:
     hooks:
       - id: uvx-ruff-format
         name: uvx ruff format
+        args: [--config=pyproject.toml]
         entry: bash -c 'uvx ruff format'
         language: system
         types_or: [python, pyi]

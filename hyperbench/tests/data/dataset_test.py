@@ -406,20 +406,14 @@ def test_dataset_process_with_edge_attributes():
     assert dataset.hdata.edge_attr.shape == (2, 2)
     # Attributes maintain dictionary insertion order (no sorting)
 
-    assert torch.allclose(
-        dataset.hdata.edge_attr[0], torch.tensor([1.0, 2.0])
-    )  # weight, type
-    assert torch.allclose(
-        dataset.hdata.edge_attr[1], torch.tensor([3.0, 0.1])
-    )  # weight, type
+    assert torch.allclose(dataset.hdata.edge_attr[0], torch.tensor([1.0, 2.0]))  # weight, type
+    assert torch.allclose(dataset.hdata.edge_attr[1], torch.tensor([3.0, 0.1]))  # weight, type
 
 
 def test_dataset_process_without_edge_attributes(mock_no_edge_attr_hypergraph):
     """Test that process handles edges without attributes."""
 
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_no_edge_attr_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_no_edge_attr_hypergraph):
         dataset = AlgebraDataset()
 
     assert dataset.hdata is not None
@@ -431,9 +425,7 @@ def test_dataset_process_without_edge_attributes(mock_no_edge_attr_hypergraph):
 def test_dataset_process_edge_index_format(mock_four_node_hypergraph):
     """Test that hyperedge_index has correct format [node_ids, edge_ids]."""
 
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph):
         dataset = AlgebraDataset()
 
     assert dataset.hdata.edge_index.shape == (2, 4)
@@ -469,9 +461,7 @@ def test_dataset_process_random_ids():
 
 def test_getitem_index_list_empty(mock_simple_hypergraph):
     """Test __getitem__ with empty index list raises ValueError."""
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_simple_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_simple_hypergraph):
         dataset = AlgebraDataset()
 
     with pytest.raises(ValueError, match="Index list cannot be empty."):
@@ -480,9 +470,7 @@ def test_getitem_index_list_empty(mock_simple_hypergraph):
 
 def test_getitem_index_list_too_large(mock_five_node_hypergraph):
     """Test __getitem__ with index list larger than number of nodes raises ValueError."""
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_five_node_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_five_node_hypergraph):
         dataset = AlgebraDataset()
 
     with pytest.raises(
@@ -494,9 +482,7 @@ def test_getitem_index_list_too_large(mock_five_node_hypergraph):
 
 def test_getitem_index_out_of_bounds(mock_four_node_hypergraph):
     """Test __getitem__ with out-of-bounds index raises IndexError."""
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph):
         dataset = AlgebraDataset()
 
     with pytest.raises(IndexError, match="Node ID 4 is out of bounds."):
@@ -506,9 +492,7 @@ def test_getitem_index_out_of_bounds(mock_four_node_hypergraph):
 def test_getitem_single_index(mock_sample_hypergraph):
     """Test __getitem__ with a single index."""
 
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_sample_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_sample_hypergraph):
         dataset = AlgebraDataset()
 
     node_data = dataset[1]
@@ -519,9 +503,7 @@ def test_getitem_single_index(mock_sample_hypergraph):
 def test_getitem_list_index(mock_four_node_hypergraph):
     """Test __getitem__ with a list of indices."""
 
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph):
         dataset = AlgebraDataset()
 
     node_data_list = dataset[[0, 2, 3]]
@@ -548,9 +530,7 @@ def test_getitem_with_edge_attr(mock_three_node_weighted_hypergraph):
 def test_getitem_without_edge_attr(mock_no_edge_attr_hypergraph):
     """Test __getitem__ returns None for edge_attr when not present."""
 
-    with patch.object(
-        HIFConverter, "load_from_hif", return_value=mock_no_edge_attr_hypergraph
-    ):
+    with patch.object(HIFConverter, "load_from_hif", return_value=mock_no_edge_attr_hypergraph):
         dataset = AlgebraDataset()
 
     node_data = dataset[0]
@@ -696,15 +676,9 @@ def test_process_with_inconsistent_node_attributes():
             3,
             2,
         )  # 3 nodes, 2 features each (weight, score in insertion order)
-        assert torch.allclose(
-            dataset.hdata.x[0], torch.tensor([1.0, 0.0])
-        )  # weight=1.0, score=0.0
-        assert torch.allclose(
-            dataset.hdata.x[1], torch.tensor([2.0, 0.8])
-        )  # weight=2.0, score=0.8
-        assert torch.allclose(
-            dataset.hdata.x[2], torch.tensor([0.0, 0.5])
-        )  # weight=0.0, score=0.5
+        assert torch.allclose(dataset.hdata.x[0], torch.tensor([1.0, 0.0]))  # weight=1.0, score=0.0
+        assert torch.allclose(dataset.hdata.x[1], torch.tensor([2.0, 0.8]))  # weight=2.0, score=0.8
+        assert torch.allclose(dataset.hdata.x[2], torch.tensor([0.0, 0.5]))  # weight=0.0, score=0.5
 
 
 def test_process_with_no_node_attributes_fallback():
@@ -832,9 +806,7 @@ def test_transform_attrs_with_attr_keys_padding():
         # Test without attr_keys - maintains insertion order
         attrs = {"weight": 1.5, "score": 0.8}
         result = dataset.transform_attrs(attrs)
-        assert torch.allclose(
-            result, torch.tensor([1.5, 0.8])
-        )  # weight, score (insertion order)
+        assert torch.allclose(result, torch.tensor([1.5, 0.8]))  # weight, score (insertion order)
 
 
 def test_load_from_hif_file_exists():

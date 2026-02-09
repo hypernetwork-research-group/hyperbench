@@ -150,9 +150,7 @@ class EdgeIndex:
         # even if we did, torch.sparse_coo_tensor would sum them up automatically
         adj_values = torch.ones(src.size(0), device=self.edge_index.device)
         adj_indices = torch.stack([src, dest], dim=0)
-        adj_matrix = torch.sparse_coo_tensor(
-            adj_indices, adj_values, (num_nodes, num_nodes)
-        )
+        adj_matrix = torch.sparse_coo_tensor(adj_indices, adj_values, size=(num_nodes, num_nodes))
         return adj_matrix
 
     def get_sparse_normalized_degree_matrix(
@@ -203,9 +201,7 @@ class EdgeIndex:
         #                  [0, 0.707, 0, 0], 1
         #                  [0, 0,     1, 0], 2
         #                  [0, 0,     0, 0]] 3
-        diagonal_indices = (
-            torch.arange(num_nodes, device=device).unsqueeze(0).repeat(2, 1)
-        )
+        diagonal_indices = torch.arange(num_nodes, device=device).unsqueeze(0).repeat(2, 1)
         degree_matrix = torch.sparse_coo_tensor(
             indices=diagonal_indices,
             values=degree_inv_sqrt,
@@ -295,9 +291,7 @@ class EdgeIndex:
             ValueError: If the input edge index has no edges (i.e., shape (2, 0)).
         """
         if self.edge_index.size(1) < 1:
-            raise ValueError(
-                "Edge index must have at least one edge to add self-loops."
-            )
+            raise ValueError("Edge index must have at least one edge to add self-loops.")
 
         device = self.edge_index.device
         src, dest = self.edge_index[0], self.edge_index[1]

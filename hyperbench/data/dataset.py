@@ -49,13 +49,9 @@ class HIFConverter:
     """
 
     @staticmethod
-    def load_from_hif(
-        dataset_name: Optional[str], save_on_disk: bool = False
-    ) -> HIFHypergraph:
+    def load_from_hif(dataset_name: Optional[str], save_on_disk: bool = False) -> HIFHypergraph:
         if dataset_name is None:
-            raise ValueError(
-                f"Dataset name (provided: {dataset_name}) must be provided."
-            )
+            raise ValueError(f"Dataset name (provided: {dataset_name}) must be provided.")
         if dataset_name not in DatasetNames.__members__:
             raise ValueError(f"Dataset '{dataset_name}' not found.")
 
@@ -88,9 +84,7 @@ class HIFConverter:
         dctx = zstd.ZstdDecompressor()
         with (
             open(zst_filename, "rb") as input_f,
-            tempfile.NamedTemporaryFile(
-                mode="wb", suffix=".json", delete=False
-            ) as tmp_file,
+            tempfile.NamedTemporaryFile(mode="wb", suffix=".json", delete=False) as tmp_file,
         ):
             dctx.copy_stream(input_f, tmp_file)
             output = tmp_file.name
@@ -168,9 +162,7 @@ class Dataset(TorchDataset):
         if node_attr_keys:
             x = torch.stack(
                 [
-                    self.transform_node_attrs(
-                        node.get("attrs", {}), attr_keys=node_attr_keys
-                    )
+                    self.transform_node_attrs(node.get("attrs", {}), attr_keys=node_attr_keys)
                     for node in self.hypergraph.nodes
                 ]
             )
@@ -206,9 +198,7 @@ class Dataset(TorchDataset):
 
         # hyperedge-attr: shape [num_hyperedges, num_hyperedge_attributes]
         hyperedge_attr = None
-        if self.hypergraph.edges and any(
-            "attrs" in edge for edge in self.hypergraph.edges
-        ):
+        if self.hypergraph.edges and any("attrs" in edge for edge in self.hypergraph.edges):
             # collect all attribute keys to have tensors of same size
             hyperedge_attr_keys = self.__collect_attr_keys(
                 [edge.get("attrs", {}) for edge in self.hypergraph.edges]
@@ -329,9 +319,7 @@ class Dataset(TorchDataset):
         """
         for id in node_ids:
             if id < 0 or id >= self.__len__():
-                raise IndexError(
-                    f"Node ID {id} is out of bounds (0, {self.__len__() - 1})."
-                )
+                raise IndexError(f"Node ID {id} is out of bounds (0, {self.__len__() - 1}).")
 
     def __sample_hyperedge_index(
         self,

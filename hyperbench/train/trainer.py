@@ -175,9 +175,7 @@ class MultiModelTrainer:
 
         for i, config in enumerate(self.model_configs):
             if config.trainer is None:
-                raise ValueError(
-                    f"Trainer not defined for model {config.full_model_name()}."
-                )
+                raise ValueError(f"Trainer not defined for model {config.full_model_name()}.")
 
             if verbose:
                 log.info(
@@ -207,9 +205,7 @@ class MultiModelTrainer:
 
         for i, config in enumerate(self.model_configs):
             if config.trainer is None:
-                raise ValueError(
-                    f"Trainer not defined for model {config.full_model_name()}."
-                )
+                raise ValueError(f"Trainer not defined for model {config.full_model_name()}.")
 
             if verbose:
                 log.info(

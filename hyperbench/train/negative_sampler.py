@@ -37,13 +37,9 @@ class RandomNegativeSampler(NegativeSampler):
 
     def __init__(self, num_negative_samples: int, num_nodes_per_sample: int):
         if num_negative_samples <= 0:
-            raise ValueError(
-                f"num_negative_samples must be positive, got {num_negative_samples}."
-            )
+            raise ValueError(f"num_negative_samples must be positive, got {num_negative_samples}.")
         if num_nodes_per_sample <= 0:
-            raise ValueError(
-                f"num_nodes_per_sample must be positive, got {num_nodes_per_sample}."
-            )
+            raise ValueError(f"num_nodes_per_sample must be positive, got {num_nodes_per_sample}.")
 
         super().__init__()
         self.num_negative_samples = num_negative_samples
@@ -106,13 +102,9 @@ class RandomNegativeSampler(NegativeSampler):
                 sampled_hyperedge_attrs.append(random_edge_attr)
 
         negative_x = data.x[sorted(negative_node_ids)]
-        negative_hyperedge_index = self.__new_negative_hyperedge_index(
-            sampled_hyperedge_indexes
-        )
+        negative_hyperedge_index = self.__new_negative_hyperedge_index(sampled_hyperedge_indexes)
         negative_hyperedge_attr = (
-            torch.stack(sampled_hyperedge_attrs, dim=0)
-            if data.edge_attr is not None
-            else None
+            torch.stack(sampled_hyperedge_attrs, dim=0) if data.edge_attr is not None else None
         )
 
         return HData(
@@ -123,9 +115,7 @@ class RandomNegativeSampler(NegativeSampler):
             num_edges=self.num_negative_samples,
         )
 
-    def __new_negative_hyperedge_index(
-        self, sampled_hyperedge_indexes: List[Tensor]
-    ) -> Tensor:
+    def __new_negative_hyperedge_index(self, sampled_hyperedge_indexes: List[Tensor]) -> Tensor:
         """
         Concatenate and sort the sampled hyperedge indexes for negative samples.
 

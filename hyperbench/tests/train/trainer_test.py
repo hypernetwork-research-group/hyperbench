@@ -20,9 +20,7 @@ def mock_model_configs():
         model_config.version = f"{i}"
         model_config.model = model
         model_config.trainer = None
-        model_config.full_model_name = lambda self=model_config: (
-            f"{self.name}:{self.version}"
-        )
+        model_config.full_model_name = lambda self=model_config: f"{self.name}:{self.version}"
 
         model_configs.append(model_config)
 
@@ -39,9 +37,7 @@ def test_trainer_initialization(_, mock_model_configs):
 
 
 @patch("hyperbench.train.trainer.L.Trainer")
-def test_trainer_initialization_with_initialized_trainer(
-    mock_trainer, mock_model_configs
-):
+def test_trainer_initialization_with_initialized_trainer(mock_trainer, mock_model_configs):
     mock_model_configs[0].trainer = mock_trainer
 
     multi_model_trainer = MultiModelTrainer(mock_model_configs)
@@ -107,9 +103,7 @@ def test_model_returns_None_when_incorrect_name_and_version(_, mock_model_config
 
 
 @patch("hyperbench.train.trainer.L.Trainer")
-def test_model_returns_None_when_incorrect_name_and_correct_version(
-    _, mock_model_configs
-):
+def test_model_returns_None_when_incorrect_name_and_correct_version(_, mock_model_configs):
     multi_model_trainer = MultiModelTrainer(mock_model_configs)
     not_found = multi_model_trainer.model(name="nonexistent", version="0")
 
@@ -160,9 +154,7 @@ def test_fit_all_with_verbose_true_prints(_, mock_model_configs, caplog):
     for config in mock_model_configs:
         config.trainer.fit.assert_called_once()
 
-    logs = [
-        record.message for record in caplog.records if "Fit model" in record.message
-    ]
+    logs = [record.message for record in caplog.records if "Fit model" in record.message]
     assert len(logs) == len(mock_model_configs)
 
 
@@ -213,7 +205,5 @@ def test_test_all_with_verbose_true_prints(_, mock_model_configs, caplog):
     for config in mock_model_configs:
         config.trainer.test.assert_called_once()
 
-    logs = [
-        record.message for record in caplog.records if "Test model" in record.message
-    ]
+    logs = [record.message for record in caplog.records if "Test model" in record.message]
     assert len(logs) == len(mock_model_configs)

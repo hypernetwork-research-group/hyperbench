@@ -36,9 +36,7 @@ def test_dropout_full_probability(mock_indices, mock_values):
 
 
 @pytest.mark.parametrize("invalid_prob", [-0.5, 1.5])
-def test_dropout_invalid_probability_out_of_range(
-    mock_indices, mock_values, invalid_prob
-):
+def test_dropout_invalid_probability_out_of_range(mock_indices, mock_values, invalid_prob):
     """Test that dropout probability below 0 raises ValueError."""
     sparse_tensor = torch.sparse_coo_tensor(mock_indices, mock_values, (2, 2))
 
@@ -77,9 +75,7 @@ def test_dropout_preserves_dtype():
     """Test that dropout preserves the tensor dtype."""
     indices = torch.tensor([[0, 1], [0, 1]])
     values = torch.tensor([1.0, 2.0], dtype=torch.float32)
-    sparse_tensor = torch.sparse_coo_tensor(
-        indices, values, (2, 2), dtype=torch.float32
-    )
+    sparse_tensor = torch.sparse_coo_tensor(indices, values, (2, 2), dtype=torch.float32)
 
     result = sparse_dropout(sparse_tensor, dropout_prob=0.5)
 
@@ -179,9 +175,7 @@ def test_dropout_fill_value_with_full_dropout():
     result = sparse_dropout(sparse_tensor, dropout_prob=1.0, fill_value=fill_value)
 
     # All values should be the fill_value
-    assert torch.allclose(
-        result.coalesce().values(), torch.full_like(values, fill_value)
-    )
+    assert torch.allclose(result.coalesce().values(), torch.full_like(values, fill_value))
 
 
 def test_dropout_with_unsorted_indices():
@@ -251,9 +245,7 @@ def test_dropout_statistical_property_moderate_rate():
 
     indices = torch.tensor([list(range(num_elements)), list(range(num_elements))])
     values = torch.ones(num_elements)
-    sparse_tensor = torch.sparse_coo_tensor(
-        indices, values, (num_elements, num_elements)
-    )
+    sparse_tensor = torch.sparse_coo_tensor(indices, values, (num_elements, num_elements))
 
     dropout_prob = 0.3
     keep_prob = 1 - dropout_prob  # Keep ~70% of elements

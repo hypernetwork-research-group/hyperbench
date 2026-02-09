@@ -219,9 +219,7 @@ def test_from_edge_index_parametrized(edge_index_data, expected_edges):
         ),
     ],
 )
-def test_reduce_to_graph_edge_count(
-    x, hyperedge_index, with_mediators, expected_num_edges
-):
+def test_reduce_to_graph_edge_count(x, hyperedge_index, with_mediators, expected_num_edges):
     result = HyperedgeIndex(hyperedge_index).reduce_to_edge_index_on_random_direction(
         x, with_mediators=with_mediators, remove_selfloops=False
     )
@@ -266,9 +264,7 @@ def test_reduce_to_graph_output_dtype_is_long():
 
 def test_reduce_to_graph_output_nodes_are_within_bounds():
     """All node indices in the output are valid indices from the input node set."""
-    x = torch.tensor(
-        [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.5, 0.5, 0.0]]
-    )
+    x = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.5, 0.5, 0.0]])
     hyperedge_index = torch.tensor([[0, 1, 2, 1, 2, 3], [0, 0, 0, 1, 1, 1]])
 
     result = HyperedgeIndex(hyperedge_index).reduce_to_edge_index_on_random_direction(x)
@@ -315,7 +311,5 @@ def test_reduce_to_graph_raises_on_single_node_hyperedge():
     x = torch.tensor([[1.0, 0.0], [0.0, 1.0]])
     hyperedge_index = torch.tensor([[0], [0]])
 
-    with pytest.raises(
-        ValueError, match="The number of vertices in an hyperedge must be >= 2."
-    ):
+    with pytest.raises(ValueError, match="The number of vertices in an hyperedge must be >= 2."):
         HyperedgeIndex(hyperedge_index).reduce_to_edge_index_on_random_direction(x)

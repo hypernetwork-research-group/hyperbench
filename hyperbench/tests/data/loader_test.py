@@ -50,9 +50,7 @@ def test_initialization_with_default_params(mock_dataset_single_sample):
 
 
 def test_initialization_with_custom_params(mock_dataset_single_sample):
-    loader = DataLoader(
-        mock_dataset_single_sample, batch_size=4, shuffle=True, num_workers=0
-    )
+    loader = DataLoader(mock_dataset_single_sample, batch_size=4, shuffle=True, num_workers=0)
 
     assert loader.batch_size == 4
     assert loader.dataset == mock_dataset_single_sample
@@ -123,9 +121,7 @@ def test_collate_two_samples_with_edge_attr(mock_dataset_multiple_samples):
     batched = loader.collate([sample0, sample1])
 
     expected_hyperedge_attr = torch.tensor([[0.5], [0.7], [0.9]])
-    assert torch.equal(
-        utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr
-    )
+    assert torch.equal(utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr)
 
 
 def test_collate_three_samples():
@@ -202,9 +198,7 @@ def test_collate_multi_dimensional_edge_attributes(mock_dataset_multiple_samples
     batched = loader.collate([sample0, sample1])
 
     expected_hyperedge_attr = torch.tensor([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
-    assert torch.equal(
-        utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr
-    )
+    assert torch.equal(utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr)
 
 
 def test_collate_mixed_edge_attr_presence(mock_dataset_multiple_samples):
@@ -224,9 +218,7 @@ def test_collate_mixed_edge_attr_presence(mock_dataset_multiple_samples):
 
     # Only sample0 has hyperedge_attr, so only that should be in the batch
     expected_hyperedge_attr = torch.tensor([[0.1, 0.2, 0.3]])
-    assert torch.equal(
-        utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr
-    )
+    assert torch.equal(utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr)
 
 
 def test_collate_with_explicit_num_nodes_and_edges():
@@ -252,9 +244,7 @@ def test_collate_with_explicit_num_nodes_and_edges():
     batched = loader.collate([sample0, sample1])
 
     assert batched.num_nodes == 2 + 1  # 3 nodes total, 2 from data0 and 1 from data1
-    assert (
-        batched.num_edges == 1 + 1
-    )  # 2 hyperedges total, 1 from data0 and 1 from data1
+    assert batched.num_edges == 1 + 1  # 2 hyperedges total, 1 from data0 and 1 from data1
 
 
 def test_iteration_over_dataloader():
@@ -279,10 +269,6 @@ def test_iteration_over_dataloader():
         assert batch.x.size(1) == 3  # 3 features per node
         dataset.__getitem__.assert_called()
 
-    assert (
-        batch_count == 3
-    )  # 5 samples with batch_size=2 should give us 3 batches (2 + 2 + 1)
+    assert batch_count == 3  # 5 samples with batch_size=2 should give us 3 batches (2 + 2 + 1)
 
-    assert (
-        dataset.__getitem__.call_count == n_samples
-    )  # Ensure all samples were accessed
+    assert dataset.__getitem__.call_count == n_samples  # Ensure all samples were accessed

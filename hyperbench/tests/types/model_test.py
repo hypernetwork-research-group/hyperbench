@@ -16,9 +16,7 @@ def mock_trainer():
 
 
 def test_model_config_initialization_with_trainer(mock_model, mock_trainer):
-    model_config = ModelConfig(
-        name="model", model=mock_model, version="0", trainer=mock_trainer
-    )
+    model_config = ModelConfig(name="model", model=mock_model, version="0", trainer=mock_trainer)
 
     assert model_config.name == "model"
     assert model_config.version == "0"
