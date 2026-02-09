@@ -125,7 +125,7 @@ def test_num_edges(edges, expected_num_edges):
 )
 def test_from_edge_index_parametrized(edge_index_data, expected_edges):
     nodes, edges = edge_index_data[0]
-    edge_index = torch.tensor([nodes, edges], dtype=torch.long)
-    hypergraph = Hypergraph.from_edge_index(edge_index)
+    hyperedge_index = torch.tensor([nodes, edges], dtype=torch.long)
+    hypergraph = Hypergraph.from_hyperedge_index(hyperedge_index)
 
     assert hypergraph.edges == expected_edges

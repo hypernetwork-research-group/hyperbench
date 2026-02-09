@@ -155,7 +155,7 @@ def reduce_to_graph_edge_index_on_random_direction(
     """
     device = x.device
 
-    hypergraph = Hypergraph.from_edge_index(edge_index)
+    hypergraph = Hypergraph.from_hyperedge_index(edge_index)
     hypergraph_edges: List[List[int]] = hypergraph.edges
     graph_edges: List[List[int]] = []
 

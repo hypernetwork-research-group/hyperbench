@@ -80,22 +80,22 @@ class Hypergraph:
         return len(self.edges)
 
     @classmethod
-    def from_edge_index(cls, edge_index: Tensor) -> "Hypergraph":
+    def from_hyperedge_index(cls, hyperedge_index: Tensor) -> "Hypergraph":
         """
-        Create a Hypergraph from an edge index representation.
+        Create a Hypergraph from a hyperedge index representation.
 
         Args:
-            edge_index: Tensor of shape (2, |E|) representing hyperedges, where each column is (node, hyperedge).
+            hyperedge_index: Tensor of shape (2, |E|) representing hyperedges, where each column is (node, hyperedge).
 
         Returns:
             Hypergraph instance
         """
-        if edge_index.size(1) < 1:
+        if hyperedge_index.size(1) < 1:
             return cls(edges=[])
 
-        max_edge_id = int(edge_index[1].max().item())
+        max_edge_id = int(hyperedge_index[1].max().item())
         edges = [
-            edge_index[0, edge_index[1] == edge_id].tolist()
+            hyperedge_index[0, hyperedge_index[1] == edge_id].tolist()
             for edge_id in range(max_edge_id + 1)
         ]
         return cls(edges=edges)

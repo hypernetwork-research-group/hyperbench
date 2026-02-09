@@ -1,17 +1,14 @@
-import zstandard as zstd
-import json
 import requests
 import torch
 import pytest
 from unittest.mock import patch, mock_open
 from hyperbench.data import Dataset, HIFConverter
-from hyperbench.types import HIFHypergraph, HData
+from hyperbench.types import HIFHypergraph
 
 from hyperbench.data.dataset import AlgebraDataset
 from hyperbench.tests.mock import *
 
 
-# Reusable fixture for hypergraph instances used in multiple tests
 @pytest.fixture
 def mock_sample_hypergraph():
     return HIFHypergraph(
@@ -24,7 +21,6 @@ def mock_sample_hypergraph():
 
 @pytest.fixture
 def mock_simple_hypergraph():
-    """Simple hypergraph with 2 nodes for basic tests."""
     return HIFHypergraph(
         network_type="undirected",
         nodes=[{"node": "0", "attrs": {}}, {"node": "1", "attrs": {}}],
@@ -56,7 +52,6 @@ def mock_three_node_weighted_hypergraph():
 
 @pytest.fixture
 def mock_four_node_hypergraph():
-    """Hypergraph with 4 nodes and 2 edges for sampling tests."""
     return HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -77,7 +72,6 @@ def mock_four_node_hypergraph():
 
 @pytest.fixture
 def mock_five_node_hypergraph():
-    """Hypergraph with 5 nodes for duplicate testing."""
     return HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -130,13 +124,6 @@ def mock_multiple_edges_attr_hypergraph():
             {"node": "3", "edge": "2"},
         ],
     )
-
-
-def test_fixture(mock_sample_hypergraph):
-    assert mock_sample_hypergraph.network_type == "undirected"
-    assert len(mock_sample_hypergraph.nodes) == 2
-    assert len(mock_sample_hypergraph.edges) == 1
-    assert len(mock_sample_hypergraph.incidences) == 1
 
 
 def test_HIFConverter():
@@ -357,16 +344,14 @@ def test_double_download():
         HIFConverter,
         "load_from_hif",
         wraps=HIFConverter.load_from_hif,
-    ) as mock_load:
+    ) as _:
         hg1 = dataset.download()
         hg2 = dataset.download()
 
         assert hg1 is hg2
 
 
-def test_dataset_name_none():
-    """Test that ValueError is raised if DATASET_NAME is None."""
-
+def test_throw_when_dataset_name_is_none():
     class FakeMockDataset(Dataset):
         DATASET_NAME = None
 
@@ -378,8 +363,6 @@ def test_dataset_name_none():
 
 
 def test_dataset_process_no_incidences():
-    """Test that process handles empty incidences list."""
-
     mock_hypergraph = HIFHypergraph(
         network_type="undirected",
         nodes=[{"node": "0", "attrs": {}}, {"node": "1", "attrs": {}}],
@@ -393,8 +376,6 @@ def test_dataset_process_no_incidences():
 
 
 def test_dataset_process_with_edge_attributes():
-    """Test that process correctly handles edges with attributes."""
-
     mock_hypergraph = HIFHypergraph(
         network_type="undirected",
         nodes=[
@@ -448,7 +429,7 @@ def test_dataset_process_without_edge_attributes(mock_no_edge_attr_hypergraph):
 
 
 def test_dataset_process_edge_index_format(mock_four_node_hypergraph):
-    """Test that edge_index has correct format [node_ids, edge_ids]."""
+    """Test that hyperedge_index has correct format [node_ids, edge_ids]."""
 
     with patch.object(
         HIFConverter, "load_from_hif", return_value=mock_four_node_hypergraph

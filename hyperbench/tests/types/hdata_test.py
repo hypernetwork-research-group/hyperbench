@@ -7,15 +7,15 @@ from hyperbench.types import HData
 @pytest.fixture
 def mock_hdata():
     x = torch.randn(5, 4)  # 5 nodes with 4 features each
-    edge_index = torch.tensor(
+    hyperedge_index = torch.tensor(
         [
             [0, 1, 2, 3, 4, 0],  # node IDs
             [0, 0, 1, 1, 2, 2],
         ]
     )  # hyperedge IDs
-    edge_attr = torch.randn(3, 2)  # 3 hyperedges with 2 features each
+    hyperedge_attr = torch.randn(3, 2)  # 3 hyperedges with 2 features each
 
-    return HData(x=x, edge_index=edge_index, edge_attr=edge_attr)
+    return HData(x=x, edge_index=hyperedge_index, edge_attr=hyperedge_attr)
 
 
 def test_hdata_to_cpu(mock_hdata):
