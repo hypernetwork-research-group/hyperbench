@@ -1,11 +1,14 @@
-from .hypergraph import HIFHypergraph
+from .graph import Graph
+from .hypergraph import HIFHypergraph, Hypergraph
 from .hdata import HData
 from .model import CkptStrategy, ModelConfig, TestResult
 
 __all__ = [
     "CkptStrategy",
-    "HIFHypergraph",
+    "Graph",
     "HData",
+    "HIFHypergraph",
+    "Hypergraph",
     "ModelConfig",
     "TestResult",
 ]

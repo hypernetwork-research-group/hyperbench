@@ -1,4 +1,4 @@
-from torch import Tensor
+from torch import Tensor, device
 from typing import Optional
 
 
@@ -44,6 +44,13 @@ class HData:
 
         max_edge_id = edge_index[1].max().item() if edge_index.size(1) > 0 else -1
         self.num_edges: int = num_edges if num_edges is not None else max_edge_id + 1
+
+    def to(self, device: device | str, non_blocking: bool = False) -> "HData":
+        self.x = self.x.to(device=device, non_blocking=non_blocking)
+        self.edge_index = self.edge_index.to(device=device, non_blocking=non_blocking)
+        if self.edge_attr is not None:
+            self.edge_attr = self.edge_attr.to(device=device, non_blocking=non_blocking)
+        return self
 
     def __repr__(self) -> str:
         return (
