@@ -148,6 +148,64 @@ def test_from_edge_index_parametrized(edge_index_data, expected_edges):
 
 
 @pytest.mark.parametrize(
+    "hyperedge_index_tensor",
+    [
+        pytest.param(torch.tensor([[0, 1, 2], [0, 0, 0]]), id="single_hyperedge"),
+        pytest.param(torch.tensor([[0, 1], [0, 1]]), id="two_hyperedges"),
+        pytest.param(torch.tensor([[], []]), id="empty"),
+    ],
+)
+def test_hyperedge_index_item_returns_tensor(hyperedge_index_tensor):
+    hyperedge_index = HyperedgeIndex(hyperedge_index_tensor)
+
+    assert torch.equal(hyperedge_index.item, hyperedge_index_tensor)
+
+
+@pytest.mark.parametrize(
+    "hyperedge_index_tensor, expected_num_hyperedges",
+    [
+        pytest.param(torch.tensor([[], []]), 0, id="empty_hypergraph"),
+        pytest.param(torch.tensor([[0], [0]]), 1, id="single_hyperedge_single_node"),
+        pytest.param(torch.tensor([[0, 1, 2], [0, 0, 0]]), 1, id="single_hyperedge_multiple_nodes"),
+        pytest.param(torch.tensor([[0, 1], [0, 1]]), 2, id="two_hyperedges"),
+        pytest.param(
+            torch.tensor([[0, 1, 2, 3], [0, 0, 1, 1]]), 2, id="two_hyperedges_multiple_nodes"
+        ),
+        pytest.param(torch.tensor([[0, 1, 2], [0, 1, 2]]), 3, id="three_singleton_hyperedges"),
+        pytest.param(
+            torch.tensor([[0, 1, 2, 3, 4], [0, 0, 1, 2, 2]]),
+            3,
+            id="multiple_hyperedges_varying_sizes",
+        ),
+    ],
+)
+def test_hyperedge_index_num_hyperedges(hyperedge_index_tensor, expected_num_hyperedges):
+    hyperedge_index = HyperedgeIndex(hyperedge_index_tensor)
+
+    assert hyperedge_index.num_hyperedges == expected_num_hyperedges
+
+
+@pytest.mark.parametrize(
+    "hyperedge_index_tensor, expected_num_nodes",
+    [
+        pytest.param(torch.tensor([[], []]), 0, id="empty_hypergraph"),
+        pytest.param(torch.tensor([[0], [0]]), 1, id="single_node"),
+        pytest.param(torch.tensor([[0, 1, 2], [0, 0, 0]]), 3, id="three_nodes_one_hyperedge"),
+        pytest.param(torch.tensor([[0, 1], [0, 1]]), 2, id="two_nodes_two_hyperedges"),
+        pytest.param(torch.tensor([[0, 5], [0, 0]]), 6, id="non_consecutive_node_indices"),
+        pytest.param(
+            torch.tensor([[0, 1, 2, 3, 4], [0, 0, 1, 1, 2]]), 5, id="five_nodes_three_hyperedges"
+        ),
+        pytest.param(torch.tensor([[9, 2, 5], [0, 0, 0]]), 10, id="sparse_node_indices"),
+    ],
+)
+def test_hyperedge_index_num_nodes(hyperedge_index_tensor, expected_num_nodes):
+    hyperedge_index = HyperedgeIndex(hyperedge_index_tensor)
+
+    assert hyperedge_index.num_nodes == expected_num_nodes
+
+
+@pytest.mark.parametrize(
     "x, hyperedge_index, with_mediators, expected_num_edges",
     [
         pytest.param(

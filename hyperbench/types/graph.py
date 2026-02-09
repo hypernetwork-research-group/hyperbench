@@ -120,6 +120,38 @@ class EdgeIndex:
             return 0
         return int(self.edge_index.max().item()) + 1
 
+    def add_selfloops(self, with_duplicate_removal: bool = True) -> None:
+        r"""
+        Add self-loops to each node in the edge index.
+
+        Example:
+            edge_index = [[0, 1, 2],
+                          [1, 0, 3]]
+            edge_index_with_selfloops = [[0, 1, 2, 0, 1, 2, 3],
+                                         [1, 0, 3, 0, 1, 2, 3]]
+
+        Args:
+            with_duplicate_removal: Whether to remove duplicate edges after adding self-loops. Defaults to ``True``.
+
+        Raises:
+            ValueError: If the input edge index has no edges (i.e., shape (2, 0)).
+        """
+        if self.edge_index.size(1) < 1:
+            raise ValueError("Edge index must have at least one edge to add self-loops.")
+
+        device = self.edge_index.device
+        src, dest = self.edge_index[0], self.edge_index[1]
+
+        # Add self-loops: A_hat = A + I (works as we assume node indices are in [0, num_nodes-1])
+        selfloop_indices = torch.arange(self.num_nodes, device=device)
+        src = torch.cat([src, selfloop_indices])
+        dest = torch.cat([dest, selfloop_indices])
+        edge_index_with_selfloops = torch.stack([src, dest], dim=0)
+
+        self.edge_index = edge_index_with_selfloops
+        if with_duplicate_removal:
+            self.remove_duplicate_edges()
+
     def get_sparse_adjacency_matrix(self, num_nodes: Optional[int] = None) -> Tensor:
         """
         Compute the sparse adjacency matrix from a graph edge index.
@@ -242,6 +274,15 @@ class EdgeIndex:
         )
         return normalized_laplacian_matrix.coalesce()
 
+    def remove_duplicate_edges(self) -> None:
+        """Remove duplicate edges from the edge index."""
+        # Example: edge_index = [[0, 1, 2, 2, 0, 3, 2],
+        #                        [1, 0, 3, 2, 1, 2, 2]], shape (2, |E| = 7)
+        #          -> after torch.unique(..., dim=1):
+        #             edge_index = [[0, 1, 2, 2, 3],
+        #                           [1, 0, 3, 2, 2]], shape (2, |E'| = 5)
+        self.edge_index = torch.unique(self.edge_index, dim=1)
+
     def to_undirected(self, with_selfloops: bool = False) -> None:
         """
         Convert the edge index to an undirected edge index by adding reverse edges.
@@ -272,45 +313,3 @@ class EdgeIndex:
             self.add_selfloops(with_duplicate_removal=False)
 
         self.remove_duplicate_edges()
-
-    def add_selfloops(self, with_duplicate_removal: bool = True) -> None:
-        r"""
-        Add self-loops to each node in the edge index.
-
-        Example:
-            edge_index = [[0, 1, 2],
-                          [1, 0, 3]]
-            edge_index_with_selfloops = [[0, 1, 2, 0, 1, 2, 3],
-                                         [1, 0, 3, 0, 1, 2, 3]]
-
-        Args:
-            edge_index: Edge index tensor of shape ``(2, |E|)``.
-            with_duplicate_removal: Whether to remove duplicate edges after adding self-loops. Defaults to ``True``.
-
-        Raises:
-            ValueError: If the input edge index has no edges (i.e., shape (2, 0)).
-        """
-        if self.edge_index.size(1) < 1:
-            raise ValueError("Edge index must have at least one edge to add self-loops.")
-
-        device = self.edge_index.device
-        src, dest = self.edge_index[0], self.edge_index[1]
-
-        # Add self-loops: A_hat = A + I (works as we assume node indices are in [0, num_nodes-1])
-        selfloop_indices = torch.arange(self.num_nodes, device=device)
-        src = torch.cat([src, selfloop_indices])
-        dest = torch.cat([dest, selfloop_indices])
-        edge_index_with_selfloops = torch.stack([src, dest], dim=0)
-
-        self.edge_index = edge_index_with_selfloops
-        if with_duplicate_removal:
-            self.remove_duplicate_edges()
-
-    def remove_duplicate_edges(self) -> None:
-        """Remove duplicate edges from the edge index."""
-        # Example: edge_index = [[0, 1, 2, 2, 0, 3, 2],
-        #                        [1, 0, 3, 2, 1, 2, 2]], shape (2, |E| = 7)
-        #          -> after torch.unique(..., dim=1):
-        #             edge_index = [[0, 1, 2, 2, 3],
-        #                           [1, 0, 3, 2, 2]], shape (2, |E'| = 5)
-        self.edge_index = torch.unique(self.edge_index, dim=1)

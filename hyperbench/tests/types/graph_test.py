@@ -479,6 +479,121 @@ def test_smoothing_with_gcn_laplacian_isolated_nodes_have_zero_features():
     assert torch.allclose(smoothed_x[2], torch.zeros(2), atol=1e-6)
 
 
+def test_edge_index_item_returns_tensor():
+    """Test that item property returns the edge index tensor."""
+    edge_index_tensor = torch.tensor([[0, 1, 2], [1, 2, 0]])
+    edge_index = EdgeIndex(edge_index_tensor)
+
+    assert torch.equal(edge_index.item, edge_index_tensor)
+
+
+@pytest.mark.parametrize(
+    "edge_index_tensor, expected_num_edges",
+    [
+        pytest.param(torch.tensor([[0], [1]]), 1, id="single_edge"),
+        pytest.param(torch.tensor([[0, 1, 2], [1, 2, 3]]), 3, id="multiple_edges"),
+        pytest.param(torch.tensor([[], []]), 0, id="empty_edge_index"),
+        pytest.param(torch.tensor([[0, 1, 1], [0, 1, 2]]), 3, id="with_selfloops"),
+    ],
+)
+def test_edge_index_num_edges(edge_index_tensor, expected_num_edges):
+    edge_index = EdgeIndex(edge_index_tensor)
+
+    assert edge_index.num_edges == expected_num_edges
+
+
+@pytest.mark.parametrize(
+    "edge_index_tensor, expected_num_nodes",
+    [
+        pytest.param(torch.tensor([[0], [1]]), 2, id="single_edge"),
+        pytest.param(torch.tensor([[0, 1, 2], [1, 2, 3]]), 4, id="multiple_edges"),
+        pytest.param(torch.tensor([[], []]), 0, id="empty_edge_index"),
+        pytest.param(torch.tensor([[0, 5], [3, 7]]), 8, id="non_consecutive_indices"),
+        pytest.param(torch.tensor([[0, 1, 1], [0, 1, 2]]), 3, id="with_selfloops"),
+    ],
+)
+def test_edge_index_num_nodes(edge_index_tensor, expected_num_nodes):
+    edge_index = EdgeIndex(edge_index_tensor)
+
+    assert edge_index.num_nodes == expected_num_nodes
+
+
+def test_add_selfloops_returns_correct_edges():
+    edge_index = EdgeIndex(torch.tensor([[0, 1], [1, 2]]))
+    edge_index.add_selfloops()
+
+    edges = set(zip(edge_index.item[0].tolist(), edge_index.item[1].tolist()))
+
+    # Original edges should still be present
+    assert (0, 1) in edges
+    assert (1, 2) in edges
+
+    # Self-loops for nodes 0, 1, 2 should be added
+    assert (0, 0) in edges
+    assert (1, 1) in edges
+    assert (2, 2) in edges
+
+
+def test_add_selfloops_raises_on_empty_edge_index():
+    edge_index = EdgeIndex(torch.tensor([[], []], dtype=torch.long))
+
+    with pytest.raises(ValueError, match="Edge index must have at least one edge"):
+        edge_index.add_selfloops()
+
+
+def test_add_selfloops_does_not_duplicate_selfloops():
+    edge_index = EdgeIndex(torch.tensor([[0, 1, 1], [1, 2, 1]]))
+    edge_index.add_selfloops()
+
+    edges = list(zip(edge_index.item[0].tolist(), edge_index.item[1].tolist()))
+
+    # (1, 1) should appear only once after duplicate removal
+    assert edges.count((1, 1)) == 1
+
+
+def test_add_selfloops_without_duplicate_removal():
+    edge_index = EdgeIndex(torch.tensor([[0, 1, 0], [1, 2, 0]]))
+    edge_index.add_selfloops(with_duplicate_removal=False)
+
+    edges = list(zip(edge_index.item[0].tolist(), edge_index.item[1].tolist()))
+
+    # (0, 0) should appear twice: once from original, once from self-loop addition
+    assert edges.count((0, 0)) == 2
+
+
+def test_add_selfloops_infers_num_nodes():
+    edge_index = EdgeIndex(torch.tensor([[0, 1], [2, 3]]))
+    edge_index.add_selfloops()
+
+    assert edge_index.num_edges == 2 + 4  # 2 original + 4 self-loops (0,0), (1,1), (2,2), (3,3)
+
+
+def test_add_selfloops_preserves_device():
+    device = torch.device("cpu")
+
+    edge_index = EdgeIndex(torch.tensor([[0, 1], [1, 2]], device=device))
+    edge_index.add_selfloops()
+
+    assert edge_index.item.device == device
+
+
+def test_add_selfloops_preserves_dtype():
+    edge_index = EdgeIndex(torch.tensor([[0, 1], [1, 2]], dtype=torch.long))
+    edge_index.add_selfloops()
+
+    assert edge_index.item.dtype == torch.long
+
+
+def test_add_selfloops_modifies_in_place():
+    tensor = torch.tensor([[0, 1], [1, 2]])
+    edge_index = EdgeIndex(tensor)
+    original_shape = edge_index.item.shape
+
+    edge_index.add_selfloops()
+
+    assert edge_index.item.shape != original_shape
+
+
 def test_get_sparse_adjacency_matrix_returns_sparse_tensor():
     edge_index = torch.tensor([[0, 1], [1, 0]])
     adj_matrix = EdgeIndex(edge_index).get_sparse_adjacency_matrix(num_nodes=2)
@@ -802,6 +917,62 @@ def test_get_sparse_normalized_laplacian_has_0_for_isolated_nodes():
     assert torch.all(dense_gcn_laplacian[:, 2] == 0)
     assert torch.all(dense_gcn_laplacian[3, :] == 0)
     assert torch.all(dense_gcn_laplacian[:, 3] == 0)
+
+
+def test_remove_duplicate_edges():
+    edge_index = EdgeIndex(torch.tensor([[0, 0, 1], [1, 1, 2]]))
+    edge_index.remove_duplicate_edges()
+
+    edges = list(zip(edge_index.item[0].tolist(), edge_index.item[1].tolist()))
+
+    assert len(edges) == 2
+    # (0, 1) should appear only once
+    assert edges.count((0, 1)) == 1
+
+
+def test_remove_duplicate_edges_when_no_duplicates():
+    edge_index = EdgeIndex(torch.tensor([[0, 1, 2], [1, 2, 3]]))
+    original_edges = set(zip(edge_index.item[0].tolist(), edge_index.item[1].tolist()))
+
+    edge_index.remove_duplicate_edges()
+
+    new_edges = set(zip(edge_index.item[0].tolist(), edge_index.item[1].tolist()))
+    assert original_edges == new_edges
+
+
+@pytest.mark.parametrize(
+    "edge_index_tensor, expected_num_edges_after_removal",
+    [
+        pytest.param(torch.tensor([[], []]), 0, id="empty_edge_index"),
+        pytest.param(torch.tensor([[0, 1], [1, 2]]), 2, id="no_duplicates"),
+        pytest.param(torch.tensor([[0, 1, 0], [1, 2, 1]]), 2, id="one_duplicate"),
+        pytest.param(torch.tensor([[0, 0, 0], [1, 1, 1]]), 1, id="three_duplicates"),
+        pytest.param(
+            torch.tensor([[0, 2, 0, 0], [1, 2, 0, 0]]), 3, id="mixed_duplicates_non_duplicates"
+        ),
+    ],
+)
+def test_remove_duplicate_edges(edge_index_tensor, expected_num_edges_after_removal):
+    edge_index = EdgeIndex(edge_index_tensor)
+    edge_index.remove_duplicate_edges()
+
+    assert edge_index.num_edges == expected_num_edges_after_removal
+
+
+def test_remove_duplicate_edges_preserves_device():
+    device = torch.device("cpu")
+
+    edge_index = EdgeIndex(torch.tensor([[0, 0, 1], [1, 1, 2]], device=device))
+    edge_index.remove_duplicate_edges()
+
+    assert edge_index.item.device == device
+
+
+def test_remove_duplicate_edges_preserves_dtype():
+    edge_index = EdgeIndex(torch.tensor([[0, 0, 1], [1, 1, 2]], dtype=torch.long))
+    edge_index.remove_duplicate_edges()
+
+    assert edge_index.item.dtype == torch.long
 
 
 def test_to_undirected_edge_index_single_directed_edge():
