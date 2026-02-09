@@ -105,16 +105,6 @@ class HIFConverter:
 
 
 class Dataset(TorchDataset):
-    """
-    Base Dataset class for hypergraph datasets, extending PyTorch's Dataset.
-    Attributes:
-        DATASET_NAME (str): Name of the dataset.
-        hypergraph (HIFHypergraph): Loaded hypergraph instance.
-    Methods:
-        download(): Downloads and loads the hypergraph from HIF.
-        process(): Processes the hypergraph into HData format.
-    """
-
     DATASET_NAME = None
 
     def __init__(self) -> None:
@@ -162,6 +152,7 @@ class Dataset(TorchDataset):
     def process(self) -> HData:
         """
         Process the loaded hypergraph into HData format, mapping HIF structure to tensors.
+
         Returns:
             HData: Processed hypergraph data.
         """
@@ -257,7 +248,7 @@ class Dataset(TorchDataset):
         attrs: Dict[str, Any],
         attr_keys: Optional[List[str]] = None,
     ) -> Tensor:
-        """
+        r"""
         Extract and encode numeric attributes to tensor.
         Non-numeric attributes are discarded. Missing attributes are filled with ``0.0``.
 
@@ -287,8 +278,10 @@ class Dataset(TorchDataset):
     def __collect_attr_keys(self, attr_keys: List[Dict[str, Any]]) -> List[str]:
         """
         Collect unique numeric attribute keys from a list of attribute dictionaries.
+
         Args:
             attrs_list: List of attribute dictionaries.
+
         Returns:
             List of unique numeric attribute keys.
         """
@@ -385,10 +378,12 @@ class Dataset(TorchDataset):
     ) -> Tensor:
         """
         Create new hyperedge_index with 0-based node and hyperedge IDs.
+
         Args:
             sampled_hyperedge_index: Original hyperedge_index tensor with sampled incidences.
             sampled_node_ids: List of sampled original node IDs.
             sampled_hyperedge_ids: List of sampled original hyperedge IDs.
+
         Returns:
             New hyperedge_index tensor with 0-based node and edge IDs.
         """

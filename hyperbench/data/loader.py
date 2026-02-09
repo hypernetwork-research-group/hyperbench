@@ -137,8 +137,8 @@ class DataLoader(TorchDataLoader):
 
         Returns:
             Tuple containing:
-                - batched_hyperedge_index: Concatenated and offset hyperedge indices, or None
-                - batched_hyperedge_attr: Concatenated hyperedge attributes, or None
+                - batched_hyperedge_index: Concatenated and offset hyperedge indices, or ``None``
+                - batched_hyperedge_attr: Concatenated hyperedge attributes, or ``None``
                 - total_hyperedges: Total number of hyperedges across all batched samples
         """
         hyperedge_indexes = []
