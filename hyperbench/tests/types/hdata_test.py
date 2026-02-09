@@ -1,6 +1,7 @@
 import pytest
 import torch
 
+from torch import Tensor
 from hyperbench.types import HData
 
 
@@ -16,6 +17,22 @@ def mock_hdata():
     hyperedge_attr = torch.randn(3, 2)  # 3 hyperedges with 2 features each
 
     return HData(x=x, edge_index=hyperedge_index, edge_attr=hyperedge_attr)
+
+
+def test_empty_returns_empty_hdata():
+    data = HData.empty()
+
+    assert data.x is not None
+    assert isinstance(data.x, Tensor)
+    assert data.x.shape == (0, 0)
+
+    assert data.edge_index is not None
+    assert isinstance(data.edge_index, Tensor)
+    assert data.edge_index.shape == (2, 0)
+
+    assert data.edge_attr is None
+    assert data.num_nodes == 0
+    assert data.num_edges == 0
 
 
 def test_hdata_to_cpu(mock_hdata):

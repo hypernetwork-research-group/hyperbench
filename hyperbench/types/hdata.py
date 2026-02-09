@@ -1,5 +1,6 @@
 from torch import Tensor, device
 from typing import Optional
+from hyperbench import utils
 
 
 class HData:
@@ -44,6 +45,16 @@ class HData:
 
         max_edge_id = edge_index[1].max().item() if edge_index.size(1) > 0 else -1
         self.num_edges: int = num_edges if num_edges is not None else max_edge_id + 1
+
+    @classmethod
+    def empty(cls) -> "HData":
+        return cls(
+            x=utils.empty_nodefeatures(),
+            edge_index=utils.empty_edgeindex(),
+            edge_attr=None,
+            num_nodes=0,
+            num_edges=0,
+        )
 
     def to(self, device: device | str, non_blocking: bool = False) -> "HData":
         self.x = self.x.to(device=device, non_blocking=non_blocking)

@@ -1,13 +1,10 @@
 import torch
 
-from torch import Tensor
 from hyperbench.utils import (
     empty_nodefeatures,
     empty_edgeindex,
     empty_edgeattr,
     to_non_empty_edgeattr,
-    empty_hdata,
-    empty_hifhypergraph,
 )
 
 
@@ -70,29 +67,3 @@ def test_empty_nodefeatures():
     result = empty_nodefeatures()
 
     assert result.shape == (0, 0)
-
-
-def test_empty_hdata():
-    result = empty_hdata()
-
-    assert result.x is not None
-    assert isinstance(result.x, Tensor)
-    assert result.x.shape == (0, 0)
-
-    assert result.edge_index is not None
-    assert isinstance(result.edge_index, Tensor)
-    assert result.edge_index.shape == (2, 0)
-
-    assert result.edge_attr is None
-    assert result.num_nodes == 0
-    assert result.num_edges == 0
-
-
-def test_empty_hifhypergraph():
-    result = empty_hifhypergraph()
-
-    assert result.network_type == "undirected"
-    assert result.nodes == []
-    assert result.edges == []
-    assert result.incidences == []
-    assert result.metadata == {}
