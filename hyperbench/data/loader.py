@@ -42,17 +42,17 @@ class DataLoader(TorchDataLoader):
                 The output will be HData with:
                     x.shape = (5, 64) # All 5 nodes concatenated
 
-            For edge index:
+            For hyperedge index:
                 HData_0 (3 nodes, 2 hyperedges):
-                    edge_index = [[0, 1, 1, 2], # Nodes 0, 1, 1, 2
+                    hyperedge_index = [[0, 1, 1, 2], # Nodes 0, 1, 1, 2
                                   [0, 0, 1, 1]] # Hyperedge 0 contains {0,1}, Hyperedge 1 contains {1,2}
 
                 HData_1 (2 nodes, 1 hyperedge):
-                    edge_index = [[0, 1], # Nodes 0, 1
+                    hyperedge_index = [[0, 1], # Nodes 0, 1
                                   [0, 0]] # Hyperedge 0 contains {0,1}
 
                 Batched result:
-                    edge_index = [[0, 1, 1, 2, 3, 4], # Node indices: original then offset by 3, so 0->3, 1->4
+                    hyperedge_index = [[0, 1, 1, 2, 3, 4], # Node indices: original then offset by 3, so 0->3, 1->4
                                   [0, 0, 1, 1, 2, 2]] # Hyperedge IDs: original then offset by 2, so 0->2, 0->2
                                    ^^^^^^^^^^  ^^^^
                                    Sample 0    Sample 1 (nodes +3, edges +2)
@@ -64,14 +64,16 @@ class DataLoader(TorchDataLoader):
             HData: A single HData object containing the batched data.
         """
         node_features, total_nodes = self.__batch_node_features(batch)
-        edge_index, edge_attr, total_edges = self.__batch_edges(batch)
+        hyperedge_index, hyperedge_attr, total_hyperedges = self.__batch_hyperedges(
+            batch
+        )
 
         batched_data = HData(
             x=node_features,
-            edge_index=edge_index,
-            edge_attr=edge_attr,
+            edge_index=hyperedge_index,
+            edge_attr=hyperedge_attr,
             num_nodes=total_nodes,
-            num_edges=total_edges,
+            num_edges=total_hyperedges,
         )
 
         return batched_data
@@ -105,58 +107,61 @@ class DataLoader(TorchDataLoader):
 
         return batched_x, total_nodes
 
-    def __batch_edges(self, batch: List[HData]) -> Tuple[Tensor, Optional[Tensor], int]:
-        """Batches hyperedge indices and attributes, adjusting indices for concatenated nodes.
+    def __batch_hyperedges(
+        self, batch: List[HData]
+    ) -> Tuple[Tensor, Optional[Tensor], int]:
+        """
+        Batches hyperedge indices and attributes, adjusting indices for concatenated nodes.
         Hyperedge indices must be offset so they point to the correct nodes in the batched node tensor.
 
         Example:
             Sample 0 (3 nodes, 2 hyperedges):
-                edge_index = [[0, 1, 1, 2], # Nodes 0, 1, 1, 2
-                              [0, 0, 1, 1]] # Hyperedge 0 contains {0,1}, Hyperedge 1 contains {1,2}
+                hyperedge_index = [[0, 1, 1, 2], # Nodes 0, 1, 1, 2
+                                   [0, 0, 1, 1]] # Hyperedge 0 contains {0,1}, Hyperedge 1 contains {1,2}
                 node_offset = 0
                 edge_offset = 0
 
             Sample 1 (2 nodes, 1 hyperedge):
-                edge_index = [[0, 1], # Nodes 0, 1
-                              [0, 0]] # Hyperedge 0 contains {0,1}
+                hyperedge_index = [[0, 1], # Nodes 0, 1
+                                   [0, 0]] # Hyperedge 0 contains {0,1}
                 node_offset = 3 # Previous samples have 3 nodes total
                 edge_offset = 2 # Previous samples have 2 hyperedges total
             Result:
-                edge_index = [[0, 1, 1, 2, 3, 4], # Node indices: original then offset by 3, so 0->3, 1->4
-                              [0, 0, 1, 1, 2, 2]] # Hyperedge IDs: original then offset by 2, so 0->2, 0->2
-                               ^^^^^^^^^^  ^^^^
-                               Sample 0    Sample 1 (nodes +3, edges +2)
+                hyperedge_index = [[0, 1, 1, 2, 3, 4], # Node indices: original then offset by 3, so 0->3, 1->4
+                                   [0, 0, 1, 1, 2, 2]] # Hyperedge IDs: original then offset by 2, so 0->2, 0->2
+                                    ^^^^^^^^^^  ^^^^
+                                    Sample 0    Sample 1 (nodes +3, edges +2)
 
         Args:
             batch: List of HData objects.
 
         Returns:
             Tuple containing:
-                - batched_edge_index: Concatenated and offset hyperedge indices, or None
-                - batched_edge_attr: Concatenated hyperedge attributes, or None
-                - total_edges: Total number of hyperedges across all batched samples
+                - batched_hyperedge_index: Concatenated and offset hyperedge indices, or None
+                - batched_hyperedge_attr: Concatenated hyperedge attributes, or None
+                - total_hyperedges: Total number of hyperedges across all batched samples
         """
-        edge_indexes = []
-        edge_attrs = []
+        hyperedge_indexes = []
+        hyperedge_attrs = []
         node_offset = 0
-        edge_offset = 0
+        hyperedge_offset = 0
 
         for data in batch:
-            # Offset nodes and hyperedge IDs (indices) in edge_index
-            offset_edge_index = data.edge_index.clone()
-            offset_edge_index[0] += node_offset
-            offset_edge_index[1] += edge_offset
-            edge_indexes.append(offset_edge_index)
+            # Offset nodes and hyperedge IDs (indices) in hyperedge_index
+            offset_hyperedge_index = data.edge_index.clone()
+            offset_hyperedge_index[0] += node_offset
+            offset_hyperedge_index[1] += hyperedge_offset
+            hyperedge_indexes.append(offset_hyperedge_index)
 
             if data.edge_attr is not None:
-                edge_attrs.append(data.edge_attr)
+                hyperedge_attrs.append(data.edge_attr)
 
             # Offset calculations for next sample based on the max hyperedge ID as it indicates the number of hyperedges
-            max_edge_id = (
+            max_hyperedge_id = (
                 data.edge_index[1].max().item() if data.edge_index.size(1) > 0 else -1
             )
-            edge_offset += (
-                data.num_edges if data.num_edges is not None else max_edge_id + 1
+            hyperedge_offset += (
+                data.num_edges if data.num_edges is not None else max_hyperedge_id + 1
             )
 
             # Offset calculations for next sample based on x[0] as x has shape (num_nodes, num_features), so 0 provides the number of nodes
@@ -164,22 +169,21 @@ class DataLoader(TorchDataLoader):
                 data.num_nodes if data.num_nodes is not None else data.x.size(0)
             )
 
-        # Concatenate all edge_index tensors along the incidence dimension, so that we get a shape of (2, total_edges)
-        batched_edge_index = torch.cat(edge_indexes, dim=1)
-        max_edge_id = int(
+        # Concatenate all hyperedge_index tensors along the incidence dimension, so that we get a shape of (2, total_hyperedges)
+        batched_hyperedge_index = torch.cat(hyperedge_indexes, dim=1)
+        max_hyperedge_id = int(
             (
-                batched_edge_index[1].max().item()
-                if batched_edge_index.size(1) > 0
+                batched_hyperedge_index[1].max().item()
+                if batched_hyperedge_index.size(1) > 0
                 else -1
             )
         )
-        total_edges = max_edge_id + 1
-
-        batched_edge_attr = None
-        if len(edge_attrs) > 0:
+        total_hyperedges = max_hyperedge_id + 1
+        batched_hyperedge_attr = None
+        if len(hyperedge_attrs) > 0:
             # Concatenate hyperedge attributes along dimension 0 (the hyperedge dimension)
-            # edge_attr typically has shape (num_edges, num_edge_features)
-            # Result shape: (total_edges, num_edge_features)
-            batched_edge_attr = torch.cat(edge_attrs, dim=0)
+            # hyperedge_attr typically has shape (num_hyperedges, num_hyperedge_features)
+            # Result shape: (total_hyperedges, num_hyperedge_features)
+            batched_hyperedge_attr = torch.cat(hyperedge_attrs, dim=0)
 
-        return batched_edge_index, batched_edge_attr, total_edges
+        return batched_hyperedge_index, batched_hyperedge_attr, total_hyperedges

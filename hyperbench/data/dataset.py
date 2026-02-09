@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
 from hyperbench.types import HData, HIFHypergraph
-from hyperbench.utils.hif_utils import validate_hif_json
+from hyperbench.utils import validate_hif_json
 
 
 class DatasetNames(Enum):
@@ -128,26 +128,26 @@ class Dataset(TorchDataset):
         sampled_node_ids_list = self.__get_node_ids_to_sample(index)
         self.__validate_node_ids(sampled_node_ids_list)
 
-        sampled_edge_index, sampled_node_ids, sampled_edge_ids = (
-            self.__sample_edge_index(sampled_node_ids_list)
+        sampled_hyperedge_index, sampled_node_ids, sampled_hyperedge_ids = (
+            self.__sample_hyperedge_index(sampled_node_ids_list)
         )
 
-        new_edge_index = self.__new_edge_index(
-            sampled_edge_index, sampled_node_ids, sampled_edge_ids
+        new_hyperedge_index = self.__new_hyperedge_index(
+            sampled_hyperedge_index, sampled_node_ids, sampled_hyperedge_ids
         )
 
         new_x = self.hdata.x[sampled_node_ids]
 
         new_edge_attr = None
-        if self.hdata.edge_attr is not None and len(sampled_edge_ids) > 0:
-            new_edge_attr = self.hdata.edge_attr[sampled_edge_ids]
+        if self.hdata.edge_attr is not None and len(sampled_hyperedge_ids) > 0:
+            new_edge_attr = self.hdata.edge_attr[sampled_hyperedge_ids]
 
         return HData(
             x=new_x,
-            edge_index=new_edge_index,
+            edge_index=new_hyperedge_index,
             edge_attr=new_edge_attr,
             num_nodes=len(sampled_node_ids),
-            num_edges=len(sampled_edge_ids),
+            num_edges=len(sampled_hyperedge_ids),
         )
 
     def download(self) -> HIFHypergraph:
@@ -210,23 +210,23 @@ class Dataset(TorchDataset):
         if len(node_ids) < 1:
             raise ValueError("Hypergraph has no incidences.")
 
-        # edge_index: shape [2, E] where E is number of incidences
-        edge_index = torch.tensor([node_ids, edge_ids], dtype=torch.long)
+        # hyperedge_index: shape [2, E] where E is number of incidences
+        hyperedge_index = torch.tensor([node_ids, edge_ids], dtype=torch.long)
 
-        # edge-attr: shape [num_edges, num_edge_attributes]
-        edge_attr = None
+        # hyperedge-attr: shape [num_hyperedges, num_hyperedge_attributes]
+        hyperedge_attr = None
         if self.hypergraph.edges and any(
             "attrs" in edge for edge in self.hypergraph.edges
         ):
             # collect all attribute keys to have tensors of same size
-            edge_attr_keys = self.__collect_attr_keys(
+            hyperedge_attr_keys = self.__collect_attr_keys(
                 [edge.get("attrs", {}) for edge in self.hypergraph.edges]
             )
 
-            edge_attr = torch.stack(
+            hyperedge_attr = torch.stack(
                 [
-                    self.transform_edge_attrs(
-                        edge.get("attrs", {}), attr_keys=edge_attr_keys
+                    self.transform_hyperedge_attrs(
+                        edge.get("attrs", {}), attr_keys=hyperedge_attr_keys
                     )
                     for edge in self.hypergraph.edges
                 ]
@@ -234,31 +234,36 @@ class Dataset(TorchDataset):
 
             # Flatten to 1D if only one attribute (PyTorch Geometric standard)
             # if edge_attr.shape[1] == 1:
-            #     edge_attr = edge_attr.squeeze(1)
+            #     hyperedge_attr = hyperedge_attr.squeeze(1)
 
-        return HData(x, edge_index, edge_attr, num_nodes, num_edges)
+        return HData(x, hyperedge_index, hyperedge_attr, num_nodes, num_edges)
 
     def transform_node_attrs(
-        self, attrs: Dict[str, Any], attr_keys: Optional[List[str]] = None
+        self,
+        attrs: Dict[str, Any],
+        attr_keys: Optional[List[str]] = None,
     ) -> Tensor:
         return self.transform_attrs(attrs, attr_keys)
 
-    def transform_edge_attrs(
-        self, attrs: Dict[str, Any], attr_keys: Optional[List[str]] = None
+    def transform_hyperedge_attrs(
+        self,
+        attrs: Dict[str, Any],
+        attr_keys: Optional[List[str]] = None,
     ) -> Tensor:
         return self.transform_attrs(attrs, attr_keys)
 
     def transform_attrs(
-        self, attrs: Dict[str, Any], attr_keys: Optional[List[str]] = None
+        self,
+        attrs: Dict[str, Any],
+        attr_keys: Optional[List[str]] = None,
     ) -> Tensor:
         """
-        Extract and encode numeric node attributes to tensor.
-        Non-numeric attributes are discarded. Missing attributes are filled with 0.0.
+        Extract and encode numeric attributes to tensor.
+        Non-numeric attributes are discarded. Missing attributes are filled with ``0.0``.
 
         Args:
-            attrs: Dictionary of node attributes
-            attr_keys: Optional list of attribute keys to encode. If provided, ensures
-                      consistent ordering and fill missing with 0.0.
+            attrs: Dictionary of attributes
+            attr_keys: Optional list of attribute keys to encode. If provided, ensures consistent ordering and fill missing with ``0.0``.
 
         Returns:
             Tensor of numeric attribute values
@@ -296,6 +301,18 @@ class Dataset(TorchDataset):
         return unique_keys
 
     def __get_node_ids_to_sample(self, id: int | List[int]) -> List[int]:
+        """
+        Get a list of node IDs to sample based on the provided index.
+
+        Args:
+            id: An integer or a list of integers representing node IDs to sample.
+
+        Returns:
+            List of node IDs to sample.
+
+        Raises:
+            ValueError: If the provided index is invalid (e.g., empty list or list length exceeds number of nodes).
+        """
         if isinstance(id, list):
             if len(id) < 1:
                 raise ValueError("Index list cannot be empty.")
@@ -308,64 +325,72 @@ class Dataset(TorchDataset):
         return [id]
 
     def __validate_node_ids(self, node_ids: List[int]) -> None:
+        """
+        Validate that node IDs are within bounds of the hypergraph.
+
+        Args:
+            node_ids: List of node IDs to validate.
+
+        Raises:
+            IndexError: If any node ID is out of bounds.
+        """
         for id in node_ids:
             if id < 0 or id >= self.__len__():
                 raise IndexError(
                     f"Node ID {id} is out of bounds (0, {self.__len__() - 1})."
                 )
 
-    def __sample_edge_index(
+    def __sample_hyperedge_index(
         self,
         sampled_node_ids_list: List[int],
     ) -> Tuple[Tensor, Tensor, Tensor]:
-        edge_index = self.hdata.edge_index
-        node_ids = edge_index[0]
-        edge_ids = edge_index[1]
+        hyperedge_index = self.hdata.edge_index
+        node_ids = hyperedge_index[0]
+        hyperedge_ids = hyperedge_index[1]
 
         sampled_node_ids = torch.tensor(sampled_node_ids_list, device=node_ids.device)
 
         # Find incidences where the node is in our sampled node set
-        # Example: edge_index[0] = [0, 0, 1, 2, 3, 4], sampled_node_ids = [0, 3]
+        # Example: hyperedge_index[0] = [0, 0, 1, 2, 3, 4], sampled_node_ids = [0, 3]
         #          -> node_incidence_mask = [True, True, False, False, True, False]
         node_incidence_mask = torch.isin(node_ids, sampled_node_ids)
 
         # Get unique hyperedges that have at least one sampled node
-        # Example: edge_index[1] = [0, 0, 0, 1, 2, 2], node_incidence_mask = [True, True, False, False, True, False]
-        #          -> sampled_edge_ids = [0, 2] as they connect to sampled nodes
-        sampled_edge_ids = edge_ids[node_incidence_mask].unique()
+        # Example: hyperedge_index[1] = [0, 0, 0, 1, 2, 2], node_incidence_mask = [True, True, False, False, True, False]
+        #          -> sampled_hyperedge_ids = [0, 2] as they connect to sampled nodes
+        sampled_hyperedge_ids = hyperedge_ids[node_incidence_mask].unique()
 
         # Find all incidences for sampled nodes belonging to relevant hyperedges
-        # Example: edge_index[1] = [0, 0, 0, 1, 2, 2], sampled_edge_ids = [0, 2]
-        #          -> edge_incidence_mask = [True, True, True, False, True, True]
-        edge_incidence_mask = torch.isin(edge_ids, sampled_edge_ids)
+        # Example: hyperedge_index[1] = [0, 0, 0, 1, 2, 2], sampled_hyperedge_ids = [0, 2]
+        #          -> hyperedge_incidence_mask = [True, True, True, False, True, True]
+        hyperedge_incidence_mask = torch.isin(hyperedge_ids, sampled_hyperedge_ids)
 
         # Incidence is kept if node is sampled AND hyperedge is relevant
-        incidence_mask = node_incidence_mask & edge_incidence_mask
+        incidence_mask = node_incidence_mask & hyperedge_incidence_mask
 
         # Keep only the incidences that match our mask
-        # Example: edge_index = [[0, 0, 1, 2, 3, 4],
-        #                        [0, 0, 0, 1, 2, 2]],
+        # Example: hyperedge_index = [[0, 0, 1, 2, 3, 4],
+        #                              [0, 0, 0, 1, 2, 2]],
         #          incidence_mask = [True, True, False, False, True, False]
-        #          -> sampled_edge_index = [[0, 0, 3],
-        #                                   [0, 0, 2]]
-        sampled_edge_index = edge_index[:, incidence_mask]
+        #          -> sampled_hyperedge_index = [[0, 0, 3],
+        #                                        [0, 0, 2]]
+        sampled_hyperedge_index = hyperedge_index[:, incidence_mask]
+        return sampled_hyperedge_index, sampled_node_ids, sampled_hyperedge_ids
 
-        return sampled_edge_index, sampled_node_ids, sampled_edge_ids
-
-    def __new_edge_index(
+    def __new_hyperedge_index(
         self,
-        sampled_edge_index: Tensor,
+        sampled_hyperedge_index: Tensor,
         sampled_node_ids: Tensor,
-        sampled_edge_ids: Tensor,
+        sampled_hyperedge_ids: Tensor,
     ) -> Tensor:
         """
-        Create new edge_index with 0-based node and edge IDs.
+        Create new hyperedge_index with 0-based node and hyperedge IDs.
         Args:
-            sampled_edge_index: Original edge_index tensor with sampled incidences.
+            sampled_hyperedge_index: Original hyperedge_index tensor with sampled incidences.
             sampled_node_ids: List of sampled original node IDs.
-            sampled_edge_ids: List of sampled original edge IDs.
+            sampled_hyperedge_ids: List of sampled original hyperedge IDs.
         Returns:
-            New edge_index tensor with 0-based node and edge IDs.
+            New hyperedge_index tensor with 0-based node and edge IDs.
         """
         # Example: sampled_edge_index = [[1, 1, 3],
         #                                [0, 2, 2]]
@@ -373,17 +398,17 @@ class Dataset(TorchDataset):
         #          sampled_edge_ids = [0, 2]
         #          -> new_node_ids = [0, 0, 1], new_edge_ids = [0, 1, 1]
         new_node_ids = self.__to_0based_ids(
-            sampled_edge_index[0], sampled_node_ids, self.hdata.num_nodes
+            sampled_hyperedge_index[0], sampled_node_ids, self.hdata.num_nodes
         )
-        new_edge_ids = self.__to_0based_ids(
-            sampled_edge_index[1], sampled_edge_ids, self.hdata.num_edges
+        new_hyperedge_ids = self.__to_0based_ids(
+            sampled_hyperedge_index[1], sampled_hyperedge_ids, self.hdata.num_edges
         )
 
-        # Example: new_node_ids = [0, 1], new_edge_ids = [0, 1]
-        #          -> new_edge_index = [[0, 1],
-        #                               [0, 1]]
-        new_edge_index = torch.stack([new_node_ids, new_edge_ids], dim=0)
-        return new_edge_index
+        # Example: new_node_ids = [0, 1], new_hyperedge_ids = [0, 1]
+        #          -> new_hyperedge_index = [[0, 1],
+        #                                    [0, 1]]
+        new_hyperedge_index = torch.stack([new_node_ids, new_hyperedge_ids], dim=0)
+        return new_hyperedge_index
 
     def __to_0based_ids(
         self,
@@ -393,15 +418,18 @@ class Dataset(TorchDataset):
     ) -> Tensor:
         """
         Map original IDs to 0-based ids.
+
         Example:
             original_ids: [1, 3, 3, 7]
             ids_to_keep: [3, 7]
             n = 8                            # total number of elements (nodes or edges) in the original hypergraph
             Returned 0-based IDs: [0, 0, 1]  # the size is sum of occurrences of ids_to_keep in original_ids
+
         Args:
             original_ids: Tensor of original IDs.
             n: Total number of original IDs.
             ids_to_keep: List of selected original IDs to be mapped to 0-based.
+
         Returns:
             Tensor of 0-based ids.
         """

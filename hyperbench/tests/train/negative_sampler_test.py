@@ -88,10 +88,10 @@ def test_random_negative_sampler_sample_unique_nodes(mock_hdata_with_attr):
     node_ids = result.edge_index[0]
     edge_ids = result.edge_index[1]
 
-    # All node indices in edge_index should be valid
+    # All node indices in hyperedge_index should be valid
     assert torch.all(node_ids < mock_hdata_with_attr.num_nodes)
 
-    # No duplicate node indices within a single edge
+    # No duplicate node indices within a single hyperedge
     for edge_id in edge_ids.unique():
         edge_mask = torch.isin(edge_ids, edge_id)
         unique_edge_nodes = node_ids[edge_mask].unique()

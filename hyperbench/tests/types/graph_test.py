@@ -119,7 +119,6 @@ def test_num_edges(graph, expected_num_edges):
     ],
 )
 def test_remove_selfloops(graph, expected_edges_after_removal):
-    """Test removing self-loops for various graph configurations."""
     graph.remove_selfloops()
     assert graph.edges == expected_edges_after_removal
 
@@ -194,7 +193,13 @@ def test_to_edge_index_does_not_modify_graph(mock_linear_graph):
 
 
 def test_to_edge_index_is_contiguous(mock_single_edge_graph):
-    """Test that to_edge_index returns a contiguous tensor."""
+    """
+    Test that to_edge_index returns a contiguous tensor.
+
+    Example:
+        If edges = [[0, 1]], then edge_index = [[0], [1]] should be contiguous.
+        If edges = [[0, 1], [1, 2], [2, 3]], then edge_index = [[0, 1, 2], [1, 2, 3]] should be contiguous.
+    """
     edge_index = mock_single_edge_graph.to_edge_index()
     assert edge_index.is_contiguous()
 

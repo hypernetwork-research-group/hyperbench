@@ -11,10 +11,10 @@ from hyperbench import utils
 def mock_dataset_single_sample():
     # Sample: 3 nodes (0, 1, 2), 2 hyperedges (0, 1)
     x = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-    edge_index = torch.tensor([[0, 1, 1, 2], [0, 0, 1, 1]])
-    edge_attr = torch.tensor([[0.5], [0.7]])
+    hyperedge_index = torch.tensor([[0, 1, 1, 2], [0, 0, 1, 1]])
+    hyperedge_attr = torch.tensor([[0.5], [0.7]])
 
-    data = HData(x=x, edge_index=edge_index, edge_attr=edge_attr)
+    data = HData(x=x, edge_index=hyperedge_index, edge_attr=hyperedge_attr)
 
     dataset = MagicMock(spec=Dataset)
     dataset.__len__.return_value = 1
@@ -27,13 +27,13 @@ def mock_dataset_single_sample():
 def mock_dataset_multiple_samples():
     # Sample 0: 3 nodes, 2 hyperedges
     x0 = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-    edge_index0 = torch.tensor([[0, 1, 1, 2], [0, 0, 1, 1]])
-    data0 = HData(x=x0, edge_index=edge_index0)
+    hyperedge_index0 = torch.tensor([[0, 1, 1, 2], [0, 0, 1, 1]])
+    data0 = HData(x=x0, edge_index=hyperedge_index0)
 
     # Sample 1: 2 nodes, 1 hyperedge
     x1 = torch.tensor([[7.0, 8.0], [9.0, 10.0]])
-    edge_index1 = torch.tensor([[0, 1], [0, 0]])
-    data1 = HData(x=x1, edge_index=edge_index1)
+    hyperedge_index1 = torch.tensor([[0, 1], [0, 0]])
+    data1 = HData(x=x1, edge_index=hyperedge_index1)
 
     dataset = MagicMock(spec=Dataset)
     dataset.__len__.return_value = 2
@@ -64,7 +64,7 @@ def test_initialization_with_custom_params(mock_dataset_single_sample):
 def test_collate_single_sample(mock_dataset_single_sample):
     loader = DataLoader(mock_dataset_single_sample, batch_size=1)
 
-    sample = mock_dataset_single_sample[0]
+    sample: HData = mock_dataset_single_sample[0]
     batched = loader.collate([sample])
 
     assert torch.equal(batched.x, sample.x)
@@ -80,8 +80,8 @@ def test_collate_single_sample(mock_dataset_single_sample):
 def test_collate_two_samples_no_edge_attr(mock_dataset_multiple_samples):
     loader = DataLoader(mock_dataset_multiple_samples, batch_size=2)
 
-    sample0 = mock_dataset_multiple_samples[0]
-    sample1 = mock_dataset_multiple_samples[1]
+    sample0: HData = mock_dataset_multiple_samples[0]
+    sample1: HData = mock_dataset_multiple_samples[1]
     batched = loader.collate([sample0, sample1])
 
     # Check node features are concatenated
@@ -97,21 +97,21 @@ def test_collate_two_samples_no_edge_attr(mock_dataset_multiple_samples):
     assert torch.equal(batched.x, expected_x)
     assert batched.num_nodes == 5
 
-    # Check edge_index nodes from Sample 1 are offset by 3 and hyperedges are offset by 2
+    # Check hyperedge_index nodes from Sample 1 are offset by 3 and hyperedges are offset by 2
     # Sample 0: nodes [0,1,2], edges [0,1]
     # Sample 1: nodes [3,4], edges [2] (offset by 3 nodes, 2 edges)
-    expected_edge_index = torch.tensor([[0, 1, 1, 2, 3, 4], [0, 0, 1, 1, 2, 2]])
-    assert torch.equal(batched.edge_index, expected_edge_index)
+    expected_hyperedge_index = torch.tensor([[0, 1, 1, 2, 3, 4], [0, 0, 1, 1, 2, 2]])
+    assert torch.equal(batched.edge_index, expected_hyperedge_index)
     assert batched.num_edges == 3
 
     assert batched.edge_attr is None
 
 
 def test_collate_two_samples_with_edge_attr(mock_dataset_multiple_samples):
-    sample0 = mock_dataset_multiple_samples[0]
+    sample0: HData = mock_dataset_multiple_samples[0]
     sample0.edge_attr = torch.tensor([[0.5], [0.7]])
 
-    sample1 = mock_dataset_multiple_samples[1]
+    sample1: HData = mock_dataset_multiple_samples[1]
     sample1.edge_attr = torch.tensor([[0.9]])
 
     mock_dataset_multiple_samples.__getitem__.side_effect = lambda idx: [
@@ -122,9 +122,9 @@ def test_collate_two_samples_with_edge_attr(mock_dataset_multiple_samples):
     loader = DataLoader(mock_dataset_multiple_samples, batch_size=2)
     batched = loader.collate([sample0, sample1])
 
-    expected_edge_attr = torch.tensor([[0.5], [0.7], [0.9]])
+    expected_hyperedge_attr = torch.tensor([[0.5], [0.7], [0.9]])
     assert torch.equal(
-        utils.to_non_empty_edgeattr(batched.edge_attr), expected_edge_attr
+        utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr
     )
 
 
@@ -145,7 +145,6 @@ def test_collate_three_samples():
     )
 
     dataset = MagicMock(spec=Dataset)
-    # TODO check that mock return value is local and not global
     dataset.__len__.return_value = 3
     dataset.__getitem__.side_effect = lambda idx: [sample0, sample1, sample2][idx]
 
@@ -159,16 +158,16 @@ def test_collate_three_samples():
     assert batched.num_nodes == total_nodes_from_all_samples
     assert batched.x.size(0) == total_nodes_from_all_samples
 
-    total_edges_from_all_samples = (
+    total_hyperedges_from_all_samples = (
         2 + 1 + 1
     )  # 4 hyperedges total, 2 from data0, 1 from data1, 1 from data2
-    assert batched.num_edges == total_edges_from_all_samples
+    assert batched.num_edges == total_hyperedges_from_all_samples
 
     # Sample 0: nodes [0,1], edges [0,1]
     # Sample 1: nodes [2], edges [2] (offset by 2 nodes, 2 edges)
     # Sample 2: nodes [3,4,5], edges [3] (offset by 3 nodes, 3 edges)
-    expected_edge_index = torch.tensor([[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 3, 3]])
-    assert torch.equal(batched.edge_index, expected_edge_index)
+    expected_hyperedge_index = torch.tensor([[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 3, 3]])
+    assert torch.equal(batched.edge_index, expected_hyperedge_index)
 
 
 def test_collate_empty_edge_index():
@@ -186,13 +185,13 @@ def test_collate_empty_edge_index():
     assert batched.num_nodes == 2
     assert batched.edge_index.size(1) == 0
 
-    assert batched.num_edges == 0  # max_edge_id (-1) + 1 = 0
+    assert batched.num_edges == 0  # max_hyperedge_id (-1) + 1 = 0
 
 
 def test_collate_multi_dimensional_edge_attributes(mock_dataset_multiple_samples):
-    sample0 = mock_dataset_multiple_samples[0]
+    sample0: HData = mock_dataset_multiple_samples[0]
     sample0.edge_attr = torch.tensor([[0.1, 0.2, 0.3]])
-    sample1 = mock_dataset_multiple_samples[1]
+    sample1: HData = mock_dataset_multiple_samples[1]
     sample1.edge_attr = torch.tensor([[0.4, 0.5, 0.6]])
 
     dataset = MagicMock(spec=Dataset)
@@ -202,16 +201,16 @@ def test_collate_multi_dimensional_edge_attributes(mock_dataset_multiple_samples
 
     batched = loader.collate([sample0, sample1])
 
-    expected_edge_attr = torch.tensor([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+    expected_hyperedge_attr = torch.tensor([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
     assert torch.equal(
-        utils.to_non_empty_edgeattr(batched.edge_attr), expected_edge_attr
+        utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr
     )
 
 
 def test_collate_mixed_edge_attr_presence(mock_dataset_multiple_samples):
-    sample0_with_edge_attr = mock_dataset_multiple_samples[0]
+    sample0_with_edge_attr: HData = mock_dataset_multiple_samples[0]
     sample0_with_edge_attr.edge_attr = torch.tensor([[0.1, 0.2, 0.3]])
-    sample1_no_edge_attr = mock_dataset_multiple_samples[1]
+    sample1_no_edge_attr: HData = mock_dataset_multiple_samples[1]
 
     dataset = MagicMock(spec=Dataset)
     dataset.__getitem__.side_effect = lambda idx: [
@@ -223,10 +222,10 @@ def test_collate_mixed_edge_attr_presence(mock_dataset_multiple_samples):
 
     batched = loader.collate([sample0_with_edge_attr, sample1_no_edge_attr])
 
-    # Only sample0 has edge_attr, so only that should be in the batch
-    expected_edge_attr = torch.tensor([[0.1, 0.2, 0.3]])
+    # Only sample0 has hyperedge_attr, so only that should be in the batch
+    expected_hyperedge_attr = torch.tensor([[0.1, 0.2, 0.3]])
     assert torch.equal(
-        utils.to_non_empty_edgeattr(batched.edge_attr), expected_edge_attr
+        utils.to_non_empty_edgeattr(batched.edge_attr), expected_hyperedge_attr
     )
 
 
@@ -287,7 +286,3 @@ def test_iteration_over_dataloader():
     assert (
         dataset.__getitem__.call_count == n_samples
     )  # Ensure all samples were accessed
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
