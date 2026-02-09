@@ -33,9 +33,20 @@ Reads as *"If applied, this commit will add new authentication method to API"*.
 
 ## Branch naming
 
-Branch names should be descriptive and use hyphens to separate words. They should also follow the same structure as commit messages, using the allowed structural elements. For example:
+Branch names should follow the pattern `^(feat|fix|chore|refactor|docs)\/[a-z0-9]+(-[a-z0-9]+)*$`. This means that branch names should:
+- Start with the same structural elements as commit messages.
+- Be descriptive and contain only lowercase letters and numbers.
+- Use hyphens to separate words.
+
+For example:
 - `feat/add-user-authentication`
 - `fix/issue-with-database-connection`
 - `chore/update-dependencies`
 - `refactor/improve-code-structure`
 - `docs/update-contributing-guidelines`
+
+To verify that your branch name adheres to these guidelines, you can use the following command:
+
+```bash
+git rev-parse --abbrev-ref HEAD | grep -Eq '^(feat|fix|chore|refactor|docs)\/[a-z0-9]+(-[a-z0-9]+)*$' && echo "Branch name is compliant" || echo "Invalid branch name"
+```
