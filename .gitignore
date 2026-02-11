@@ -125,4 +125,4 @@ cython_debug/
 
 # Custom
 data/datasets/*.zst
-plans/
+.plans/
