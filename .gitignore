@@ -123,5 +123,6 @@ cython_debug/
 # MacOS
 .DS_Store
 
-# Datasets
+# Custom
 data/datasets/*.zst
+plans/
