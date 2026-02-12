@@ -152,89 +152,42 @@ class Dataset(TorchDataset):
             HData: Processed hypergraph data.
         """
         num_nodes = len(self.hypergraph.nodes)
+        x = self.__process_x(num_nodes)
 
-        # x: shape [num_nodes, num_node_features]
-        # collect all attribute keys to have tensors of same size
-        node_attr_keys = self.__collect_attr_keys(
-            [node.get("attrs", {}) for node in self.hypergraph.nodes]
-        )
-
-        if node_attr_keys:
-            x = torch.stack(
-                [
-                    self.transform_node_attrs(node.get("attrs", {}), attr_keys=node_attr_keys)
-                    for node in self.hypergraph.nodes
-                ]
-            )
-        else:
-            # Fallback to ones if no node features, 1 is better as it can help during
-            # training (e.g., avoid zero multiplication), especially in first epochs
-            x = torch.ones((num_nodes, 1), dtype=torch.float)
-
-        # Remap node IDs to 0-based contiguous IDs matching the x tensor order
-        node_set = {node.get("node"): id for id, node in enumerate(self.hypergraph.nodes)}
-        # Initialize edge_set only with edges that have incidences
-        # to avoid inflating edge count due to isolated nodes/missing incidences
-        hyperedge_set = {}
+        # Remap node IDs to 0-based contiguous IDs (using indices) matching the x tensor order
+        node_id_to_idx = {node.get("node"): idx for idx, node in enumerate(self.hypergraph.nodes)}
+        # Initialize edge_set only with edges that have incidences, so that
+        # we avoid inflating edge count due to isolated nodes/missing incidences
+        hyperedge_id_to_idx: Dict[Any, int] = {}
 
         node_ids = []
         hyperedge_ids = []
         nodes_with_incidences = set()
-
         for incidence in self.hypergraph.incidences:
-            node = incidence.get("node", 0)
-            hyperedge = incidence.get("edge", 0)
+            node_id = incidence.get("node", 0)
+            hyperedge_id = incidence.get("edge", 0)
 
-            if hyperedge not in hyperedge_set:
-                # Edges start from 0 and are assigned IDs in the order they are first encountered in incidences
-                hyperedge_set[hyperedge] = len(hyperedge_set)
+            if hyperedge_id not in hyperedge_id_to_idx:
+                # Hyperedges start from 0 and are assigned IDs in the order they are first encountered in incidences
+                hyperedge_id_to_idx[hyperedge_id] = len(hyperedge_id_to_idx)
 
-            node_ids.append(node_set[node])
-            hyperedge_ids.append(hyperedge_set[hyperedge])
-            nodes_with_incidences.add(node_set[node])
+            node_ids.append(node_id_to_idx[node_id])
+            hyperedge_ids.append(hyperedge_id_to_idx[hyperedge_id])
+            nodes_with_incidences.add(node_id_to_idx[node_id])
 
         # Handle isolated nodes by assigning them to a new unique hyperedge (self-loop)
-        for hyperedge_idx in range(num_nodes):
-            if hyperedge_idx not in nodes_with_incidences:
-                new_hyperedge_id = len(hyperedge_set)
+        for node_idx in range(num_nodes):
+            if node_idx not in nodes_with_incidences:
+                new_hyperedge_id = len(hyperedge_id_to_idx)
                 # Unique dummy key to reserve the index in hyperedge_set
-                hyperedge_set[f"__self_loop_{hyperedge_idx}__"] = new_hyperedge_id
-
-                node_ids.append(hyperedge_idx)
+                hyperedge_id_to_idx[f"__self_loop_{node_idx}__"] = new_hyperedge_id
+                node_ids.append(node_idx)
                 hyperedge_ids.append(new_hyperedge_id)
 
-        num_hyperedges = len(hyperedge_set)
+        num_hyperedges = len(hyperedge_id_to_idx)
+        hyperedge_attr = self.__process_hyperedge_attr(hyperedge_id_to_idx, num_hyperedges)
 
-        # hyperedge_index: shape [2, E] where E is number of incidences
         hyperedge_index = torch.tensor([node_ids, hyperedge_ids], dtype=torch.long)
-
-        # hyperedge-attr: shape [num_hyperedges, num_hyperedge_attributes]
-        hyperedge_attr = None
-        should_process_hyperedge_attrs = self.hypergraph.edges and any(
-            "attrs" in edge for edge in self.hypergraph.edges
-        )
-        if should_process_hyperedge_attrs:
-            hyperedge_id_to_attrs: Dict[Any, Dict[str, Any]] = {
-                e.get("edge"): e.get("attrs", {}) for e in self.hypergraph.edges
-            }
-
-            hyperedge_attr_keys = self.__collect_attr_keys(list(hyperedge_id_to_attrs.values()))
-
-            # Build attributes in exact order of hyperedge_set indices (0 to num_hyperedges - 1)
-            idx_to_id = {
-                hyperedge_idx: hyperedge_id for hyperedge_id, hyperedge_idx in hyperedge_set.items()
-            }
-
-            attrs = []
-            for hyperedge_idx in range(num_hyperedges):
-                hyperedge_id = idx_to_id[hyperedge_idx]
-
-                # If it's a real hyperedge, get its attrs, if self-loop, get empty dict
-                hyperedge_attrs = hyperedge_id_to_attrs.get(hyperedge_id, {})
-                attrs.append(
-                    self.transform_hyperedge_attrs(hyperedge_attrs, attr_keys=hyperedge_attr_keys)
-                )
-            hyperedge_attr = torch.stack(attrs)
 
         return HData(x, hyperedge_index, hyperedge_attr, num_nodes, num_hyperedges)
 
@@ -326,19 +279,97 @@ class Dataset(TorchDataset):
 
         return [id]
 
-    def __validate_node_ids(self, node_ids: List[int]) -> None:
+    def __new_hyperedge_index(
+        self,
+        sampled_hyperedge_index: Tensor,
+        sampled_node_ids: Tensor,
+        sampled_hyperedge_ids: Tensor,
+    ) -> Tensor:
         """
-        Validate that node IDs are within bounds of the hypergraph.
+        Create new hyperedge_index with 0-based node and hyperedge IDs.
 
         Args:
-            node_ids: List of node IDs to validate.
+            sampled_hyperedge_index: Original hyperedge_index tensor with sampled incidences.
+            sampled_node_ids: List of sampled original node IDs.
+            sampled_hyperedge_ids: List of sampled original hyperedge IDs.
 
-        Raises:
-            IndexError: If any node ID is out of bounds.
+        Returns:
+            New hyperedge_index tensor with 0-based node and edge IDs.
         """
-        for id in node_ids:
-            if id < 0 or id >= self.__len__():
-                raise IndexError(f"Node ID {id} is out of bounds (0, {self.__len__() - 1}).")
+        # Example: sampled_edge_index = [[1, 1, 3],
+        #                                [0, 2, 2]]
+        #          sampled_node_ids = [1, 3],
+        #          sampled_edge_ids = [0, 2]
+        #          -> new_node_ids = [0, 0, 1], new_edge_ids = [0, 1, 1]
+        new_node_ids = self.__to_0based_ids(
+            sampled_hyperedge_index[0], sampled_node_ids, self.hdata.num_nodes
+        )
+        new_hyperedge_ids = self.__to_0based_ids(
+            sampled_hyperedge_index[1], sampled_hyperedge_ids, self.hdata.num_edges
+        )
+
+        # Example: new_node_ids = [0, 1], new_hyperedge_ids = [0, 1]
+        #          -> new_hyperedge_index = [[0, 1],
+        #                                    [0, 1]]
+        new_hyperedge_index = torch.stack([new_node_ids, new_hyperedge_ids], dim=0)
+        return new_hyperedge_index
+
+    def __process_hyperedge_attr(
+        self,
+        hyperedge_id_to_idx: Dict[Any, int],
+        num_hyperedges: int,
+    ) -> Optional[Tensor]:
+        # hyperedge-attr: shape [num_hyperedges, num_hyperedge_attributes]
+        hyperedge_attr = None
+        has_hyperedges = self.hypergraph.edges is not None and len(self.hypergraph.edges) > 0
+        has_any_hyperedge_attrs = has_hyperedges and any(
+            "attrs" in edge for edge in self.hypergraph.edges
+        )
+
+        if has_any_hyperedge_attrs:
+            hyperedge_id_to_attrs: Dict[Any, Dict[str, Any]] = {
+                e.get("edge"): e.get("attrs", {}) for e in self.hypergraph.edges
+            }
+
+            hyperedge_attr_keys = self.__collect_attr_keys(list(hyperedge_id_to_attrs.values()))
+
+            # Build attributes in exact order of hyperedge_set indices (0 to num_hyperedges - 1)
+            hyperedge_idx_to_id = {idx: id for id, idx in hyperedge_id_to_idx.items()}
+
+            attrs = []
+            for hyperedge_idx in range(num_hyperedges):
+                hyperedge_id = hyperedge_idx_to_id[hyperedge_idx]
+
+                transformed_attrs = self.transform_hyperedge_attrs(
+                    # If it's a real hyperedge, get its attrs; if self-loop, get empty dict
+                    attrs=hyperedge_id_to_attrs.get(hyperedge_id, {}),
+                    attr_keys=hyperedge_attr_keys,
+                )
+                attrs.append(transformed_attrs)
+
+            hyperedge_attr = torch.stack(attrs)
+
+        return hyperedge_attr
+
+    def __process_x(self, num_nodes: int) -> Tensor:
+        # Collect all attribute keys to have tensors of same size
+        node_attr_keys = self.__collect_attr_keys(
+            [node.get("attrs", {}) for node in self.hypergraph.nodes]
+        )
+
+        if node_attr_keys:
+            x = torch.stack(
+                [
+                    self.transform_node_attrs(node.get("attrs", {}), attr_keys=node_attr_keys)
+                    for node in self.hypergraph.nodes
+                ]
+            )
+        else:
+            # Fallback to ones if no node features, 1 is better as it can help during
+            # training (e.g., avoid zero multiplication), especially in first epochs
+            x = torch.ones((num_nodes, 1), dtype=torch.float)
+
+        return x  # shape [num_nodes, num_node_features]
 
     def __sample_hyperedge_index(
         self,
@@ -379,41 +410,6 @@ class Dataset(TorchDataset):
         sampled_hyperedge_index = hyperedge_index[:, hyperedge_incidence_mask]
         return sampled_hyperedge_index, node_ids_in_sampled_hyperedge, sampled_hyperedge_ids
 
-    def __new_hyperedge_index(
-        self,
-        sampled_hyperedge_index: Tensor,
-        sampled_node_ids: Tensor,
-        sampled_hyperedge_ids: Tensor,
-    ) -> Tensor:
-        """
-        Create new hyperedge_index with 0-based node and hyperedge IDs.
-
-        Args:
-            sampled_hyperedge_index: Original hyperedge_index tensor with sampled incidences.
-            sampled_node_ids: List of sampled original node IDs.
-            sampled_hyperedge_ids: List of sampled original hyperedge IDs.
-
-        Returns:
-            New hyperedge_index tensor with 0-based node and edge IDs.
-        """
-        # Example: sampled_edge_index = [[1, 1, 3],
-        #                                [0, 2, 2]]
-        #          sampled_node_ids = [1, 3],
-        #          sampled_edge_ids = [0, 2]
-        #          -> new_node_ids = [0, 0, 1], new_edge_ids = [0, 1, 1]
-        new_node_ids = self.__to_0based_ids(
-            sampled_hyperedge_index[0], sampled_node_ids, self.hdata.num_nodes
-        )
-        new_hyperedge_ids = self.__to_0based_ids(
-            sampled_hyperedge_index[1], sampled_hyperedge_ids, self.hdata.num_edges
-        )
-
-        # Example: new_node_ids = [0, 1], new_hyperedge_ids = [0, 1]
-        #          -> new_hyperedge_index = [[0, 1],
-        #                                    [0, 1]]
-        new_hyperedge_index = torch.stack([new_node_ids, new_hyperedge_ids], dim=0)
-        return new_hyperedge_index
-
     def __to_0based_ids(
         self,
         original_ids: Tensor,
@@ -443,6 +439,20 @@ class Dataset(TorchDataset):
         n_ids_to_keep = len(ids_to_keep)
         id_to_0based_id[ids_to_keep] = torch.arange(n_ids_to_keep, device=device)
         return id_to_0based_id[original_ids]
+
+    def __validate_node_ids(self, node_ids: List[int]) -> None:
+        """
+        Validate that node IDs are within bounds of the hypergraph.
+
+        Args:
+            node_ids: List of node IDs to validate.
+
+        Raises:
+            IndexError: If any node ID is out of bounds.
+        """
+        for id in node_ids:
+            if id < 0 or id >= self.__len__():
+                raise IndexError(f"Node ID {id} is out of bounds (0, {self.__len__() - 1}).")
 
 
 class AlgebraDataset(Dataset):
