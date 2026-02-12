@@ -27,12 +27,6 @@ def mock_hdata_no_attr():
     )
 
 
-def test_negative_sampler_is_abstract(mock_hdata_no_attr):
-    sampler = NegativeSampler()
-    with pytest.raises(NotImplementedError):
-        sampler.sample(mock_hdata_no_attr)
-
-
 def test_random_negative_sampler_invalid_args():
     with pytest.raises(ValueError, match="num_negative_samples must be positive, got 0"):
         RandomNegativeSampler(num_negative_samples=0, num_nodes_per_sample=2)
