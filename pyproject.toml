@@ -13,6 +13,10 @@ dependencies = [
     "zstandard>=0.25.0",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hyperbench"]
+
 [dependency-groups]
 dev = [
     "mkdocs>=1.6.1",
