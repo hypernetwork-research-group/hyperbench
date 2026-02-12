@@ -29,17 +29,18 @@ class DatasetNames(Enum):
     EMAIL_W3C = "email-W3C"
     GEOMETRY = "geometry"
     GOT = "got"
-    IMBD = "imdb"
+    IMDB = "imdb"
     MUSIC_BLUES_REVIEWS = "music-blues-reviews"
     NBA = "nba"
     NDC_CLASSES = "NDC-classes"
     NDC_SUBSTANCES = "NDC-substances"
+    PATENT = "patent"
+    PUBMED = "pubmed"
     RESTAURANT_REVIEWS = "restaurant-reviews"
     THREADS_ASK_UBUNTU = "threads-ask-ubuntu"
     THREADS_MATH_SX = "threads-math-sx"
     TWITTER = "twitter"
     VEGAS_BARS_REVIEWS = "vegas-bars-reviews"
-    PATENT = "patent"
 
 
 class HIFConverter:
@@ -140,7 +141,7 @@ class Dataset(TorchDataset):
         """
         if hasattr(self, "hypergraph") and self.hypergraph is not None:
             return self.hypergraph
-        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME)
+        hypergraph = HIFConverter.load_from_hif(self.DATASET_NAME, save_on_disk=True)
         return hypergraph
 
     def process(self) -> HData:
@@ -151,7 +152,6 @@ class Dataset(TorchDataset):
             HData: Processed hypergraph data.
         """
         num_nodes = len(self.hypergraph.nodes)
-        num_edges = len(self.hypergraph.edges)
 
         # x: shape [num_nodes, num_node_features]
         # collect all attribute keys to have tensors of same size
@@ -171,53 +171,72 @@ class Dataset(TorchDataset):
             # training (e.g., avoid zero multiplication), especially in first epochs
             x = torch.ones((num_nodes, 1), dtype=torch.float)
 
-        # remap node and edge IDs to 0-based contiguous IDs
-        # Use dict comprehension for faster lookups
-        node_set = {}
-        edge_set = {}
+        # Remap node IDs to 0-based contiguous IDs matching the x tensor order
+        node_set = {node.get("node"): id for id, node in enumerate(self.hypergraph.nodes)}
+        # Initialize edge_set only with edges that have incidences
+        # to avoid inflating edge count due to isolated nodes/missing incidences
+        hyperedge_set = {}
+
         node_ids = []
-        edge_ids = []
+        hyperedge_ids = []
+        nodes_with_incidences = set()
 
-        for inc in self.hypergraph.incidences:
-            node = inc.get("node", 0)
-            edge = inc.get("edge", 0)
+        for incidence in self.hypergraph.incidences:
+            node = incidence.get("node", 0)
+            hyperedge = incidence.get("edge", 0)
 
-            if node not in node_set:
-                node_set[node] = len(node_set)
-            if edge not in edge_set:
-                edge_set[edge] = len(edge_set)
+            if hyperedge not in hyperedge_set:
+                # Edges start from 0 and are assigned IDs in the order they are first encountered in incidences
+                hyperedge_set[hyperedge] = len(hyperedge_set)
 
             node_ids.append(node_set[node])
-            edge_ids.append(edge_set[edge])
+            hyperedge_ids.append(hyperedge_set[hyperedge])
+            nodes_with_incidences.add(node_set[node])
 
-        if len(node_ids) < 1:
-            raise ValueError("Hypergraph has no incidences.")
+        # Handle isolated nodes by assigning them to a new unique hyperedge (self-loop)
+        for hyperedge_idx in range(num_nodes):
+            if hyperedge_idx not in nodes_with_incidences:
+                new_hyperedge_id = len(hyperedge_set)
+                # Unique dummy key to reserve the index in hyperedge_set
+                hyperedge_set[f"__self_loop_{hyperedge_idx}__"] = new_hyperedge_id
+
+                node_ids.append(hyperedge_idx)
+                hyperedge_ids.append(new_hyperedge_id)
+
+        num_hyperedges = len(hyperedge_set)
 
         # hyperedge_index: shape [2, E] where E is number of incidences
-        hyperedge_index = torch.tensor([node_ids, edge_ids], dtype=torch.long)
+        hyperedge_index = torch.tensor([node_ids, hyperedge_ids], dtype=torch.long)
 
         # hyperedge-attr: shape [num_hyperedges, num_hyperedge_attributes]
         hyperedge_attr = None
-        if self.hypergraph.edges and any("attrs" in edge for edge in self.hypergraph.edges):
-            # collect all attribute keys to have tensors of same size
-            hyperedge_attr_keys = self.__collect_attr_keys(
-                [edge.get("attrs", {}) for edge in self.hypergraph.edges]
-            )
+        should_process_hyperedge_attrs = self.hypergraph.edges and any(
+            "attrs" in edge for edge in self.hypergraph.edges
+        )
+        if should_process_hyperedge_attrs:
+            hyperedge_id_to_attrs: Dict[Any, Dict[str, Any]] = {
+                e.get("edge"): e.get("attrs", {}) for e in self.hypergraph.edges
+            }
 
-            hyperedge_attr = torch.stack(
-                [
-                    self.transform_hyperedge_attrs(
-                        edge.get("attrs", {}), attr_keys=hyperedge_attr_keys
-                    )
-                    for edge in self.hypergraph.edges
-                ]
-            )
+            hyperedge_attr_keys = self.__collect_attr_keys(list(hyperedge_id_to_attrs.values()))
 
-            # Flatten to 1D if only one attribute (PyTorch Geometric standard)
-            # if edge_attr.shape[1] == 1:
-            #     hyperedge_attr = hyperedge_attr.squeeze(1)
+            # Build attributes in exact order of hyperedge_set indices (0 to num_hyperedges - 1)
+            idx_to_id = {
+                hyperedge_idx: hyperedge_id for hyperedge_id, hyperedge_idx in hyperedge_set.items()
+            }
 
-        return HData(x, hyperedge_index, hyperedge_attr, num_nodes, num_edges)
+            attrs = []
+            for hyperedge_idx in range(num_hyperedges):
+                hyperedge_id = idx_to_id[hyperedge_idx]
+
+                # If it's a real hyperedge, get its attrs, if self-loop, get empty dict
+                hyperedge_attrs = hyperedge_id_to_attrs.get(hyperedge_id, {})
+                attrs.append(
+                    self.transform_hyperedge_attrs(hyperedge_attrs, attr_keys=hyperedge_attr_keys)
+                )
+            hyperedge_attr = torch.stack(attrs)
+
+        return HData(x, hyperedge_index, hyperedge_attr, num_nodes, num_hyperedges)
 
     def transform_node_attrs(
         self,
@@ -341,22 +360,24 @@ class Dataset(TorchDataset):
         #          -> sampled_hyperedge_ids = [0, 2] as they connect to sampled nodes
         sampled_hyperedge_ids = hyperedge_ids[node_incidence_mask].unique()
 
-        # Find all incidences for sampled nodes belonging to relevant hyperedges
+        # Find all incidences for the sampled hyperedges (not just sampled nodes)
         # Example: hyperedge_index[1] = [0, 0, 0, 1, 2, 2], sampled_hyperedge_ids = [0, 2]
         #          -> hyperedge_incidence_mask = [True, True, True, False, True, True]
         hyperedge_incidence_mask = torch.isin(hyperedge_ids, sampled_hyperedge_ids)
 
-        # Incidence is kept if node is sampled AND hyperedge is relevant
-        incidence_mask = node_incidence_mask & hyperedge_incidence_mask
+        # Collect all node IDs that appear in the sampled hyperedges
+        # Example: hyperedge_index[0] = [0, 0, 1, 2, 3, 4], hyperedge_incidence_mask = [True, True, True, False, True, True]
+        #          -> node_ids_in_sampled_hyperedge = [0, 1, 3, 4]
+        node_ids_in_sampled_hyperedge = node_ids[hyperedge_incidence_mask].unique()
 
-        # Keep only the incidences that match our mask
+        # Keep all incidences belonging to the sampled hyperedges
         # Example: hyperedge_index = [[0, 0, 1, 2, 3, 4],
-        #                              [0, 0, 0, 1, 2, 2]],
-        #          incidence_mask = [True, True, False, False, True, False]
-        #          -> sampled_hyperedge_index = [[0, 0, 3],
-        #                                        [0, 0, 2]]
-        sampled_hyperedge_index = hyperedge_index[:, incidence_mask]
-        return sampled_hyperedge_index, sampled_node_ids, sampled_hyperedge_ids
+        #                             [0, 0, 0, 1, 2, 2]],
+        #          hyperedge_incidence_mask = [True, True, True, False, True, True]
+        #          -> sampled_hyperedge_index = [[0, 0, 1, 3, 4],
+        #                                        [0, 0, 0, 2, 2]]
+        sampled_hyperedge_index = hyperedge_index[:, hyperedge_incidence_mask]
+        return sampled_hyperedge_index, node_ids_in_sampled_hyperedge, sampled_hyperedge_ids
 
     def __new_hyperedge_index(
         self,
@@ -428,25 +449,89 @@ class AlgebraDataset(Dataset):
     DATASET_NAME = "ALGEBRA"
 
 
-class DBLPDataset(Dataset):
-    DATASET_NAME = "DBLP"
+class AmazonDataset(Dataset):
+    DATASET_NAME = "AMAZON"
 
 
-class ThreadsMathsxDataset(Dataset):
-    DATASET_NAME = "THREADSMATHSX"
+class ContactHighSchoolDataset(Dataset):
+    DATASET_NAME = "CONTACT_HIGH_SCHOOL"
 
 
-class PatentDataset(Dataset):
-    DATASET_NAME = "PATENT"
+class ContactPrimarySchoolDataset(Dataset):
+    DATASET_NAME = "CONTACT_PRIMARY_SCHOOL"
+
+
+class CoraDataset(Dataset):
+    DATASET_NAME = "CORA"
 
 
 class CourseraDataset(Dataset):
     DATASET_NAME = "COURSERA"
 
 
+class DBLPDataset(Dataset):
+    DATASET_NAME = "DBLP"
+
+
+class EmailEnronDataset(Dataset):
+    DATASET_NAME = "EMAIL_ENRON"
+
+
+class EmailW3CDataset(Dataset):
+    DATASET_NAME = "EMAIL_W3C"
+
+
+class GeometryDataset(Dataset):
+    DATASET_NAME = "GEOMETRY"
+
+
+class GOTDataset(Dataset):
+    DATASET_NAME = "GOT"
+
+
 class IMDBDataset(Dataset):
     DATASET_NAME = "IMDB"
 
 
-class CoraDataset(Dataset):
-    DATASET_NAME = "CORA"
+class MusicBluesReviewsDataset(Dataset):
+    DATASET_NAME = "MUSIC_BLUES_REVIEWS"
+
+
+class NBADataset(Dataset):
+    DATASET_NAME = "NBA"
+
+
+class NDCClassesDataset(Dataset):
+    DATASET_NAME = "NDC_CLASSES"
+
+
+class NDCSubstancesDataset(Dataset):
+    DATASET_NAME = "NDC_SUBSTANCES"
+
+
+class PatentDataset(Dataset):
+    DATASET_NAME = "PATENT"
+
+
+class PubmedDataset(Dataset):
+    DATASET_NAME = "PUBMED"
+
+
+class RestaurantReviewsDataset(Dataset):
+    DATASET_NAME = "RESTAURANT_REVIEWS"
+
+
+class ThreadsAskUbuntuDataset(Dataset):
+    DATASET_NAME = "THREADS_ASK_UBUNTU"
+
+
+class ThreadsMathsxDataset(Dataset):
+    DATASET_NAME = "THREADS_MATH_SX"
+
+
+class TwitterDataset(Dataset):
+    DATASET_NAME = "TWITTER"
+
+
+class VegasBarsReviewsDataset(Dataset):
+    DATASET_NAME = "VEGAS_BARS_REVIEWS"
