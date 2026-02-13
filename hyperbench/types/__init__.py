@@ -1,5 +1,5 @@
 from .graph import EdgeIndex, Graph
-from .hypergraph import HIFHypergraph, Hypergraph, HyperedgeIndex
+from .hypergraph import HIFHypergraph, Hypergraph, HyperedgeIndex, Neighborhood
 from .hdata import HData
 from .model import CkptStrategy, ModelConfig, TestResult
 
@@ -12,5 +12,6 @@ __all__ = [
     "Hypergraph",
     "HyperedgeIndex",
     "ModelConfig",
+    "Neighborhood",
     "TestResult",
 ]

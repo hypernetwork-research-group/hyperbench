@@ -1,9 +1,12 @@
 import torch
 
 from torch import Tensor
-from typing import Optional, List, Dict, Any, Literal
+from typing import Optional, List, Dict, Any, Literal, Set, TypeAlias
 
 from .graph import Graph
+
+
+Neighborhood: TypeAlias = Set[int]
 
 
 class HIFHypergraph:
@@ -93,6 +96,47 @@ class Hypergraph:
         """Return the number of edges in the hypergraph."""
         return len(self.edges)
 
+    def neighbors_of(self, node: int) -> Neighborhood:
+        """
+        Return the set of nodes that share at least one hyperedge with node.
+
+        A node u is a neighbor of v if there exists a hyperedge e such that
+        both u and v are in e. The node itself is excluded from the result.
+
+        Args:
+            node: The node ID to find neighbors for.
+
+        Returns:
+            A set of neighbor node IDs (excluding the node itself).
+        """
+        neighbors: Neighborhood = set()
+        for edge in self.edges:
+            if node in edge:
+                neighbors.update(edge)
+
+        neighbors.discard(node)
+        return neighbors
+
+    def neighbors_of_all(self) -> Dict[int, Neighborhood]:
+        """
+        Build a mapping from every node to its neighbors.
+
+        This precomputes ``neighbors_of`` for all nodes at once, which is
+        more efficient when scoring many candidate hyperedges.
+
+        Returns:
+            A dictionary mapping each node ID to its set of neighbors.
+        """
+        nodes: Set[int] = set()
+        for edge in self.edges:
+            nodes.update(edge)
+
+        node_to_neighbors: Dict[int, Neighborhood] = {}
+        for node in nodes:
+            node_to_neighbors[node] = self.neighbors_of(node)
+
+        return node_to_neighbors
+
     @classmethod
     def from_hyperedge_index(cls, hyperedge_index: Tensor) -> "Hypergraph":
         """
@@ -159,6 +203,10 @@ class HyperedgeIndex:
 
         nodes = self.hyperedge_index[0]
         return int(nodes.max().item()) + 1
+
+    def nodes_in(self, hyperedge_id: int) -> List[int]:
+        """Return the list of node IDs that belong to the given hyperedge."""
+        return self.hyperedge_index[0, self.hyperedge_index[1] == hyperedge_id].tolist()
 
     def reduce_to_edge_index_on_random_direction(
         self,
