@@ -65,8 +65,7 @@ class RandomNegativeSampler(NegativeSampler):
         The resulting negative samples are returned as a new :class:`HData` object with remapped 0-based node and hyperedge IDs, and mappings to the original IDs.
 
         Example:
-            ```python
-            num_negative_samples = 2, num_nodes_per_sample = 3
+            >>> num_negative_samples = 2, num_nodes_per_sample = 3
             >>> negative_hyperedge_index = [[0, 0, 1, 2, 3, 4],
                                            [0, 1, 1, 0, 1, 0]]
                 The negative hyperedge 0 connects nodes 0, 2, 3.
@@ -75,7 +74,6 @@ class RandomNegativeSampler(NegativeSampler):
             >>> negative_hyperedge_attr = random attributes for the 2 negative hyperedges (if data.edge_attr is not None)
             >>> node_local_to_global = [0, 1, 2, 3, 4]
             >>> edge_local_to_global = [3, 4]  # if data.num_edges was 3, the new negative hyperedges will have global IDs 3 and 4
-            ```
         Args:
             data (HData): The input data object containing node and hyperedge information.
 
