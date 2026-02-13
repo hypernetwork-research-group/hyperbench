@@ -83,3 +83,13 @@ def test_random_negative_sampler_sample_unique_nodes(mock_hdata_with_attr):
         unique_edge_nodes = node_ids[edge_mask].unique()
 
         assert len(unique_edge_nodes) == sampler.num_nodes_per_sample
+
+
+def test_random_negative_sampler_sample_nodes_0based(mock_hdata_no_attr):
+    sampler = RandomNegativeSampler(num_negative_samples=2, num_nodes_per_sample=2)
+    result = sampler.sample(mock_hdata_no_attr)
+
+    node_ids = result.edge_index[0]
+
+    assert torch.all(node_ids >= 0)
+    assert torch.all(node_ids < mock_hdata_no_attr.num_nodes)
