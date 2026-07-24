@@ -9,7 +9,7 @@ site_url = "https://hypernetwork-research-group.github.io/hypertorch"
 repo_name = "HyperTorch"
 repo_url = "https://github.com/hypernetwork-research-group/hypertorch"
 copyright = """
-Copyright &copy; 2026 The authors
+Copyright &copy; 2026 Tiziano Citro, Daniele De Vinco, and Carmine Spagnuolo
 """
 
 # Mirror the old MkDocs nav structure explicitly.
@@ -43,9 +43,9 @@ nav = [
     { "Overview" = "api/reference.md" },
     { "Data" = "api/data.md" },
     { "Hyperlink prediction (HLP)" = "api/hyperlink_prediction.md" },
-    { "NC (Node classification)" = "api/nc.md" },
+    { "Node classification (NC)" = "api/nc.md" },
     { "Models" = "api/models.md" },
-    { "NN" = "api/nn.md" },
+    { "Neural components (NN)" = "api/nn.md" },
     { "Train" = "api/train.md" },
     { "Types" = "api/types.md" },
     { "Utils" = "api/utils.md" },
