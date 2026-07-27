@@ -117,7 +117,7 @@ and open the browser at http://localhost:8000 to access the documentation.
 
 ## License
 
-See [LICENSE](LICENSE).
+This project is released under the Apache License 2.0 license. See [LICENSE](LICENSE).
 
 ## Discussion
 

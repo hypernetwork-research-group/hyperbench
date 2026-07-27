@@ -50,7 +50,7 @@ If you're interested in contributing, please visit the [contributing guide](http
 
 The core development team includes:
 
-| GitHub handle | Mail | Full Name |
+| GitHub handle | Mail | Full name |
 | --- | --- | --- |
 | @tizianocitro | tcitro@unisa.it | Tiziano Citro |
 | @ddevin96 | ddevinco@unisa.it | Daniele De Vinco |
@@ -61,4 +61,4 @@ The core development team includes:
 
 ## License
 
-This project is under the MIT license. See [LICENSE](https://github.com/hypernetwork-research-group/hypertorch/blob/main/LICENSE).
+This project is released under the Apache License 2.0 license. See [LICENSE](https://github.com/hypernetwork-research-group/hypertorch/blob/main/LICENSE).
