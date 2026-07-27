@@ -381,7 +381,7 @@ def load_hypergcn_no_mediator_fast(
 
     configs = [
         ModelConfig(
-            name=f"hypergcn_no_med_{num_run}",
+            name=f"hypergcn_no_med_fast_{num_run}",
             version="hyperlink-prediction",
             model=model,
             train_dataloader=train_loader,
@@ -425,7 +425,7 @@ def load_hypergcn_with_mediator_fast(
 
     configs = [
         ModelConfig(
-            name=f"hypergcn_with_med_{num_run}",
+            name=f"hypergcn_with_med_fast_{num_run}",
             version="hyperlink-prediction",
             model=model,
             train_dataloader=train_loader,

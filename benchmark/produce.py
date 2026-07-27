@@ -81,7 +81,7 @@ def build_table_with_std(folder: str):
                 for metric in ["accuracy", "roc-auc", "precision"]:
                     mean = df[df["model"] == model][metric].mean()
                     std = df[df["model"] == model][metric].std()
-                    df.loc[df["model"] == model, metric] = f"{mean:.4f} ± {std:.4f}"
+                    df.loc[df["model"] == model, metric] = f"{mean:.2f} ± {std:.2f}"
             df = df.drop_duplicates(subset=["model"])
             df.to_csv(os.path.join(path, f"{csvs.split('_metrics.csv')[0]}_metrics_mean_std.csv"))
 
@@ -97,6 +97,8 @@ def create_latex_table(dataset_name: str, task: str, folder: str, output_folder:
         + dataset_name
         + r"""}
 \centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
 \caption{Results for """
         + task
         + r""" - dataset """
@@ -107,7 +109,7 @@ def create_latex_table(dataset_name: str, task: str, folder: str, output_folder:
 \addlinespace[3pt]
 \multicolumn{4}{c}{\textbf{Test Results}} \\
 \midrule
-Model & accuracy & roc-auc & precision \\
+\textbf{Model} & \textbf{Acc.} & \textbf{ROC-AUC} & \textbf{Prec.} \\
 """
     )
 
