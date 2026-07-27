@@ -9,39 +9,37 @@ permissions:
   contents: read
 
 jobs:
-
   code_quality:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      with:
-        persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
-      with:
-        python-version: "3.14"
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          python-version: "3.14"
 
-    - name: Install dependencies
-      run: |
-        make build
+      - name: Install dependencies
+        run: |
+          make build
 
-    - name: Check docstrings
-      run: |
-        make docstring-check
+      - name: Check docstrings
+        run: |
+          make docstring-check
 
-    - name: Type check
-      run: |
-        make typecheck
+      - name: Type check
+        run: |
+          make typecheck
 
-    - name: Lint code with ruff
-      run: |
-        make lint
+      - name: Lint code with ruff
+        run: |
+          make lint
 
-    - name: Format code with ruff
-      run: |
-        make format
-
+      - name: Format code with ruff
+        run: |
+          make format
 
   test:
     runs-on: ${{ matrix.os }}
@@ -51,22 +49,22 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      with:
-        persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
 
-    - name: Install uv with Python ${{ matrix.python-version }}
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install uv with Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        make build
+      - name: Install dependencies
+        run: |
+          make build
 
-    - name: Run tests with pytest
-      run: |
-        make test
+      - name: Run tests with pytest
+        run: |
+          make test
 
   test-arm:
     runs-on: ${{ matrix.os }}
@@ -76,22 +74,22 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      with:
-        persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
 
-    - name: Install uv with Python ${{ matrix.python-version }}
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install uv with Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        make build
+      - name: Install dependencies
+        run: |
+          make build
 
-    - name: Run tests with pytest
-      run: |
-        make test
+      - name: Run tests with pytest
+        run: |
+          make test
 
   test-x86:
     runs-on: ${{ matrix.os }}
@@ -101,22 +99,22 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      with:
-        persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
 
-    - name: Install uv with Python ${{ matrix.python-version }}
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install uv with Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        make build
+      - name: Install dependencies
+        run: |
+          make build
 
-    - name: Run tests with pytest
-      run: |
-        make test
+      - name: Run tests with pytest
+        run: |
+          make test
 
   integration-test:
     runs-on: ${{ matrix.os }}
@@ -126,21 +124,21 @@ jobs:
         python-version: ["3.10", "3.14"]
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      with:
-        persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
 
-    - name: Install uv with Python ${{ matrix.python-version }}
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install uv with Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        make build
+      - name: Install dependencies
+        run: |
+          make build
 
-    - name: Run integration tests with pytest
-      env:
-        HF_DOWNLOAD_TOKEN: ${{ secrets.HF_DOWNLOAD_TOKEN }}
-      run: |
-        make i-test
+      - name: Run integration tests with pytest
+        env:
+          HF_DOWNLOAD_TOKEN: ${{ secrets.HF_DOWNLOAD_TOKEN }}
+        run: |
+          make i-test
