@@ -274,13 +274,23 @@ def test_auto_named_trainer_reuses_parent_experiment_dir_in_relaunched_processes
         child_environment = os.environ.copy()
         child_environment["SIMULATED_CHILD_RANK"] = child_rank
         child_environment["SIMULATED_LOG_ROOT"] = str(tmp_path)
-        child_process = subprocess.run(
-            [sys.executable, "-c", child_script],
-            check=True,
-            capture_output=True,
-            env=child_environment,
-            text=True,
-        )
+
+        try:
+            child_process = subprocess.run(
+                [sys.executable, "-c", child_script],
+                check=True,
+                capture_output=True,
+                env=child_environment,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            pytest.fail(
+                "DDP subprocess failed.\n\n"
+                f"Exit code: {e.returncode}\n\n"
+                f"STDOUT:\n{e.stdout}\n\n"
+                f"STDERR:\n{e.stderr}"
+            )
+
         child_log_dir_line = next(
             line
             for line in child_process.stdout.splitlines()
@@ -361,13 +371,23 @@ def test_multiple_auto_named_trainers_reuse_parent_experiment_dirs_in_relaunched
         child_environment = os.environ.copy()
         child_environment["SIMULATED_CHILD_RANK"] = child_rank
         child_environment["SIMULATED_LOG_ROOT"] = str(tmp_path)
-        child_process = subprocess.run(
-            [sys.executable, "-c", child_script],
-            check=True,
-            capture_output=True,
-            env=child_environment,
-            text=True,
-        )
+
+        try:
+            child_process = subprocess.run(
+                [sys.executable, "-c", child_script],
+                check=True,
+                capture_output=True,
+                env=child_environment,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            pytest.fail(
+                "DDP subprocess failed.\n\n"
+                f"Exit code: {e.returncode}\n\n"
+                f"STDOUT:\n{e.stdout}\n\n"
+                f"STDERR:\n{e.stderr}"
+            )
+
         child_log_dirs = [
             Path(line.split("=", maxsplit=1)[1])
             for line in child_process.stdout.splitlines()
@@ -456,15 +476,25 @@ def test_lightning_distributed_training_works_correctly(tmp_path):
         )
     )
 
-    child_environment = {"HYPERTORCH_DDP_TEST_ROOT": str(tmp_path)}
-    subprocess.run(
-        [sys.executable, str(script_path)],
-        check=True,
-        capture_output=True,
-        env=child_environment,
-        text=True,
-        timeout=120,
-    )
+    child_environment = os.environ.copy()
+    child_environment["HYPERTORCH_DDP_TEST_ROOT"] = str(tmp_path)
+
+    try:
+        subprocess.run(
+            [sys.executable, str(script_path)],
+            check=True,
+            capture_output=True,
+            env=child_environment,
+            text=True,
+            timeout=120,
+        )
+    except subprocess.CalledProcessError as e:
+        pytest.fail(
+            "DDP subprocess failed.\n\n"
+            f"Exit code: {e.returncode}\n\n"
+            f"STDOUT:\n{e.stdout}\n\n"
+            f"STDERR:\n{e.stderr}"
+        )
 
     expected_log_dir = (tmp_path / "experiment_0").resolve()
     rank_log_dir_paths = sorted(tmp_path.glob("rank_*.txt"))
