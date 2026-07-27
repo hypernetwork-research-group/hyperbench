@@ -288,9 +288,9 @@ def test_auto_named_trainer_reuses_parent_experiment_dir_in_relaunched_processes
         try:
             child_process = subprocess.run(
                 [sys.executable, "-c", child_script],
+                env=child_environment,
                 check=True,
                 capture_output=True,
-                env=child_environment,
                 text=True,
             )
         except subprocess.CalledProcessError as e:
@@ -389,9 +389,9 @@ def test_multiple_auto_named_trainers_reuse_parent_experiment_dirs_in_relaunched
         try:
             child_process = subprocess.run(
                 [sys.executable, "-c", child_script],
+                env=child_environment,
                 check=True,
                 capture_output=True,
-                env=child_environment,
                 text=True,
             )
         except subprocess.CalledProcessError as e:
@@ -494,22 +494,12 @@ def test_lightning_distributed_training_works_correctly(tmp_path):
         variables={"HYPERTORCH_DDP_TEST_ROOT": str(tmp_path)},
     )
 
-    try:
-        subprocess.run(
-            [sys.executable, str(script_path)],
-            check=True,
-            capture_output=True,
-            env=child_environment,
-            text=True,
-            timeout=120,
-        )
-    except subprocess.CalledProcessError as e:
-        pytest.fail(
-            "DDP subprocess failed.\n\n"
-            f"Exit code: {e.returncode}\n\n"
-            f"STDOUT:\n{e.stdout}\n\n"
-            f"STDERR:\n{e.stderr}"
-        )
+    subprocess.run(
+        [sys.executable, str(script_path)],
+        check=True,
+        env=child_environment,
+        timeout=120,
+    )
 
     expected_log_dir = (tmp_path / "experiment_0").resolve()
     rank_log_dir_paths = sorted(tmp_path.glob("rank_*.txt"))
