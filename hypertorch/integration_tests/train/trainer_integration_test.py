@@ -477,8 +477,7 @@ def test_lightning_distributed_training_works_correctly(tmp_path):
                 ) as trainer:
                     local_rank = os.environ.get("LOCAL_RANK", "0")
                     rank_log_dir_path = (
-                        os.environ["HYPERTORCH_DDP_TEST_ROOT"]
-                        + f"/rank_{local_rank}.txt"
+                        os.environ["HYPERTORCH_DDP_TEST_ROOT"] + f"/rank_{local_rank}.txt"
                     )
                     with open(rank_log_dir_path, "w") as rank_log_dir_file:
                         rank_log_dir_file.write(str(trainer.log_dir))
@@ -490,9 +489,23 @@ def test_lightning_distributed_training_works_correctly(tmp_path):
         )
     )
 
+    # For MacOS, we need to set the GLOO_SOCKET_IFNAME environment variable to "lo0"
+    # Ref: https://docs.pytorch.org/docs/2.13/distributed.html#choosing-the-network-interface-to-use
+    # Start a fresh local job while preserving the system environment required to launch
+    # subprocesses. Removing MASTER_PORT prevents reuse of a stale or occupied rendezvous
+    # port so Lightning can select a free one. Both ranks rendezvous through the loopback address.
+    # On macOS, explicitly binding Gloo to lo0 avoids hosted-runner interface auto-detection
+    # selecting an unsuitable adapter and leaving both ranks blocked during process-group
+    # initialization.
     child_environment = __inherit_process_environment(
-        variables={"HYPERTORCH_DDP_TEST_ROOT": str(tmp_path)},
+        variables={
+            "HYPERTORCH_DDP_TEST_ROOT": str(tmp_path),
+            "MASTER_ADDR": "127.0.0.1",
+        },
+        variables_to_remove=("MASTER_PORT",),
     )
+    if sys.platform == "darwin":
+        child_environment["GLOO_SOCKET_IFNAME"] = "lo0"
 
     subprocess.run(
         [sys.executable, str(script_path)],
@@ -1003,8 +1016,10 @@ def __duplicate_model_configs(num_models: int = 2) -> list[ModelConfig]:
 def __inherit_process_environment(
     variables: dict[str, str],
     inherit_auto_experiment_dirs: bool = False,
+    variables_to_remove: tuple[str, ...] = (),
 ) -> dict[str, str]:
     environment = os.environ.copy()
+
     if not inherit_auto_experiment_dirs:
         auto_experiment_dir_prefix = f"{trainer_module.AUTO_EXPERIMENT_DIR_ENV_PREFIX}_"
         environment = {
@@ -1012,6 +1027,10 @@ def __inherit_process_environment(
             for name, value in environment.items()
             if not name.startswith(auto_experiment_dir_prefix)
         }
+
+    for variable in variables_to_remove:
+        environment.pop(variable, None)
+
     environment.update(variables)
     return environment
 
