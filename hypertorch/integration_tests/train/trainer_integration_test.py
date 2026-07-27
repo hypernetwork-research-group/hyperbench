@@ -1,10 +1,10 @@
 import os
 import subprocess
 import sys
-
 import pytest
 import lightning as L
 import torch
+import hypertorch.train.trainer as trainer_module
 
 from itertools import count
 from pathlib import Path
@@ -12,7 +12,6 @@ from textwrap import dedent
 from torch import Tensor, nn, optim
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
-import hypertorch.train.trainer as trainer_module
 from hypertorch.train import MultiModelTrainer
 from hypertorch.types import HData, ModelConfig
 from hypertorch.data import DataLoader, Dataset
@@ -150,7 +149,15 @@ def test_fit_and_test_all_trains_and_evaluates_models(
 def test_auto_named_trainers_reserve_distinct_experiment_directories(
     tmp_path,
     mock_tiny_dataloader,
+    monkeypatch,
 ):
+    for trainer_index in range(2):
+        monkeypatch.delenv(
+            f"HYPERTORCH_AUTO_EXPERIMENT_DIR_{trainer_index}",
+            raising=False,
+        )
+    monkeypatch.setattr(trainer_module, "AUTO_EXPERIMENT_INDEX", count())
+
     first_model_configs = [
         ModelConfig(
             name="first",
@@ -224,8 +231,7 @@ def test_auto_named_trainer_reuses_parent_experiment_dir_in_relaunched_processes
     tmp_path,
     monkeypatch,
 ):
-    environment_variable = "HYPERTORCH_AUTO_EXPERIMENT_DIR_0"
-    monkeypatch.delenv(environment_variable, raising=False)
+    monkeypatch.delenv("HYPERTORCH_AUTO_EXPERIMENT_DIR_0", raising=False)
     monkeypatch.setattr(trainer_module, "AUTO_EXPERIMENT_INDEX", count())
 
     parent_trainer = MultiModelTrainer(
@@ -271,9 +277,13 @@ def test_auto_named_trainer_reuses_parent_experiment_dir_in_relaunched_processes
 
     child_log_dirs = []
     for child_rank in ("1", "2"):
-        child_environment = os.environ.copy()
-        child_environment["SIMULATED_CHILD_RANK"] = child_rank
-        child_environment["SIMULATED_LOG_ROOT"] = str(tmp_path)
+        child_environment = __inherit_process_environment(
+            {
+                "SIMULATED_CHILD_RANK": child_rank,
+                "SIMULATED_LOG_ROOT": str(tmp_path),
+            },
+            inherit_auto_experiment_dirs=True,
+        )
 
         try:
             child_process = subprocess.run(
@@ -368,9 +378,13 @@ def test_multiple_auto_named_trainers_reuse_parent_experiment_dirs_in_relaunched
 
     child_log_dirs_by_rank = []
     for child_rank in ("1", "2"):
-        child_environment = os.environ.copy()
-        child_environment["SIMULATED_CHILD_RANK"] = child_rank
-        child_environment["SIMULATED_LOG_ROOT"] = str(tmp_path)
+        child_environment = __inherit_process_environment(
+            {
+                "SIMULATED_CHILD_RANK": child_rank,
+                "SIMULATED_LOG_ROOT": str(tmp_path),
+            },
+            inherit_auto_experiment_dirs=True,
+        )
 
         try:
             child_process = subprocess.run(
@@ -476,8 +490,9 @@ def test_lightning_distributed_training_works_correctly(tmp_path):
         )
     )
 
-    child_environment = os.environ.copy()
-    child_environment["HYPERTORCH_DDP_TEST_ROOT"] = str(tmp_path)
+    child_environment = __inherit_process_environment(
+        variables={"HYPERTORCH_DDP_TEST_ROOT": str(tmp_path)},
+    )
 
     try:
         subprocess.run(
@@ -993,6 +1008,22 @@ def __duplicate_model_configs(num_models: int = 2) -> list[ModelConfig]:
         )
         for _ in range(num_models)
     ]
+
+
+def __inherit_process_environment(
+    variables: dict[str, str],
+    inherit_auto_experiment_dirs: bool = False,
+) -> dict[str, str]:
+    environment = os.environ.copy()
+    if not inherit_auto_experiment_dirs:
+        auto_experiment_dir_prefix = f"{trainer_module.AUTO_EXPERIMENT_DIR_ENV_PREFIX}_"
+        environment = {
+            name: value
+            for name, value in environment.items()
+            if not name.startswith(auto_experiment_dir_prefix)
+        }
+    environment.update(variables)
+    return environment
 
 
 def __last_checkpoint_path(
