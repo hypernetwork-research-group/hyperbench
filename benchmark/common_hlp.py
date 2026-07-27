@@ -17,6 +17,8 @@ from hypertorch.hyperlink_prediction import (
     NHPPredictor,
     Node2VecPredictor,
     VilLainPredictor,
+    Node2VecGCNPredictor,
+    Node2VecGCNHLPConfig,
 )
 from hypertorch.types import ModelConfig, TaskEnum
 from hypertorch.data import DataLoader, Dataset, RandomNegativeSampler, get_dataset_by_name
@@ -607,7 +609,7 @@ def load_villain_hyperedge(
     return configs
 
 
-def load_n2v_joint(
+def load_n2v(
     metrics: MetricCollection,
     num_nodes: int,
     train_loader: DataLoader,
@@ -618,7 +620,7 @@ def load_n2v_joint(
     num_features: int = 32,
     max_epochs: int = 100,
 ) -> list[ModelConfig]:
-    node2vec_joint = Node2VecPredictor(
+    node2vec = Node2VecPredictor(
         encoder_config={
             "mode": "joint",
             "num_features": num_features,
@@ -646,9 +648,79 @@ def load_n2v_joint(
 
     configs = [
         ModelConfig(
-            name=f"node2vec_joint_{num_run}",
+            name=f"node2vec_{num_run}",
             version="hyperlink-prediction",
-            model=node2vec_joint,
+            model=node2vec,
+            train_dataloader=train_loader,
+            val_dataloader=val_loader,
+            test_dataloader=test_loader,
+            trainer_kwargs={
+                "max_epochs": max_epochs,
+            },
+        ),
+    ]
+
+    return configs
+
+
+def load_n2vgcn(
+    metrics: MetricCollection,
+    num_nodes: int,
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    test_loader: DataLoader,
+    train_hyperedge_index: Tensor,
+    num_run: int,
+    num_features: int = 32,
+    max_epochs: int = 100,
+) -> list[ModelConfig]:
+    gcn_config: Node2VecGCNHLPConfig = {
+        "out_channels": num_features,
+        "hidden_channels": num_features,
+        "num_layers": 2,
+        "drop_rate": 0.1,
+        "bias": True,
+        "improved": False,
+        "add_self_loops": True,
+        "normalize": True,
+        "cached": False,
+        "graph_reduction_strategy": "clique_expansion",
+        # Transductive splits keep the full node space.
+        "num_nodes": num_nodes,
+    }
+
+    node2vecgcn = Node2VecGCNPredictor(
+        encoder_config={
+            "mode": "joint",
+            "num_features": num_features,
+            "node2vec_config": {
+                "context_size": 10,
+                "walk_length": 20,
+                "num_walks_per_node": 10,
+                "p": 1.0,
+                "q": 1.0,
+                "num_negative_samples": 1,
+                "train_hyperedge_index": train_hyperedge_index,
+                # Transductive splits keep the full node space.
+                "num_nodes": num_nodes,
+                "graph_reduction_strategy": "clique_expansion",
+                "random_walk_batch_size": 128,
+                # We count the node2vec loss as 40% of the total loss (the rest is the HLP loss)
+                "node2vec_loss_weight": 0.4,
+            },
+            "gcn_config": gcn_config,
+        },
+        aggregation="mean",
+        lr=0.001,
+        weight_decay=0.0,
+        metrics=metrics,
+    )
+
+    configs = [
+        ModelConfig(
+            name=f"node2vecgcn_{num_run}",
+            version="hyperlink-prediction",
+            model=node2vecgcn,
             train_dataloader=train_loader,
             val_dataloader=val_loader,
             test_dataloader=test_loader,

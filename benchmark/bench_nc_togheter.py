@@ -281,7 +281,7 @@ if __name__ == "__main__":
             print("Starting training and evaluation...")
             timer_start = pd.Timestamp.now()
             with MultiModelTrainer(
-                experiment_name=f"{model}_{r}",
+                # experiment_name=f"{model}_{r}",
                 model_configs=loaded_models,
                 enable_checkpointing=False,
                 default_root_dir=f"benchmark/results_nc/{dataset_name}/",

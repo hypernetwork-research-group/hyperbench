@@ -20,7 +20,7 @@ from common_hlp import (
     load_hnhn,
     load_mlp,
     load_nhp,
-    load_n2v_joint,
+    load_n2v,
     load_villain_node,
     load_villain_hyperedge,
     collect_hw_stats_row,
@@ -252,7 +252,7 @@ if __name__ == "__main__":
                         max_epochs=100,
                     )
                 elif model == "node2vec":
-                    config = load_n2v_joint(
+                    config = load_n2v(
                         metrics=metrics,
                         num_features=num_features,
                         train_loader=data_loader.train_dataloader(),

@@ -22,7 +22,8 @@ from common_hlp import (
     load_hnhn,
     load_mlp,
     load_nhp,
-    load_n2v_joint,
+    load_n2v,
+    load_n2vgcn,
     load_villain_node,
     load_villain_hyperedge,
     parse_arguments,
@@ -112,6 +113,7 @@ if __name__ == "__main__":
                 "villain_node",
                 "villain_hyperedge",
                 "node2vec",
+                "node2vecgcn",
             ]
             loaded_models = []
             for model in list_model:
@@ -271,7 +273,20 @@ if __name__ == "__main__":
                     )
                     loaded_models.append(config[0])
                 elif model == "node2vec":
-                    config = load_n2v_joint(
+                    config = load_n2v(
+                        metrics=metrics,
+                        num_features=num_features,
+                        train_loader=data_loader.train_dataloader(),
+                        val_loader=data_loader.val_dataloader(),
+                        test_loader=test_loader,
+                        num_nodes=num_nodes,
+                        num_run=r,
+                        train_hyperedge_index=train_dataset.hdata.hyperedge_index,
+                        max_epochs=60,
+                    )
+                    loaded_models.append(config[0])
+                elif model == "node2vecgcn":
+                    config = load_n2vgcn(
                         metrics=metrics,
                         num_features=num_features,
                         train_loader=data_loader.train_dataloader(),
