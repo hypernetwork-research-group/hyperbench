@@ -7,7 +7,7 @@
 </h1>
 
 <p align="center">
-  <strong>A library for hypergraph learning and reproducible benchmarking.</strong>
+  <strong>A library for hypergraph learning and reproducible benchmarking</strong>
 </p>
 
 <p align="center">
