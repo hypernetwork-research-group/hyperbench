@@ -29,26 +29,46 @@
     <tr>
       <td>Testing</td>
       <td>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml"><img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&amp;label=Unit%20tests" alt="Unit tests"></a>
-        <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_ci.yaml?branch=main&amp;label=Integration%20tests" alt="Integration tests">
-        <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&amp;label=Released%20version%20tests" alt="Released version tests">
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml">
+            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&amp;label=Unit%20tests" alt="Unit tests">
+        </a>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_ci.yaml">
+            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_ci.yaml?branch=main&amp;label=Integration%20tests" alt="Integration tests">
+        </a>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_ci.yaml">
+            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&amp;label=Released%20version%20tests" alt="Released version tests">
+        </a>
       </td>
     </tr>
     <tr>
       <td>Quality assurance</td>
       <td>
-        <a href="https://codecov.io/github/hypernetwork-research-group/hypertorch"><img src="https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS" alt="codecov"></a>
-        <a href="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch"><img src="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge" alt="CodeFactor"></a>
+        <a href="https://codecov.io/github/hypernetwork-research-group/hypertorch">
+            <img src="https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS" alt="codecov">
+        </a>
+        <a href="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch">
+            <img src="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge" alt="CodeFactor">
+        </a>
       </td>
     </tr>
     <tr>
       <td>Project & community</td>
       <td>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/issues"><img src="https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Issues" alt="Issues"></a>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/stargazers"><img src="https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Stars" alt="Stargazers"></a>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/network/members"><img src="https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Forks" alt="Forks"></a>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors"><img src="https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Contributors" alt="Contributors"></a>
-        <a href="https://discord.gg/4krTXCWRzD"><img src="https://img.shields.io/discord/693092516286693387?style=flat&amp;label=Discord" alt="Discord"></a>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/issues">
+            <img src="https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Issues" alt="Issues">
+        </a>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/stargazers">
+            <img src="https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Stars" alt="Stargazers">
+        </a>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/network/members">
+            <img src="https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Forks" alt="Forks">
+        </a>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors">
+            <img src="https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Contributors" alt="Contributors">
+        </a>
+        <a href="https://discord.gg/4krTXCWRzD">
+            <img src="https://img.shields.io/discord/693092516286693387?style=flat&amp;label=Discord" alt="Discord">
+        </a>
       </td>
     </tr>
   </tbody>
@@ -97,9 +117,9 @@ Use HyperTorch to:
 
 ### Installation
 
-HyperTorch requires Python 3.10 or newer up to 3.14. CI tests Python 3.10 through 3.14 on Linux x86_64 and ARM/aarch64, macOS arm64, and Windows x64.
+HyperTorch requires Python 3.10 or newer. The currently documented and CI-tested range is Python 3.10 through 3.14 on Linux x86_64 and ARM/aarch64, macOS arm64, and Windows x64.
 
-For a CPU installation, follow the platform-specific [installation guide][installation] to install compatible PyTorch and PyG wheels (required for Node2Vec), then install HyperTorch from PyPI:
+For a CPU installation, follow the platform-specific [installation guide][installation] to install compatible PyTorch and PyG wheels, then install HyperTorch from PyPI:
 
 ```bash
 uv pip install hypertorch
@@ -173,15 +193,16 @@ This project is released under the Apache License 2.0 license. See [LICENSE](LIC
 - Use the [GitHub issue tracker][issues] for bugs and feature requests.
 - Use [Discord][discord] for community chat.
 
-Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue for suspected security vulnerabilities.
+Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue
+for suspected security vulnerabilities.
 
-# Cite
+## Cite
 
-Please cite us if you use HyperTorch in your work:
+Please cite HyperTorch using the metadata in [CITATION.cff](CITATION.cff):
 
 ```bibtex
 @software{Citro_HyperTorch_2026,
-    author = {Citro, Tiziano, De Vinco, Daniele, and Spagnuolo, Carmine},
+    author = {Citro, Tiziano and De Vinco, Daniele and Spagnuolo, Carmine},
     title = {{HyperTorch: A Python Library for Hypergraph Learning and Benchmarking}},
     url = {https://github.com/hypernetwork-research-group/hypertorch},
     year = {2026}
