@@ -12,11 +12,11 @@
 
 <p align="center">
   <a href="https://hypernetwork-research-group.github.io/hypertorch/">Documentation</a>
-  ·
+  |
   <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/overview">Getting started</a>
-  ·
+  |
   <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/tutorials">Tutorial</a>
-  ·
+  |
   <a href="https://hypernetwork-research-group.github.io/hypertorch/development/contribution">Contributing</a>
 </p>
 
