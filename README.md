@@ -181,7 +181,7 @@ Please cite us if you use HyperTorch in your work:
 ```bibtex
 @software{Citro_HyperTorch_2026,
     author = {Citro, Tiziano, De Vinco, Daniele, and Spagnuolo, Carmine},
-    title = {{HyperTorch}},
+    title = {{HyperTorch: A Python Library for Hypergraph Learning and Benchmarking}},
     url = {https://github.com/hypernetwork-research-group/hypertorch},
     year = {2026}
 }

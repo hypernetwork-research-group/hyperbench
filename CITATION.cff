@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: >-
   If you use HyperTorch in your research, please cite it using the metadata in
   this file.
-title: HyperTorch
+title: "HyperTorch: A Python Library for Hypergraph Learning and Benchmarking"
 type: software
 
 repository-code: https://github.com/hypernetwork-research-group/hypertorch
