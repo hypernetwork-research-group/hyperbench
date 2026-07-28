@@ -79,6 +79,7 @@ Use HyperTorch to:
 - [Documentation](#documentation)
 - [License](#license)
 - [Support](#support)
+- [Cite](#cite)
 
 ## Main features
 
