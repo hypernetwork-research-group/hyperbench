@@ -33,9 +33,9 @@
     <tr>
       <td>Testing</td>
       <td>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml"><img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&amp;label=Unit%20tests" alt="Unit tests"></a>
         <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_ci.yaml?branch=main&amp;label=Integration%20tests" alt="Integration tests">
         <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&amp;label=Released%20version" alt="Released version">
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml"><img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&amp;label=Unit%20tests" alt="Unit tests"></a>
       </td>
     </tr>
     <tr>
