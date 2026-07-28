@@ -98,8 +98,7 @@ Use HyperTorch to:
 
 HyperTorch requires Python 3.10 or newer up to 3.14. CI tests Python 3.10 through 3.14 on Linux x86_64 and ARM/aarch64, macOS arm64, and Windows x64.
 
-For a CPU installation, follow the platform-specific
-[installation guide](docs/getting-started/installation.md) to install compatible PyTorch and PyG wheels (required for Node2Vec), then install HyperTorch from PyPI:
+For a CPU installation, follow the platform-specific [installation guide][installation] to install compatible PyTorch and PyG wheels (required for Node2Vec), then install HyperTorch from PyPI:
 
 ```bash
 uv pip install hypertorch
@@ -116,8 +115,7 @@ cd hypertorch
 make setup
 ```
 
-See the [installation guide](docs/getting-started/installation.md) for platform
-notes and dependency ranges.
+See the [installation guide][installation] for platform notes and dependency ranges.
 
 ### TensorBoard support
 
@@ -145,12 +143,11 @@ make run examples/hyperlink_prediction/nhp.py
 make run examples/node_classification/hypergcn.py
 ```
 
-The [tutorials guide](docs/getting-started/tutorials.md) lists examples for dataset loading, feature enrichment, hyperlink prediction, node classification, sampling, splitting, and
-training customization.
+The [tutorials guide][tutorials] lists examples for dataset loading, feature enrichment, hyperlink prediction, node classification, sampling, splitting, and training customization.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor quickstart and the [development guide](docs/development/development.md) for the complete workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor quickstart and the [development guide][development] for the complete workflow.
 
 ## Documentation
 
@@ -182,3 +179,6 @@ Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue for s
 [discord]: https://discord.gg/4krTXCWRzD
 [docs]: https://hypernetwork-research-group.github.io/hypertorch/
 [issues]: https://github.com/hypernetwork-research-group/hypertorch/issues
+[installation]: https://hypernetwork-research-group.github.io/hypertorch/getting-started/installation/
+[tutorials]: https://hypernetwork-research-group.github.io/hypertorch/getting-started/tutorials/
+[development]: https://hypernetwork-research-group.github.io/hypertorch/development/development/
