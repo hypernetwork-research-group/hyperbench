@@ -26,12 +26,12 @@ authors:
     email: cspagnuolo@unisa.it
 
 keywords:
-  - hypergraph
-  - benchmarking
-  - machine-learning
-  - python
   - hypergraph-learning
+  - benchmarking
   - hyperlink-prediction
+  - node-classification
+  - python
+  - pytorch
 
 preferred-citation:
   type: software
