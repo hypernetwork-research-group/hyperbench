@@ -21,7 +21,7 @@
     <tr>
       <td>Package</td>
       <td>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/tags"><img src="https://img.shields.io/github/v/tag/hypernetwork-research-group/hypertorch?label=Release" alt="Release"></a>
+        <a href="https://pypi.org/project/hypertorch/"><img src="https://img.shields.io/pypi/v/hypertorch.svg?label=PyPI" alt="PyPI Latest Release"></a>
         <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-yellow.svg" alt="License: Apache 2.0"></a>
         <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python" alt="Python"></a>
       </td>
