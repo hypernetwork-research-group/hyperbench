@@ -84,7 +84,7 @@ Use HyperTorch to:
 
 | Area | What you can do | Public APIs |
 | :--- | :--- | :--- |
-| **Data and HIF integration** | Load built-in datasets or `.json`/`.json.zst` HIF data from files and URLs; validate HIF JSON; work with typed `HData` objects | `hypertorch.data`, `hypertorch.types`, `hypertorch.utils` |
+| **Data and HIF integration** | Load built-in datasets or `.json`/`.json.zst` HIF data from files and URLs and work with typed `HData` objects | `hypertorch.data`, `hypertorch.types` |
 | **Preparation and enrichment** | Split datasets, sample nodes or hyperedges, generate negative samples, batch data, and enrich node or hyperedge features | `hypertorch.data` |
 | **Hyperlink prediction** | Use ready-to-train hyperlink prediction pipelines | `hypertorch.hyperlink_prediction` |
 | **Node classification** | Use ready-to-train node classification pipelines | `hypertorch.node_classification` |
