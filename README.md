@@ -1,11 +1,48 @@
-# HyperTorch
+<h1 align="center">
+  <img
+    src="docs/assets/horizontal.svg"
+    alt="HyperTorch"
+    width="760"
+  >
+</h1>
+
+<p align="center">
+  <strong>A library for hypergraph learning and reproducible benchmarking.</strong>
+</p>
+
+<p align="center">
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/">Documentation</a>
+  ·
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/overview">Getting started</a>
+  ·
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/tutorials">Tutorial</a>
+  ·
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/development/contribution">Contributing</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/hypernetwork-research-group/hypertorch/stargazers">
+    <img src="https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Stars" alt="GitHub stars">
+  </a>
+  <a href="https://github.com/hypernetwork-research-group/hypertorch/network/members">
+    <img src="https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Forks" alt="GitHub forks">
+  </a>
+  <a href="https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors">
+    <img src="https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Contributors" alt="Contributors">
+  </a>
+  <a href="https://github.com/hypernetwork-research-group/hypertorch/issues">
+    <img src="https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Issues" alt="GitHub issues">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-yellow.svg" alt="License: Apache 2.0">
+  </a>
+</p>
 
 | | |
 | --- | --- |
-| Repo | [![Forks][forks-shield]][forks-url] [![Stargazers][stars-shield]][stars-url] [![Contributors][contributors-shield]][contributors-url] [![Issues][issues-shield]][issues-url] |
-| Package | [![License: MIT][license-shield]][license-url] [![Python][python-shield]][python-url] [![Documentation][docs-shield]][docs-url] |
+| Package | [![Python][python-shield]][python-url] [![Documentation][docs-shield]][docs-url] |
 | Testing | ![Daily CI][daily-ci-shield] ![Weekly CI][weekly-ci-shield] [![codecov][codecov-shield]][codecov-url] [![CodeFactor][codefactor-shield]][codefactor-url] |
-| Contact | [![Discord][discord-shield]][discord-url] |
+| Reach out | [![Discord][discord-shield]][discord-url] |
 
 ## About the project
 
@@ -130,21 +167,11 @@ Most development discussions take place on GitHub in this repo, via the [GitHub 
 [codefactor-url]: https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch
 [daily-ci-shield]: https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_ci.yaml/badge.svg
 [weekly-ci-shield]: https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_ci.yaml/badge.svg
-[contributors-shield]: https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&label=Contributors
-[contributors-url]: https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&label=Forks
-[forks-url]: https://github.com/hypernetwork-research-group/hypertorch/network/members
-[stars-shield]: https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&label=Stars
-[stars-url]: https://github.com/hypernetwork-research-group/hypertorch/stargazers
-[issues-shield]: https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&label=Issues
-[issues-url]: https://github.com/hypernetwork-research-group/hypertorch/issues
-[license-shield]: https://img.shields.io/badge/License-MIT-yellow.svg
-[license-url]: https://opensource.org/licenses/MIT
+[discord-shield]: https://img.shields.io/discord/693092516286693387?style=flat&label=Discord
+[discord-url]: https://discord.gg/4krTXCWRzD
 [docs]: https://hypernetwork-research-group.github.io/hypertorch/
+[docs-shield]: https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation
+[docs-url]: https://hypernetwork-research-group.github.io/hypertorch/
 [issues]: https://github.com/hypernetwork-research-group/hypertorch/issues
 [python-shield]: https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python
 [python-url]: https://www.python.org/downloads/
-[docs-shield]: https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation
-[docs-url]: https://hypernetwork-research-group.github.io/hypertorch/
-[discord-shield]: https://img.shields.io/discord/693092516286693387?style=flat&label=Discord
-[discord-url]: https://discord.gg/4krTXCWRzD
