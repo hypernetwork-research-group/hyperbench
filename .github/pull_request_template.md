@@ -14,5 +14,5 @@ Please include a summary of the changes.
 
 - [ ] Does your submission pass all tests? (use `make test`)
 - [ ] Have you written tests to cover all your changes? If not, provide a reason.
-- [ ] Have you lint your code locally before submission? (use `make format`)
-- [ ] Have you type checked your code locally before submission? (use `make typecheck`)
+- [ ] Have you linted your code locally before submission? (use `make format`)
+- [ ] Have you type-checked your code locally before submission? (use `make typecheck`)
