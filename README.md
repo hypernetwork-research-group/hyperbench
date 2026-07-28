@@ -20,11 +20,6 @@
 </p>
 
 <table align="center">
-  <thead>
-    <tr>
-      <th align="center" colspan="2">Helpful info and tracking</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
       <td>Package</td>
