@@ -6,9 +6,8 @@
   >
 </h1>
 
-<p align="center">
-  <strong>A library for hypergraph learning and reproducible benchmarking</strong>
-</p>
+-----------------
+# HyperTorch: A Python library for hypergraph learning and reproducible benchmarking
 
 <p align="center">
   <a href="https://hypernetwork-research-group.github.io/hypertorch/">Documentation</a>
@@ -20,65 +19,12 @@
   <a href="https://hypernetwork-research-group.github.io/hypertorch/development/contribution">Contributing</a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/hypernetwork-research-group/hypertorch/stargazers">
-    <img src="https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Stars" alt="GitHub stars">
-  </a>
-  <a href="https://github.com/hypernetwork-research-group/hypertorch/network/members">
-    <img src="https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Forks" alt="GitHub forks">
-  </a>
-  <a href="https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors">
-    <img src="https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Contributors" alt="Contributors">
-  </a>
-  <a href="https://github.com/hypernetwork-research-group/hypertorch/issues">
-    <img src="https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Issues" alt="GitHub issues">
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-Apache%202.0-yellow.svg" alt="License: Apache 2.0">
-  </a>
-</p>
-
-<table>
-  <thead>
-    <tr>
-      <th colspan="2">Helpful info and tracking</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Package</td>
-      <td>
-        <a href="https://www.python.org/downloads/">
-          <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python" alt="Python 3.10+">
-        </a>
-        <a href="https://hypernetwork-research-group.github.io/hypertorch/">
-          <img src="https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation" alt="Documentation">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td>Testing</td>
-      <td>
-        <img src="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_ci.yaml/badge.svg" alt="Daily CI">
-        <img src="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_ci.yaml/badge.svg" alt="Weekly CI">
-        <a href="https://codecov.io/github/hypernetwork-research-group/hypertorch">
-          <img src="https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS" alt="Coverage">
-        </a>
-        <a href="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch">
-          <img src="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge" alt="CodeFactor">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td>Reach out</td>
-      <td>
-        <a href="https://discord.gg/4krTXCWRzD">
-          <img src="https://img.shields.io/discord/693092516286693387?style=flat&amp;label=Discord" alt="Discord">
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+| Helpful info and tracking | |
+| --- | --- |
+| Package | [![Release][release-shield]][release-url] [![License: Apache 2.0][license-shield]][license-url] [![Python][python-shield]][python-url] [![Documentation][docs-shield]][docs-url] |
+| Testing | ![Integration tests][daily-ci-shield] ![Released version][weekly-ci-shield] [![Unit tests][unit-testing-shield]][unit-testing-url] |
+| Quality assurance | [![codecov][codecov-shield]][codecov-url] [![CodeFactor][codefactor-shield]][codefactor-url] [![Issues][issues-shield]][issues-url] |
+| Meta | [![Stargazers][stars-shield]][stars-url] [![Forks][forks-shield]][forks-url] [![Contributors][contributors-shield]][contributors-url] [![Discord][discord-shield]][discord-url] |
 
 ## About the project
 
@@ -197,5 +143,31 @@ This project is released under the Apache License 2.0 license. See [LICENSE](LIC
 Most development discussions take place on GitHub in this repo, via the [GitHub issue tracker][issues].
 
 <!-- LINKS -->
+[codecov-shield]: https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS
+[codecov-url]: https://codecov.io/github/hypernetwork-research-group/hypertorch
+[codefactor-shield]: https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge
+[codefactor-url]: https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch
+[contributors-shield]: https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&label=Contributors
+[contributors-url]: https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors
+[daily-ci-shield]: https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_ci.yaml?branch=main&label=Integration%20tests
+[discord-shield]: https://img.shields.io/discord/693092516286693387?style=flat&label=Discord
+[discord-url]: https://discord.gg/4krTXCWRzD
 [docs]: https://hypernetwork-research-group.github.io/hypertorch/
+[docs-shield]: https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation
+[docs-url]: https://hypernetwork-research-group.github.io/hypertorch/
+[forks-shield]: https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&label=Forks
+[forks-url]: https://github.com/hypernetwork-research-group/hypertorch/network/members
 [issues]: https://github.com/hypernetwork-research-group/hypertorch/issues
+[issues-shield]: https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&label=Issues
+[issues-url]: https://github.com/hypernetwork-research-group/hypertorch/issues
+[license-shield]: https://img.shields.io/badge/License-Apache%202.0-yellow.svg
+[license-url]: LICENSE
+[python-shield]: https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python
+[python-url]: https://www.python.org/downloads/
+[release-shield]: https://img.shields.io/github/v/tag/hypernetwork-research-group/hypertorch?label=Release
+[release-url]: https://github.com/hypernetwork-research-group/hypertorch/tags
+[stars-shield]: https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&label=Stars
+[stars-url]: https://github.com/hypernetwork-research-group/hypertorch/stargazers
+[unit-testing-shield]: https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&label=Unit%20tests
+[unit-testing-url]: https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml
+[weekly-ci-shield]: https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&label=Released%20version
