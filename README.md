@@ -174,6 +174,19 @@ This project is released under the Apache License 2.0 license. See [LICENSE](LIC
 
 Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue for suspected security vulnerabilities.
 
+# Cite
+
+Please cite us if you use HyperTorch in your work:
+
+```bibtex
+@software{Citro_HyperTorch_2026,
+    author = {Citro, Tiziano, De Vinco, Daniele, and Spagnuolo, Carmine},
+    title = {{HyperTorch}},
+    url = {https://github.com/hypernetwork-research-group/hypertorch},
+    year = {2026}
+}
+```
+
 <!-- LINKS -->
 [discussions]: https://github.com/hypernetwork-research-group/hypertorch/discussions
 [discord]: https://discord.gg/4krTXCWRzD

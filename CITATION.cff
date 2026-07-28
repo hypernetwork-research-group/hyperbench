@@ -20,6 +20,10 @@ authors:
     given-names: Daniele
     orcid: https://orcid.org/0000-0003-0781-3744
     email: ddevinco@unisa.it
+  - family-names: Spagnuolo
+    given-names: Carmine
+    orcid: https://orcid.org/0000-0002-8267-9808
+    email: cspagnuolo@unisa.it
 
 keywords:
   - hypergraph
@@ -37,5 +41,7 @@ preferred-citation:
       given-names: Tiziano
     - family-names: De Vinco
       given-names: Daniele
+    - family-names: Spagnuolo
+      given-names: Carmine
   year: 2026
   url: https://github.com/hypernetwork-research-group/hypertorch
