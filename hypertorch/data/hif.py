@@ -227,10 +227,16 @@ class HIFProcessor:
         Returns:
             attr_keys: List of unique numeric attribute keys.
         """
+        excluded_keys = {"label"}  # TODO make it constant
         unique_keys = []
         for attrs in attr_keys:
             for key, value in attrs.items():
-                if key not in unique_keys and isinstance(value, (int, float)):
+                if (
+                    key not in excluded_keys
+                    and key not in unique_keys
+                    and isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                ):
                     unique_keys.append(key)
 
         return unique_keys
