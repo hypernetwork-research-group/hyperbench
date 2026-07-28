@@ -7,7 +7,7 @@
 </h1>
 
 -----------------
-<h1 align="center">HyperTorch: A Python library for <br/>hypergraph learning and reproducible benchmarking</h1>
+<h1 align="center">HyperTorch: A Python library for <br/>hypergraph learning and benchmarking</h1>
 
 <p align="center">
   <a href="https://hypernetwork-research-group.github.io/hypertorch/">Documentation</a>
