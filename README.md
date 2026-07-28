@@ -2,18 +2,18 @@
   <img alt="HyperTorch Logo" src="docs/assets/horizontal.svg">
 </picture>
 
------------------
+---
 
-<h1 align="center">HyperTorch: A Python library for <br/>hypergraph learning and benchmarking</h1>
+<h1 align="center">HyperTorch: A Python library for<br>hypergraph learning and benchmarking</h1>
 
 <p align="center">
   <a href="https://hypernetwork-research-group.github.io/hypertorch/">Documentation</a>
   |
-  <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/overview">Getting started</a>
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/overview/">Getting started</a>
   |
-  <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/tutorials">Tutorial</a>
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/getting-started/tutorials/">Tutorials</a>
   |
-  <a href="https://hypernetwork-research-group.github.io/hypertorch/development/contribution">Contributing</a>
+  <a href="https://hypernetwork-research-group.github.io/hypertorch/development/contribution/">Contributing</a>
 </p>
 
 <table align="center">
@@ -31,7 +31,7 @@
       <td>
         <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml"><img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&amp;label=Unit%20tests" alt="Unit tests"></a>
         <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_ci.yaml?branch=main&amp;label=Integration%20tests" alt="Integration tests">
-        <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&amp;label=Released%20version" alt="Released version">
+        <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&amp;label=Released%20version%20tests" alt="Released version tests">
       </td>
     </tr>
     <tr>
@@ -39,12 +39,12 @@
       <td>
         <a href="https://codecov.io/github/hypernetwork-research-group/hypertorch"><img src="https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS" alt="codecov"></a>
         <a href="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch"><img src="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge" alt="CodeFactor"></a>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/issues"><img src="https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Issues" alt="Issues"></a>
       </td>
     </tr>
     <tr>
-      <td>Meta</td>
+      <td>Project & community</td>
       <td>
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/issues"><img src="https://img.shields.io/github/issues/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Issues" alt="Issues"></a>
         <a href="https://github.com/hypernetwork-research-group/hypertorch/stargazers"><img src="https://img.shields.io/github/stars/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Stars" alt="Stargazers"></a>
         <a href="https://github.com/hypernetwork-research-group/hypertorch/network/members"><img src="https://img.shields.io/github/forks/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Forks" alt="Forks"></a>
         <a href="https://github.com/hypernetwork-research-group/hypertorch/graphs/contributors"><img src="https://img.shields.io/github/contributors/hypernetwork-research-group/hypertorch.svg?style=flat&amp;label=Contributors" alt="Contributors"></a>
@@ -56,14 +56,16 @@
 
 ## About the project
 
-HyperTorch is a library for hypergraph learning and benchmarking. It provides a standardized workflow for loading hypergraph datasets, training models, evaluating them under comparable settings, and reporting results. The current release focuses on Hyperlink Prediction, with ready-to-run pipelines for established hypergraph baselines.
+HyperTorch is a library for hypergraph learning and benchmarking. It provides standardized workflows for loading hypergraph datasets, training models, evaluating them under comparable
+settings, and reporting results for both hyperlink prediction and node classification.
 
-The library is built around extensibility: datasets are represented in [HIF](https://github.com/HIF-org/HIF-standard) format and converted into typed tensor objects, models can be implemented as standard Lightning modules, and benchmarking is handled through reusable trainers, samplers, metrics, loggers, and result exporters (Markdown/LaTeX). HyperTorch includes preloaded datasets, mini-batch and full-hypergraph data loading, negative sampling utilities, structural feature enrichers, neural components, and built-in models such as HGNN, HNHN, HyperGCN, GCN, MLP/SLP, NHP, Node2Vec, VilLain, and more.
+The library is built around extensibility: datasets are represented in [HIF](https://github.com/HIF-org/HIF-standard) format and converted into typed tensor objects, models can be implemented as standard Lightning modules, and benchmarking is handled through reusable trainers, samplers, metrics, loggers, and result exporters (Markdown/LaTeX). HyperTorch includes preloaded datasets, mini-batch and full-hypergraph data loading, negative sampling utilities, structural feature enrichers, neural components, and many built-in models.
 
 Use HyperTorch to:
+
 - Benchmark existing models across a shared collection of hypergraph datasets.
-- Develop custom PyTorch or PyTorch Lightning models and train and compare them against the built-in baselines.
-- Integrate new datasets through the HIF format and run the same training, evaluation, and reporting pipeline on them.
+- Develop custom PyTorch or Lightning models and compare them with built-in baselines.
+- Load local or remote `.json` and `.json.zst` HIF datasets and run the same training, evaluation, and reporting pipeline on them.
 
 ## Table of contents
 
@@ -76,30 +78,34 @@ Use HyperTorch to:
 - [Contributing](#contributing)
 - [Documentation](#documentation)
 - [License](#license)
-- [Discussion](#discussion)
+- [Support](#support)
 
 ## Main features
 
-| Feature | What you can do | Highlights | Location |
-| :--- | :--- | :--- | :--- |
-| **Dataset management** | Load, process, and validate hypergraph datasets | HIF loader/processor, built-in datasets such as Algebra, Cora, Pubmed, DBLP, Amazon, and IMDB | `hypertorch.data` |
-| **Splitting, sampling, and batching** | Prepare train/validation/test data and mini-batches | Dataset splitters, node and hyperedge samplers, negative samplers, data loaders | `hypertorch.data` |
-| **Feature enrichment** | Enrich node and hyperedge features before training | Laplacian positional encodings, Node2Vec features, hyperedge weights and attributes | `hypertorch.data` |
-| **Neural components (NN)** | Build models and pipelines | Layers, aggregators, losses, and activation/normalization helpers | `hypertorch.nn` |
-| **Models** | Access hypergraph models | HGNN, HGNNP, HNHN, HyperGCN, GCN, MLP/SLP, NHP, Node2Vec, VilLain, CommonNeighbors | `hypertorch.models` |
-| **Hyperlink prediction (HLP) pipelines** | Use ready-to-train hyperlink prediction modules | HLP modules with encoders, configs, losses, and stage metrics for multiple models | `hypertorch.hyperlink_prediction` |
-| **Node classification (NC) pipelines** | Use ready-to-train node classification modules | NC modules with encoders, configs, losses, and stage metrics for multiple models | `hypertorch.node_classification` |
-| **Training and benchmarking** | Train, compare, checkpoint, and report model runs | Multi-model trainer, schedulers, TensorBoard support, CSV/Markdown/LaTeX result tables | `hypertorch.train` |
+| Area | What you can do | Public APIs |
+| :--- | :--- | :--- |
+| **Data and HIF integration** | Load built-in datasets or `.json`/`.json.zst` HIF data from files and URLs; validate HIF JSON; work with typed `HData` objects | `hypertorch.data`, `hypertorch.types`, `hypertorch.utils` |
+| **Preparation and enrichment** | Split datasets, sample nodes or hyperedges, generate negative samples, batch data, and enrich node or hyperedge features with LPE, Node2Vec, weights, and attributes | `hypertorch.data` |
+| **Hyperlink prediction** | Use ready-to-train hyperlink prediction pipelines | `hypertorch.hyperlink_prediction` |
+| **Node classification** | Use ready-to-train node classification pipelines | `hypertorch.node_classification` |
+| **Models and neural components** | Reuse model implementations, layers, aggregators, losses, activations, and normalization helpers | `hypertorch.models`, `hypertorch.nn` |
+| **Training and benchmarking** | Train and compare multiple models with shared data, callbacks, device settings, checkpoints, and per-model trainer options | `hypertorch.train`, `hypertorch.types` |
+| **Logging and visualization** | Write CSV metrics and Markdown/LaTeX comparison tables; optionally log to and auto-start TensorBoard | `hypertorch.train` |
 
 ## Getting started
 
 ### Installation
 
-HyperTorch can be installed from PyPI when you want to use it as a dependency, or from source when you want to contribute or run the latest repository version.
+HyperTorch requires Python 3.10 or newer up to 3.14. CI tests Python 3.10 through 3.14 on Linux x86_64 and ARM/aarch64, macOS arm64, and Windows x64.
 
-CI pipelines validate CPU installs on Python 3.10 through 3.14 for Linux x86_64, Linux ARM/aarch64, macOS arm64, and Windows x64. Install the matching PyTorch and PyG wheels for your platform (e.g., CUDA) before installing HyperTorch.
+For a CPU installation, follow the platform-specific
+[installation guide](docs/getting-started/installation.md) to install compatible PyTorch and PyG wheels (required for Node2Vec), then install HyperTorch from PyPI:
 
-For more detailed instructions, see the [installation guide](docs/getting-started/installation.md).
+```bash
+uv pip install hypertorch
+```
+
+If you use `pip`, replace `uv pip install` with `pip install`. For CUDA or other hardware, you can install the matching PyTorch and PyG wheels within HyperTorch's declared dependency ranges before installing HyperTorch.
 
 ### Source installation
 
@@ -115,13 +121,13 @@ notes and dependency ranges.
 
 ### TensorBoard support
 
-To include TensorBoard support, also run HyperTorch install command with the TensorBoard extra:
+Install the optional TensorBoard integration from PyPI with:
 
 ```bash
 uv pip install "hypertorch[tensorboard]"
 ```
 
-When installing from source, run the command:
+For a source installation, use:
 
 ```bash
 make setup-tensorboard
@@ -129,47 +135,50 @@ make setup-tensorboard
 
 ### Run examples
 
-You can download the [examples](examples) directory and run the example scripts to get started.
-
-With Python:
+Run examples from the repository root with `make run`. For example:
 
 ```bash
-python3 examples/hyperlink_prediction/nhp.py
+# Hyperlink prediction
+make run examples/hyperlink_prediction/nhp.py
+
+# Node classification
+make run examples/node_classification/hypergcn.py
 ```
 
-Or with `uv`:
-
-```bash
-uv run examples/hyperlink_prediction/nhp.py
-```
+The [tutorials guide](docs/getting-started/tutorials.md) lists examples for dataset loading, feature enrichment, hyperlink prediction, node classification, sampling, splitting, and
+training customization.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributing to the project.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor quickstart and the [development guide](docs/development/development.md) for the complete workflow.
 
 ## Documentation
 
-You can find the extensive documentation [here][docs].
+Read the [documentation][docs] for installation, tutorials, user guides, API references, development guidance, and release notes.
 
-Alternatively, you can build the documentation locally with the following commands:
+Build or serve it locally with the documented Makefile targets:
 
 ```bash
-make docs
-
-# With explicit commands
-uv run zensical build --clean -f zensical.toml
-uv run zensical serve -f zensical.toml -a 127.0.0.1:8000
+make docs-build
+make docs-serve
 ```
-and open the browser at http://localhost:8000 to access the documentation.
+
+Use `make docs` to build and serve in one command. The local site is available at <http://127.0.0.1:8000>.
 
 ## License
 
 This project is released under the Apache License 2.0 license. See [LICENSE](LICENSE).
 
-## Discussion
+## Support
 
-Most development discussions take place on GitHub in this repo, via the [GitHub issue tracker][issues].
+- Use [GitHub Discussions][discussions] for questions and ideas.
+- Use the [GitHub issue tracker][issues] for bugs and feature requests.
+- Use [Discord][discord] for community chat.
+
+Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue for suspected security vulnerabilities.
 
 <!-- LINKS -->
+[discussions]: https://github.com/hypernetwork-research-group/hypertorch/discussions
+[discord]: https://discord.gg/4krTXCWRzD
 [docs]: https://hypernetwork-research-group.github.io/hypertorch/
 [issues]: https://github.com/hypernetwork-research-group/hypertorch/issues
