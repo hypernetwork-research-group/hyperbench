@@ -1,12 +1,9 @@
-<h1 align="center">
-  <img
-    src="docs/assets/horizontal.svg"
-    alt="HyperTorch"
-    width="760"
-  >
-</h1>
+<picture align="center">
+  <img alt="HyperTorch Logo" src="docs/assets/horizontal.svg">
+</picture>
 
 -----------------
+
 <h1 align="center">HyperTorch: A Python library for <br/>hypergraph learning and benchmarking</h1>
 
 <p align="center">
@@ -27,7 +24,6 @@
         <a href="https://github.com/hypernetwork-research-group/hypertorch/tags"><img src="https://img.shields.io/github/v/tag/hypernetwork-research-group/hypertorch?label=Release" alt="Release"></a>
         <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-yellow.svg" alt="License: Apache 2.0"></a>
         <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python" alt="Python"></a>
-        <a href="https://hypernetwork-research-group.github.io/hypertorch/"><img src="https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation" alt="Documentation"></a>
       </td>
     </tr>
     <tr>
