@@ -38,11 +38,47 @@
   </a>
 </p>
 
-| | |
-| --- | --- |
-| Package | [![Python][python-shield]][python-url] [![Documentation][docs-shield]][docs-url] |
-| Testing | ![Daily CI][daily-ci-shield] ![Weekly CI][weekly-ci-shield] [![codecov][codecov-shield]][codecov-url] [![CodeFactor][codefactor-shield]][codefactor-url] |
-| Reach out | [![Discord][discord-shield]][discord-url] |
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Helpful info and tracking</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Package</td>
+      <td>
+        <a href="https://www.python.org/downloads/">
+          <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python" alt="Python 3.10+">
+        </a>
+        <a href="https://hypernetwork-research-group.github.io/hypertorch/">
+          <img src="https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation" alt="Documentation">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Testing</td>
+      <td>
+        <img src="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_ci.yaml/badge.svg" alt="Daily CI">
+        <img src="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_ci.yaml/badge.svg" alt="Weekly CI">
+        <a href="https://codecov.io/github/hypernetwork-research-group/hypertorch">
+          <img src="https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS" alt="Coverage">
+        </a>
+        <a href="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch">
+          <img src="https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge" alt="CodeFactor">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Reach out</td>
+      <td>
+        <a href="https://discord.gg/4krTXCWRzD">
+          <img src="https://img.shields.io/discord/693092516286693387?style=flat&amp;label=Discord" alt="Discord">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## About the project
 
@@ -161,17 +197,5 @@ This project is released under the Apache License 2.0 license. See [LICENSE](LIC
 Most development discussions take place on GitHub in this repo, via the [GitHub issue tracker][issues].
 
 <!-- LINKS -->
-[codecov-shield]: https://codecov.io/github/hypernetwork-research-group/hypertorch/graph/badge.svg?token=XE0TB5JMOS
-[codecov-url]: https://codecov.io/github/hypernetwork-research-group/hypertorch
-[codefactor-shield]: https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch/badge
-[codefactor-url]: https://www.codefactor.io/repository/github/hypernetwork-research-group/hypertorch
-[daily-ci-shield]: https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_ci.yaml/badge.svg
-[weekly-ci-shield]: https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_ci.yaml/badge.svg
-[discord-shield]: https://img.shields.io/discord/693092516286693387?style=flat&label=Discord
-[discord-url]: https://discord.gg/4krTXCWRzD
 [docs]: https://hypernetwork-research-group.github.io/hypertorch/
-[docs-shield]: https://img.shields.io/badge/docs-latest-blue.svg?label=Documentation
-[docs-url]: https://hypernetwork-research-group.github.io/hypertorch/
 [issues]: https://github.com/hypernetwork-research-group/hypertorch/issues
-[python-shield]: https://img.shields.io/badge/python-3.10%2B-blue.svg?label=Python
-[python-url]: https://www.python.org/downloads/
