@@ -82,7 +82,7 @@ Use HyperTorch to:
 
 ## Main features
 
-| Area | What you can do | Public APIs |
+| | What you can do | Public APIs |
 | :--- | :--- | :--- |
 | **Data and HIF integration** | Load built-in datasets or `.json`/`.json.zst` HIF data from files and URLs and work with typed `HData` objects | `hypertorch.data`, `hypertorch.types` |
 | **Preparation and enrichment** | Split datasets, sample nodes or hyperedges, generate negative samples, batch data, and enrich node or hyperedge features | `hypertorch.data` |
