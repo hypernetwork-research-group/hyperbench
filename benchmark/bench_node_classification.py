@@ -282,7 +282,7 @@ if __name__ == "__main__":
             print("Starting training and evaluation...")
             timer_start = pd.Timestamp.now()
             resource_monitor = ResourceMonitor(
-                csv_path="results/resource_usage.csv",
+                csv_path=f"resources_nc/resource_usage_{dataset_name}.csv",
                 interval=1.0,
                 gpu_id=0,
             )
