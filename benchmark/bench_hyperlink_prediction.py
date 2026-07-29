@@ -286,7 +286,7 @@ if __name__ == "__main__":
                         max_epochs=60,
                     )
                     loaded_models.append(config[0])
-            # model = config[0].model
+
             print("Starting training and evaluation...")
             timer_start = pd.Timestamp.now()
             resource_monitor = ResourceMonitor(
@@ -295,7 +295,6 @@ if __name__ == "__main__":
                 gpu_id=0,
             )
             with MultiModelTrainer(
-                # experiment_name=f"{model}_{r}",
                 model_configs=loaded_models,
                 enable_checkpointing=False,
                 default_root_dir=f"benchmark/resources_hlp/{dataset_name}/",

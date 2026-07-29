@@ -267,6 +267,7 @@ if __name__ == "__main__":
                         num_classes=num_classes,
                     )
                     loaded_models.append(config[0])
+
             print("Starting training and evaluation...")
             timer_start = pd.Timestamp.now()
             resource_monitor = ResourceMonitor(
@@ -276,7 +277,6 @@ if __name__ == "__main__":
             )
 
             with MultiModelTrainer(
-                # experiment_name=f"{model}_{r}",
                 model_configs=loaded_models,
                 enable_checkpointing=False,
                 default_root_dir=f"benchmark/resources_nc/{dataset_name}/",
