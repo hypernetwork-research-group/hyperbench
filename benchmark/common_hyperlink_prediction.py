@@ -61,11 +61,9 @@ def retrieve_hw_stats() -> tuple[float, float, float]:
 
 def load_common_neighbors(
     metrics: MetricCollection,
-    num_nodes: int,
     train_dataset: Dataset,
     test_loader: DataLoader,
     num_run: int,
-    num_features: int = 32,
     max_epochs: int = 100,
 ) -> list[ModelConfig]:
     model = CommonNeighborsPredictor(
@@ -140,7 +138,6 @@ def load_gcn(
 
 def load_hgnn(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -182,7 +179,6 @@ def load_hgnn(
 
 def load_hgnnp(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -224,7 +220,6 @@ def load_hgnnp(
 
 def load_hnhn(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -268,7 +263,6 @@ def load_hnhn(
 
 def load_hypergcn_no_mediator(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -312,7 +306,6 @@ def load_hypergcn_no_mediator(
 
 def load_hypergcn_with_mediator(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -356,7 +349,6 @@ def load_hypergcn_with_mediator(
 
 def load_hypergcn_no_mediator_fast(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -400,7 +392,6 @@ def load_hypergcn_no_mediator_fast(
 
 def load_hypergcn_with_mediator_fast(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -444,7 +435,6 @@ def load_hypergcn_with_mediator_fast(
 
 def load_mlp(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -483,7 +473,6 @@ def load_mlp(
 
 def load_nhp(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -526,7 +515,6 @@ def load_villain_node(
     val_loader: DataLoader,
     test_loader: DataLoader,
     num_run: int,
-    num_features: int = 32,
     max_epochs: int = 100,
 ) -> list[ModelConfig]:
     villain_node = VilLainPredictor(
@@ -572,7 +560,6 @@ def load_villain_hyperedge(
     val_loader: DataLoader,
     test_loader: DataLoader,
     num_run: int,
-    num_features: int = 32,
     max_epochs: int = 100,
 ) -> list[ModelConfig]:
     villain_hyperedge = VilLainPredictor(

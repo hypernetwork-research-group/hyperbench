@@ -60,11 +60,9 @@ def retrieve_hw_stats() -> tuple[float, float, float]:
 
 def load_common_neighbors(
     metrics: MetricCollection,
-    num_nodes: int,
     train_dataset: Dataset,
     test_loader: DataLoader,
     num_run: int,
-    num_features: int = 32,
     max_epochs: int = 100,
     num_classes: int = 2,
 ) -> list[ModelConfig]:
@@ -134,7 +132,6 @@ def load_gcn(
 
 def load_hgnn(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -172,7 +169,6 @@ def load_hgnn(
 
 def load_hgnnp(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -210,7 +206,6 @@ def load_hgnnp(
 
 def load_hnhn(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -248,7 +243,6 @@ def load_hnhn(
 
 def load_hypergcn_no_mediator(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -289,7 +283,6 @@ def load_hypergcn_no_mediator(
 
 def load_hypergcn_no_mediator_fast(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -330,7 +323,6 @@ def load_hypergcn_no_mediator_fast(
 
 def load_hypergcn_with_mediator(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -371,7 +363,6 @@ def load_hypergcn_with_mediator(
 
 def load_hypergcn_with_mediator_fast(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -387,7 +378,7 @@ def load_hypergcn_with_mediator_fast(
             "hidden_channels": 64,
             "drop_rate": 0.3,
             "use_mediator": True,
-            "fast": False,
+            "fast": True,
             "seed": 42,
         },
         metrics=metrics,
@@ -412,7 +403,6 @@ def load_hypergcn_with_mediator_fast(
 
 def load_mlp(
     metrics: MetricCollection,
-    num_nodes: int,
     train_loader: DataLoader,
     val_loader: DataLoader,
     test_loader: DataLoader,
@@ -456,7 +446,6 @@ def load_villain_node(
     val_loader: DataLoader,
     test_loader: DataLoader,
     num_run: int,
-    num_features: int = 32,
     max_epochs: int = 100,
     num_classes: int = 2,
 ) -> list[ModelConfig]:
@@ -625,7 +614,6 @@ def prepare(
     split_ratios: list[float],
     k_nodes: int = 2,
     seed: int = 42,
-    test_set_negative_ratio: float = 0.6,
     task: TaskEnum = TaskEnum.HYPERLINK_PREDICTION,
 ) -> tuple[Dataset, Dataset, Dataset, int, int]:
 

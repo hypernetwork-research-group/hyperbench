@@ -29,6 +29,7 @@ from hypertorch.utils import (
 )
 
 GITHUB_COMMIT_SHA = "03e7cf15663aca1fa8c9afa21f33027c0ac2eee8"
+EXCLUDED_KEYS = {"label"}
 
 
 class HIFProcessor:
@@ -227,12 +228,11 @@ class HIFProcessor:
         Returns:
             attr_keys: List of unique numeric attribute keys.
         """
-        excluded_keys = {"label"}  # TODO make it constant
         unique_keys = []
         for attrs in attr_keys:
             for key, value in attrs.items():
                 if (
-                    key not in excluded_keys
+                    key not in EXCLUDED_KEYS
                     and key not in unique_keys
                     and isinstance(value, (int, float))
                     and not isinstance(value, bool)

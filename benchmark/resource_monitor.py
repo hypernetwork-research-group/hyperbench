@@ -1,11 +1,11 @@
 import csv
+import pynvml
+import psutil
 import threading
 import time
-from pathlib import Path
 
-import psutil
-import pynvml
 from lightning.pytorch.callbacks import Callback
+from pathlib import Path
 
 
 class ResourceMonitor(Callback):

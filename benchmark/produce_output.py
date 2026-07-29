@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import warnings
 
+
 warnings.filterwarnings(
     "ignore",
     category=FutureWarning,
@@ -54,7 +55,7 @@ def build_table_with_std_dev(task: str, folder: str):
                         std = df[df["model"] == model][metric].std()
                         df.loc[df["model"] == model, metric] = f"{mean:.3f} ± {std:.3f}"
                 elif task == "nc":
-                    for metric in ["roc-auc", "accuracy", "f1"]:
+                    for metric in ["accuracy", "roc-auc", "f1"]:
                         mean = df[df["model"] == model][metric].mean()
                         std = df[df["model"] == model][metric].std()
                         df.loc[df["model"] == model, metric] = f"{mean:.3f} ± {std:.3f}"
@@ -136,18 +137,15 @@ def create_latex_body_hlp(dataset_name: str, path: str) -> list[str]:
         roc_auc = row["roc-auc"]
         precision = row["precision"]
         if float(accuracy.split("±")[0].strip()) in best_three_accuracy:
-            # use the index of the value in best_three_accuracy to get the color
             color_index = best_three_accuracy.index(float(accuracy.split("±")[0].strip()))
             accuracy = f"\\cellcolor{{{list_of_colors[color_index]}}} {accuracy}"
         if float(roc_auc.split("±")[0].strip()) in best_three_roc_auc:
-            # use the index of the value in best_three_roc_auc to get the color
             color_index = best_three_roc_auc.index(float(roc_auc.split("±")[0].strip()))
             roc_auc = f"\\cellcolor{{{list_of_colors[color_index]}}} {roc_auc}"
         if float(precision.split("±")[0].strip()) in best_three_precision:
-            # use the index of the value in best_three_precision to get the color
             color_index = best_three_precision.index(float(precision.split("±")[0].strip()))
             precision = f"\\cellcolor{{{list_of_colors[color_index]}}} {precision}"
-        line = f"{model} & {accuracy} & {roc_auc} & {precision} \\\\"
+        line = f"{model} & {roc_auc} & {accuracy} & {precision} \\\\"
         lines.append(line)
     return lines
 
@@ -175,15 +173,12 @@ def create_body_latex_nc(dataset_name: str, path: str) -> list[str]:
         roc_auc = row["roc-auc"]
         f1 = row["f1"]
         if float(accuracy.split("±")[0].strip()) in best_three_accuracy:
-            # use the index of the value in best_three_accuracy to get the color
             color_index = best_three_accuracy.index(float(accuracy.split("±")[0].strip()))
             accuracy = f"\\cellcolor{{{list_of_colors[color_index]}}} {accuracy}"
         if float(roc_auc.split("±")[0].strip()) in best_three_roc_auc:
-            # use the index of the value in best_three_roc_auc to get the color
             color_index = best_three_roc_auc.index(float(roc_auc.split("±")[0].strip()))
             roc_auc = f"\\cellcolor{{{list_of_colors[color_index]}}} {roc_auc}"
         if float(f1.split("±")[0].strip()) in best_three_f1:
-            # use the index of the value in best_three_f1 to get the color
             color_index = best_three_f1.index(float(f1.split("±")[0].strip()))
             f1 = f"\\cellcolor{{{list_of_colors[color_index]}}} {f1}"
         line = f"{model} & {roc_auc} & {accuracy} & {f1} \\\\"

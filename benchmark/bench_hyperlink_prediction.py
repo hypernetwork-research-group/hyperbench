@@ -10,7 +10,7 @@ from torchmetrics.classification import (
 from hypertorch.train import MultiModelTrainer
 from hypertorch.data import DataLoader
 
-from common_hlp import (
+from common_hyperlink_prediction import (
     load_gcn,
     load_common_neighbors,
     load_hgnn,
@@ -133,10 +133,8 @@ if __name__ == "__main__":
                 elif model == "common_neighbors":
                     config = load_common_neighbors(
                         metrics=metrics,
-                        num_features=num_features,
                         train_dataset=train_dataset,
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=0,
                     )
@@ -148,7 +146,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=60,
                     )
@@ -160,7 +157,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=60,
                     )
@@ -172,7 +168,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=200,
                     )
@@ -184,7 +179,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=200,
                     )
@@ -196,7 +190,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=200,
                     )
@@ -208,7 +201,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=200,
                     )
@@ -220,7 +212,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=200,
                     )
@@ -232,7 +223,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=100,
                     )
@@ -244,7 +234,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=50,
                     )
@@ -252,7 +241,6 @@ if __name__ == "__main__":
                 elif model == "villain_node":
                     config = load_villain_node(
                         metrics=metrics,
-                        num_features=num_features,
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
@@ -264,7 +252,6 @@ if __name__ == "__main__":
                 elif model == "villain_hyperedge":
                     config = load_villain_hyperedge(
                         metrics=metrics,
-                        num_features=num_features,
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,

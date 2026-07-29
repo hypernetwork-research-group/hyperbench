@@ -5,7 +5,7 @@ from torchmetrics.classification import MulticlassAUROC, MulticlassAccuracy, Mul
 from hypertorch.train import MultiModelTrainer
 from hypertorch.data import DataLoader
 
-from common_nc import (
+from common_node_classification import (
     load_gcn,
     load_common_neighbors,
     load_hgnn,
@@ -52,7 +52,6 @@ if __name__ == "__main__":
                 k_nodes=k_nodes,
                 split_ratios=split_ratios,
                 seed=picked_seed,
-                test_set_negative_ratio=test_set_negative_ratio,
                 task=task,
             )
             prepared_datasets[dataset_name] = (
@@ -125,10 +124,8 @@ if __name__ == "__main__":
                 elif model == "common_neighbors":
                     config = load_common_neighbors(
                         metrics=metrics,
-                        num_features=num_features,
                         train_dataset=train_dataset,
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=0,
                         num_classes=num_classes,
@@ -141,7 +138,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=60,
                         num_classes=num_classes,
@@ -154,7 +150,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=60,
                         num_classes=num_classes,
@@ -167,7 +162,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=200,
                         num_classes=num_classes,
@@ -180,7 +174,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=100,
                         num_classes=num_classes,
@@ -193,7 +186,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=100,
                         num_classes=num_classes,
@@ -206,7 +198,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=100,
                         num_classes=num_classes,
@@ -219,7 +210,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=100,
                         num_classes=num_classes,
@@ -232,7 +222,6 @@ if __name__ == "__main__":
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
-                        num_nodes=num_nodes,
                         num_run=r,
                         max_epochs=100,
                         num_classes=num_classes,
@@ -241,7 +230,6 @@ if __name__ == "__main__":
                 elif model == "villain_node":
                     config = load_villain_node(
                         metrics=metrics,
-                        num_features=num_features,
                         train_loader=data_loader.train_dataloader(),
                         val_loader=data_loader.val_dataloader(),
                         test_loader=test_loader,
