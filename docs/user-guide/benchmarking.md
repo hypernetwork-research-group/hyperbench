@@ -5,6 +5,36 @@ Benchmarking in HyperTorch typically means:
 - Using the same negative sampling and feature enrichment.
 - Producing comparable metrics and summary tables.
 
+## Running the benchmark suite
+
+In the benchmark folder, we provide a `bench_hyperlink_prediction.py` script that runs multiple
+models on a given dataset. The script is designed to be run from the command line and accepts
+various arguments to customize the benchmarking process.
+
+```bash
+bash benchmark/bench.sh hlp -- \
+    --datasets citeseer cora pubmed \
+    --k-nodes 2 \
+    --num-workers 4 \
+    --num-features 16 \
+    --run 3 \
+    --seed 1 2 3 \
+    --split-ratios 0.7 0.1 0.2 \
+    --task hyperlink_prediction \
+    --test-set-negative-ratio 0.5
+```
+
+You can specify:
+- `--datasets`: List of datasets to benchmark.
+- `--k-nodes`: Number of nodes for negative sampling.
+- `--num-workers`: Number of workers for data loading.
+- `--num-features`: Number of features for the model.
+- `--run`: Number of runs for each model.
+- `--seed`: Random seeds for reproducibility.
+- `--split-ratios`: Ratios for train, validation, and test splits.
+- `--task`: Task type (e.g., hyperlink_prediction, node_classification).
+- `--test-set-negative-ratio`: Ratio of negative samples in the test set.
+
 ## Comparing multiple models
 
 The recommended pattern is to pass multiple `ModelConfig` objects to `MultiModelTrainer`:
@@ -52,8 +82,8 @@ with MultiModelTrainer(model_configs=configs, max_epochs=200, accelerator="auto"
 By default, runs are saved under `hypertorch_logs/`.
 
 The trainer writes comparison tables to:
-- `hypertorch_logs/experiment_*/comparison/results.md`.
-- `hypertorch_logs/experiment_*/comparison/results.tex`.
+- `hypertorch_logs/experiment_*/comparison/{overall, test, train, val}.md`.
+- `hypertorch_logs/experiment_*/comparison/{overall, test, train, val}.tex`.
 
 ## Next steps
 
