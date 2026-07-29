@@ -193,12 +193,11 @@ This project is released under the Apache License 2.0 license. See [LICENSE](LIC
 - Use the [GitHub issue tracker][issues] for bugs and feature requests.
 - Use [Discord][discord] for community chat.
 
-Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue
-for suspected security vulnerabilities.
+Please follow [SECURITY.md](SECURITY.md) instead of opening a public issue for suspected security vulnerabilities.
 
 ## Cite
 
-Please cite HyperTorch using the metadata in [CITATION.cff](CITATION.cff):
+Please cite us if you use HyperTorch in your work:
 
 ```bibtex
 @software{Citro_HyperTorch_2026,
