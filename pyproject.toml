@@ -63,7 +63,6 @@ dev = [
 benchmark = [
   "nvidia-ml-py>=13.610.43,<14.0.0",
   "pandas>=2.3.3,<3.0.0",
-  "psutil>=7.2.2,<8.0.0",
 ]
 docs = ["mkdocstrings[python]>=1.0.4,<2.0.0", "zensical>=0.0.44,<1.0.0"]
 test = [
