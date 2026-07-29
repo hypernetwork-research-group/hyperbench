@@ -1,36 +1,19 @@
 import os
 import pandas as pd
+import warnings
 
-
-def clean_model_name(model_name: str) -> str:
-    model_name = model_name.replace("\\_", "_")
-    if "_" in model_name:
-        model_name = "_".join(model_name.split("_")[:-1])
-    return model_name
-
-
-def df_instance(task: str) -> pd.DataFrame:
-
-    if task == "hlp":
-        dataset_df = pd.DataFrame(
-            columns=pd.Index(
-                ["model", "accuracy", "roc-auc", "precision"],
-                name="metric",
-            )
-        )
-    elif task == "nc":
-        dataset_df = pd.DataFrame(
-            columns=pd.Index(
-                ["model", "roc-auc", "accuracy", "f1"],
-                name="metric",
-            )
-        )
-    else:
-        raise ValueError(f"Task {task} not supported yet.")
-    return dataset_df
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    message=".*Setting an item of incompatible dtype is deprecated.*",
+)
 
 
 def add_row_to_df(dataset_df: pd.DataFrame, latex_test: str) -> None:
+    """Add a row to the DataFrame.
+    The values are extracted from the LaTeX test file and cleaned before being added
+        to the DataFrame.
+    """
     if os.path.exists(latex_test):
         with open(latex_test) as f:
             content = f.read()
@@ -54,45 +37,11 @@ def add_row_to_df(dataset_df: pd.DataFrame, latex_test: str) -> None:
                     dataset_df.loc[len(dataset_df)] = [model, metric1, metric2, metric3]
 
 
-def create_results_csv(task: str, folder: str, output_folder: str):
-    path = os.path.join(os.path.dirname(__file__), folder)
-    output_path = os.path.join(path, output_folder)
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-
-    for dataset_name in os.listdir(path):
-        if dataset_name == "output":
-            continue
-        dataset_df = df_instance(task)
-        dataset_path = os.path.join(path, dataset_name)
-        if not os.path.isdir(dataset_path):
-            continue
-
-        for experiment in os.listdir(dataset_path):
-            model_path = os.path.join(dataset_path, experiment)
-            if not os.path.isdir(model_path):
-                continue
-            latex_test = os.path.join(model_path, "comparison", "test.tex")
-
-            print(f"Processing latex_test {latex_test}...")
-            add_row_to_df(dataset_df, latex_test)
-
-        dataset_df.to_csv(os.path.join(output_path, f"{dataset_name}_metrics.csv"))
-
-
-def clean_metric(value: str) -> float:
-    """Clean the metric value by removing LaTeX formatting and converting to float."""
-    if "\\cellcolor" in value and "\\underline" in value:
-        value = value.rsplit("\\underline{", maxsplit=1)[-1].split("}", maxsplit=1)[0].strip()
-    if "\\cellcolor" in value:
-        value = value.split("}")[-1].strip()
-    try:
-        return float(value)
-    except ValueError:
-        return float("nan")  # Return NaN if conversion fails
-
-
-def build_table_with_std(task: str, folder: str):
+def build_table_with_std_dev(task: str, folder: str):
+    """
+    Build a table with the mean and standard deviation of the metrics for each model across the
+        different runs.
+    """
     path = os.path.join(os.path.dirname(__file__), folder)
     for csvs in os.listdir(path):
         if csvs.endswith("metrics.csv"):
@@ -113,7 +62,63 @@ def build_table_with_std(task: str, folder: str):
             df.to_csv(os.path.join(path, f"{csvs.split('_metrics.csv')[0]}_metrics_mean_std.csv"))
 
 
-def create_latex_body_hlp(dataset_name: str) -> list[str]:
+def clean_metric(value: str) -> float:
+    """Clean the metric value by removing LaTeX formatting and converting to float."""
+
+    if "\\cellcolor" in value and "\\underline" in value:
+        value = value.rsplit("\\underline{", maxsplit=1)[-1].split("}", maxsplit=1)[0].strip()
+    if "\\cellcolor" in value:
+        value = value.split("}")[-1].strip()
+    try:
+        return float(value)
+    except ValueError:
+        return float("nan")  # Return NaN if conversion fails
+
+
+def clean_model_name(model_name: str) -> str:
+    """Clean the model name by removing LaTeX formatting and underscores."""
+
+    model_name = model_name.replace("\\_", "_")
+    if "_" in model_name:
+        model_name = "_".join(model_name.split("_")[:-1])
+    return model_name
+
+
+def create_results_csv(task: str, folder: str, output_folder: str):
+    """
+    Create a CSV file containing the results of the experiments for each dataset.
+    """
+
+    path = os.path.join(os.path.dirname(__file__), folder)
+    output_path = os.path.join(path, output_folder)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    for dataset_name in os.listdir(path):
+        if dataset_name == "output":
+            continue
+        dataset_df = df_instance(task)
+        dataset_path = os.path.join(path, dataset_name)
+        if not os.path.isdir(dataset_path):
+            continue
+
+        for experiment in os.listdir(dataset_path):
+            model_path = os.path.join(dataset_path, experiment)
+            if not os.path.isdir(model_path):
+                continue
+            latex_test = os.path.join(model_path, "comparison", "test.tex")
+            print(f"Processing {os.path.join(*latex_test.split(os.sep)[-5:])}...")
+            add_row_to_df(dataset_df, latex_test)
+
+        dataset_df.to_csv(os.path.join(output_path, f"{dataset_name}_metrics.csv"))
+
+
+def create_latex_body_hlp(dataset_name: str, path: str) -> list[str]:
+    """
+    Create the body of the LaTeX table for hyperlink prediction task.
+    Highlight the best three values for each metric with green, yellow, and orange.
+    """
+
     df = pd.read_csv(os.path.join(path, f"{dataset_name}_metrics_mean_std.csv"), index_col=0)
     lines = []
     accuracies = df["accuracy"].apply(lambda x: float(x.split("±")[0].strip()))
@@ -147,7 +152,12 @@ def create_latex_body_hlp(dataset_name: str) -> list[str]:
     return lines
 
 
-def create_body_latex_nc(dataset_name: str) -> list[str]:
+def create_body_latex_nc(dataset_name: str, path: str) -> list[str]:
+    """
+    Create the body of the LaTeX table for node classification task.
+    Highlight the best three values for each metric with green, yellow, and orange.
+    """
+
     df = pd.read_csv(os.path.join(path, f"{dataset_name}_metrics_mean_std.csv"), index_col=0)
     lines = []
     accuracies = df["accuracy"].apply(lambda x: float(x.split("±")[0].strip()))
@@ -182,6 +192,10 @@ def create_body_latex_nc(dataset_name: str) -> list[str]:
 
 
 def create_latex_table(dataset_name: str, task: str, folder: str, output_folder: str):
+    """
+    Create a LaTeX table for the given dataset and task.
+    """
+
     if task == "hlp":
         path = os.path.join(os.path.dirname(__file__), folder)
         setup_latex = (
@@ -209,7 +223,7 @@ def create_latex_table(dataset_name: str, task: str, folder: str, output_folder:
 """
         )
 
-        lines = create_latex_body_hlp(dataset_name)
+        lines = create_latex_body_hlp(dataset_name, path)
 
         end_latex = r"""
 \bottomrule
@@ -247,11 +261,11 @@ def create_latex_table(dataset_name: str, task: str, folder: str, output_folder:
 \addlinespace[3pt]
 \multicolumn{4}{c}{\textbf{Test Results}} \\
 \midrule
-\textbf{Model} & \textbf{ROC-AUC} & \textbf{Acc.} & \textbf{f1} \\
+\textbf{Model} & \textbf{ROC-AUC} & \textbf{Acc.} & \textbf{F1} \\
 """
         )
 
-        lines = create_body_latex_nc(dataset_name)
+        lines = create_body_latex_nc(dataset_name, path)
 
         end_latex = r"""
 \bottomrule
@@ -270,17 +284,40 @@ def create_latex_table(dataset_name: str, task: str, folder: str, output_folder:
         raise ValueError(f"Task {task} not supported yet.")
 
 
-if __name__ == "__main__":
-    task = "nc"  # TODO: change to "nc" for node classification
-    create_results_csv(task=task, folder=f"results_{task}", output_folder="output")
-    build_table_with_std(task=task, folder=f"results_{task}/output")
-    path = os.path.join(os.path.dirname(__file__), f"results_{task}/output")
-    for csvs in os.listdir(path):
-        if csvs.endswith("metrics_mean_std.csv"):
-            dataset_name = csvs.split("_metrics_mean_std.csv")[0]
-            create_latex_table(
-                dataset_name=dataset_name,
-                task=task,
-                folder=f"results_{task}/output",
-                output_folder="latex",
+def df_instance(task: str) -> pd.DataFrame:
+    """Create a DataFrame instance based on the task type."""
+
+    if task == "hlp":
+        dataset_df = pd.DataFrame(
+            columns=pd.Index(
+                ["model", "accuracy", "roc-auc", "precision"],
+                name="metric",
             )
+        )
+    elif task == "nc":
+        dataset_df = pd.DataFrame(
+            columns=pd.Index(
+                ["model", "roc-auc", "accuracy", "f1"],
+                name="metric",
+            )
+        )
+    else:
+        raise ValueError(f"Task {task} not supported yet.")
+    return dataset_df
+
+
+if __name__ == "__main__":
+    tasks = ["hlp", "nc"]
+    for task in tasks:
+        create_results_csv(task=task, folder=f"results_{task}", output_folder="output")
+        build_table_with_std_dev(task=task, folder=f"results_{task}/output")
+        path = os.path.join(os.path.dirname(__file__), f"results_{task}/output")
+        for csvs in os.listdir(path):
+            if csvs.endswith("metrics_mean_std.csv"):
+                dataset_name = csvs.split("_metrics_mean_std.csv")[0]
+                create_latex_table(
+                    dataset_name=dataset_name,
+                    task=task,
+                    folder=f"results_{task}/output",
+                    output_folder="latex",
+                )
