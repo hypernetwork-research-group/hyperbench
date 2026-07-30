@@ -3,6 +3,7 @@ import pynvml
 import psutil
 import threading
 import time
+import warnings
 
 from lightning.pytorch.callbacks import Callback
 from pathlib import Path
@@ -11,8 +12,10 @@ from pathlib import Path
 class ResourceMonitor(Callback):
     """
     A callback to monitor resource usage during training.
+
     Usable only on NVIDIA GPUs. It records CPU, RAM, GPU usage, and GPU memory usage at a specified
-        interval and saves the results to a CSV file at the end of training or upon an exception.
+    interval and saves the results to a CSV file at the end of training or upon an exception.
+    Monitoring is skipped when the NVML shared library is unavailable.
     """
 
     def __init__(
@@ -42,7 +45,19 @@ class ResourceMonitor(Callback):
 
         self.csv_path.parent.mkdir(parents=True, exist_ok=True)
 
-        pynvml.nvmlInit()
+        try:
+            pynvml.nvmlInit()
+        except pynvml.NVMLError as error:
+            if error.args != (pynvml.NVML_ERROR_LIBRARY_NOT_FOUND,):
+                raise
+
+            warnings.warn(
+                "NVML shared library not found; resource monitoring is disabled.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return
+
         self.handle = pynvml.nvmlDeviceGetHandleByIndex(self.gpu_id)
 
         self.running = True

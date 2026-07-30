@@ -1,6 +1,6 @@
 [project]
 name = "hypertorch"
-version = "0.1.11"
+version = "0.1.12"
 description = "HyperTorch is a library for hypergraph learning and benchmarking. It provides a standardized workflow for loading hypergraph datasets, training models, evaluating them under comparable settings, and reporting results."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -61,10 +61,7 @@ dev = [
   { include-group = "test" },
   { include-group = "benchmark" },
 ]
-benchmark = [
-  "nvidia-ml-py>=13.610.43,<14.0.0",
-  "pandas>=2.3.3,<3.0.0",
-]
+benchmark = ["nvidia-ml-py>=13.610.43,<14.0.0", "pandas>=2.3.3,<3.0.0"]
 docs = ["mkdocstrings[python]>=1.0.4,<2.0.0", "zensical>=0.0.44,<1.0.0"]
 test = [
   "pytest>=9.0.3,<10.0.0",
