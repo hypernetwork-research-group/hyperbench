@@ -2,7 +2,7 @@
 
 This page will contain the release notes for stable versions of HyperTorch.
 
-## Version 0.1.12 - Initial stable release
+## Version 0.1.13 - Initial stable release
 
 First stable release of HyperTorch. This release includes the following features:
 
