@@ -770,5 +770,7 @@ def parse_arguments():
     parser.add_argument("--test-set-negative-ratio", type=float, default=0.6)
     parser.add_argument("--split-ratios", type=float, nargs=3, default=[0.7, 0.1, 0.2])
     parser.add_argument("--datasets", nargs="+", default=["cora", "citeseer", "pubmed"])
-    parser.add_argument("--task", type=TaskEnum, default=TaskEnum.HYPERLINK_PREDICTION)
+    parser.add_argument(
+        "--task", type=TaskEnum, default=TaskEnum.HYPERLINK_PREDICTION, choices=list(TaskEnum)
+    )
     return parser.parse_args()

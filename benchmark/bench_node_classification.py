@@ -1,7 +1,8 @@
 import pandas as pd
+import torch
+
 from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassAUROC, MulticlassAccuracy, MulticlassF1Score
-
 from hypertorch.train import MultiModelTrainer
 from hypertorch.data import DataLoader
 
@@ -38,14 +39,14 @@ if __name__ == "__main__":
     datasets = args.datasets
     task = args.task
 
-    print("Running task:", task)
-
-    print("Loading and preparing datasets...")
     prepared_datasets = {}
-
     for r in range(run):
         for dataset_name in datasets:
             picked_seed = seed[r]
+            torch.manual_seed(picked_seed)
+
+            print(f"Loading and preparing dataset {dataset_name}...")
+
             train_dataset, val_dataset, test_dataset, num_nodes, num_features = prepare(
                 dataset_name=dataset_name,
                 num_features=num_features,
@@ -61,8 +62,6 @@ if __name__ == "__main__":
                 num_nodes,
                 num_features,
             )
-
-            print(f"Running benchmark for dataset: {dataset_name}")
 
             data_loader = DataLoader.from_datasets(
                 train_dataset=train_dataset,
@@ -80,7 +79,8 @@ if __name__ == "__main__":
                 persistent_workers=True,
             )
 
-            print(f"Run {r + 1}/{run} for dataset: {dataset_name}")
+            print(f"Run {r + 1}/{run} for dataset: {dataset_name}...")
+
             num_classes = int(train_dataset.hdata.y.max().item() + 1)
             metrics = MetricCollection(
                 {
@@ -268,20 +268,27 @@ if __name__ == "__main__":
                     )
                     loaded_models.append(config[0])
 
-            print("Starting training and evaluation...")
-            timer_start = pd.Timestamp.now()
-            resource_monitor = ResourceMonitor(
-                csv_path=f"resources_nc/resource_usage_{dataset_name}.csv",
-                interval=1.0,
-                gpu_id=0,
+            print(f"Starting training and evaluation for dataset: {dataset_name}...")
+
+            callbacks = (
+                [
+                    ResourceMonitor(
+                        csv_path=f"benchmark/resources_nc/resource_usage/{dataset_name}.csv",
+                        interval=1.0,
+                        gpu_id=0,
+                    )
+                ]
+                if torch.cuda.is_available()
+                else []
             )
 
             with MultiModelTrainer(
                 model_configs=loaded_models,
                 enable_checkpointing=False,
                 default_root_dir=f"benchmark/resources_nc/{dataset_name}/",
-                callbacks=[resource_monitor],
+                callbacks=callbacks,
             ) as trainer:
+                timer_start = pd.Timestamp.now()
                 trainer.fit_all(
                     train_dataloader=data_loader.train_dataloader(),
                     val_dataloader=data_loader.val_dataloader(),
@@ -293,5 +300,6 @@ if __name__ == "__main__":
                 print(f"Time for run {r + 1}/{run} on {dataset_name}: {execution_time:.2f} seconds")
 
         del prepared_datasets[dataset_name]
+
     print("Merging all results into a single CSV file...")
     merge_all_results(dir_path="benchmark/resources_nc", output_file="merged_results.csv")

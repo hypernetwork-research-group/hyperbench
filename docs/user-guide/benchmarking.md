@@ -20,7 +20,6 @@ bash benchmark/bench.sh hlp -- \
     --run 3 \
     --seed 1 2 3 \
     --split-ratios 0.7 0.1 0.2 \
-    --task hyperlink_prediction \
     --test-set-negative-ratio 0.5
 ```
 
@@ -30,9 +29,10 @@ You can specify:
 - `--num-workers`: Number of workers for data loading.
 - `--num-features`: Number of features for the model.
 - `--run`: Number of runs for each model.
-- `--seed`: Random seeds for reproducibility.
+- `--seed`: Random seeds used for dataset preparation and PyTorch's seed.
 - `--split-ratios`: Ratios for train, validation, and test splits.
-- `--task`: Task type (e.g., hyperlink_prediction, node_classification).
+- `--task`: Task type. The launcher defaults to `hyperlink-prediction` for `hlp` and
+  `node-classification` for `nc`.
 - `--test-set-negative-ratio`: Ratio of negative samples in the test set.
 
 ## Comparing multiple models

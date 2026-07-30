@@ -21,12 +21,14 @@ fi
 
 case "${task}" in
     hlp)
-        echo "Running HLP benchmark..."
-        exec uv run python3 "${repo_root}/benchmark/bench_hyperlink_prediction.py" "$@"
+        echo "Running hyperlink prediction benchmark..."
+        exec uv run python3 "${repo_root}/benchmark/bench_hyperlink_prediction.py" \
+            --task hyperlink-prediction "$@"
         ;;
     nc)
-        echo "Running NC benchmark..."
-        exec uv run python3 "${repo_root}/benchmark/bench_node_classification.py" "$@"
+        echo "Running node classification benchmark..."
+        exec uv run python3 "${repo_root}/benchmark/bench_node_classification.py" \
+            --task node-classification "$@"
         ;;
     *)
         echo "Unknown task: ${task}" >&2
