@@ -92,19 +92,19 @@ if __name__ == "__main__":
 
             list_model = [
                 "gcn",
-                # "common_neighbors",
-                # "hgnn",
-                # "hgnnp",
-                # "hnhn",
-                # "hypergcn_no_mediator",
-                # "hypergcn_no_mediator_fast",
-                # "hypergcn_with_mediator",
-                # "hypergcn_with_mediator_fast",
-                # "hnhn",
-                # "mlp",
-                # "villain_node",
-                # "node2vec",
-                # "node2vecgcn",
+                "common_neighbors",
+                "hgnn",
+                "hgnnp",
+                "hnhn",
+                "hypergcn_no_mediator",
+                "hypergcn_no_mediator_fast",
+                "hypergcn_with_mediator",
+                "hypergcn_with_mediator_fast",
+                "hnhn",
+                "mlp",
+                "villain_node",
+                "node2vec",
+                "node2vecgcn",
             ]
             loaded_models = []
             for model in list_model:
