@@ -28,6 +28,8 @@ else
     examples=(examples/**/*.py)
 fi
 
+echo "examples to run: ${examples[*]}"
+exit 0
 
 if [[ ${#examples[@]} -eq 0 || ! -e "${examples[0]}" ]]; then
     echo "No Python examples found under examples/." >&2

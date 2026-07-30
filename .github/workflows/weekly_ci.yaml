@@ -27,7 +27,7 @@ jobs:
           TAG_TO_CHECK=$(git tag --sort=-creatordate | head -n 1) # latest tag including beta
           COMMIT_TO_CHECK=$(git rev-list -n 1 "$TAG_TO_CHECK")
           # WEEKLY_SCRIPT_URL="https://raw.githubusercontent.com/hypernetwork-research-group/hypertorch/${COMMIT_TO_CHECK}/scripts/weekly_run.sh"
-          WEEKLY_SCRIPT_URL="https://raw.githubusercontent.com/hypernetwork-research-group/hypertorch/refs/heads/chore/weekly-macos-ci/scripts/weekly_run.sh"
+          WEEKLY_SCRIPT_URL="https://raw.githubusercontent.com/hypernetwork-research-group/hypertorch/refs/heads/chore/weekly-macos-ci/scripts/weekly_run.sh" #TODO remove after test
           echo "tag=$TAG_TO_CHECK" >> "$GITHUB_OUTPUT"
           echo "weekly_script_url=$WEEKLY_SCRIPT_URL" >> "$GITHUB_OUTPUT"
           {
@@ -127,7 +127,9 @@ jobs:
           curl -fsSL "$WEEKLY_SCRIPT_URL" | bash -s -- "$TAG_TO_CHECK" dataset, enrichment, sampling, splitting, train
 
   test-macos-arm-node-classification:
-    needs: test-macos-arm-misc
+    needs:
+      - retrieve-latest-tag-and-weekly-script-url
+      - test-macos-arm-misc
     runs-on: ${{ matrix.os }}
     env:
       TAG_TO_CHECK: ${{ needs.retrieve-latest-tag-and-weekly-script-url.outputs.tag }}
@@ -156,7 +158,9 @@ jobs:
           curl -fsSL "$WEEKLY_SCRIPT_URL" | bash -s -- "$TAG_TO_CHECK" node_classification
 
   test-macos-arm-hyperlink-prediction:
-    needs: test-macos-arm-node-classification
+    needs:
+      - retrieve-latest-tag-and-weekly-script-url
+      - test-macos-arm-node-classification
     runs-on: ${{ matrix.os }}
     env:
       TAG_TO_CHECK: ${{ needs.retrieve-latest-tag-and-weekly-script-url.outputs.tag }}
