@@ -1,5 +1,5 @@
 <picture align="center">
-  <img alt="HyperTorch Logo" src="docs/assets/horizontal.svg">
+  <img alt="HyperTorch Logo" src="https://github.com/hypernetwork-research-group/hypertorch/blob/main/docs/assets/horizontal.svg">
 </picture>
 
 ---
