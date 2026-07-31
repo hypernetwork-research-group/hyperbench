@@ -4,6 +4,7 @@ set -uo pipefail
 
 # TAG_TO_CHECK=$(git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1) #TODO: when first stable release, change to latest tag not beta
 TAG_TO_CHECK="$1" #latest tag including beta
+FOLDER_LIST="${2:-}"
 
 # remove first character 'v' from TAG_TO_CHECK
 TAG_WITHOUT_V="${TAG_TO_CHECK:1}"
@@ -15,7 +16,17 @@ curl -L \
 tar -xzf hypertorch.tar.gz --strip-components=1 \
   "hypertorch-${TAG_WITHOUT_V}/examples"
 
-examples=(examples/**/*.py)
+# if folder list is provided, only run examples in those folders
+if [[ -n "$FOLDER_LIST" ]]; then
+    IFS=, read -ra folders <<<"$FOLDER_LIST"
+    shopt -s nullglob
+    examples=()
+    for folder in "${folders[@]}"; do
+        examples+=(examples/"$folder"/*)
+    done
+else
+    examples=(examples/**/*.py)
+fi
 
 if [[ ${#examples[@]} -eq 0 || ! -e "${examples[0]}" ]]; then
     echo "No Python examples found under examples/." >&2

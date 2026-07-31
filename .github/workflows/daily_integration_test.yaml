@@ -1,4 +1,4 @@
-name: Daily CI
+name: Daily integration test
 
 on:
   schedule:
