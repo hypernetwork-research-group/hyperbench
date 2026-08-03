@@ -26,7 +26,8 @@ jobs:
         run: |
           TAG_TO_CHECK=$(git tag --sort=-creatordate | head -n 1) # latest tag including beta
           COMMIT_TO_CHECK=$(git rev-list -n 1 "$TAG_TO_CHECK")
-          WEEKLY_SCRIPT_URL="https://raw.githubusercontent.com/hypernetwork-research-group/hypertorch/${COMMIT_TO_CHECK}/scripts/weekly_run.sh"
+          SCRIPT_COMMIT=$(git rev-parse HEAD)
+          WEEKLY_SCRIPT_URL="https://raw.githubusercontent.com/hypernetwork-research-group/hypertorch/${SCRIPT_COMMIT}/scripts/weekly_run.sh"
           echo "tag=$TAG_TO_CHECK" >> "$GITHUB_OUTPUT"
           echo "weekly_script_url=$WEEKLY_SCRIPT_URL" >> "$GITHUB_OUTPUT"
           {
@@ -35,7 +36,8 @@ jobs:
             echo "| Variable | Value |"
             echo "| --- | --- |"
             echo "| Tag | \`$TAG_TO_CHECK\` |"
-            echo "| Commit | \`$COMMIT_TO_CHECK\` |"
+            echo "| Release commit | \`$COMMIT_TO_CHECK\` |"
+            echo "| Weekly script commit | \`$SCRIPT_COMMIT\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   test-ubuntu-x86:
