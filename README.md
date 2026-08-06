@@ -35,11 +35,11 @@
         <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/coverage.yaml">
             <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/coverage.yaml?branch=main&amp;label=Unit%20tests" alt="Unit tests">
         </a>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_integration_test.yaml">
-            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_integration_test.yaml?branch=main&amp;label=Integration%20tests" alt="Integration tests">
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/daily_ci.yaml">
+            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/daily_ci.yaml?branch=main&amp;label=Integration%20tests" alt="Integration tests">
         </a>
-        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_released_version_test.yaml">
-            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_released_version_test.yaml?branch=main&amp;label=Released%20version%20tests" alt="Released version tests">
+        <a href="https://github.com/hypernetwork-research-group/hypertorch/actions/workflows/weekly_ci.yaml">
+            <img src="https://img.shields.io/github/actions/workflow/status/hypernetwork-research-group/hypertorch/weekly_ci.yaml?branch=main&amp;label=Released%20version%20tests" alt="Released version tests">
         </a>
       </td>
     </tr>
