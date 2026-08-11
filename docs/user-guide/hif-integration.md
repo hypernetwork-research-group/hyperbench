@@ -54,9 +54,9 @@ When loaded, HIF data is processed into an `HData` object (see [HData API refere
 
 ## HIF keywords and their effect on processing
 
-HIF reserves a few keywords that HyperTorch interprets specially when converting a hypergraph into tensors. These keys are not treated as ordinary attributes: they drive how the resulting `HData` is built. The two most important ones are `weight` and `label`.
+HIF reserves a few keywords that HyperTorch interprets specially when converting a hypergraph into tensors. The two most important ones are `weight` and `label`.
 
-### `weight`
+### `weight` keyword
 
 The `weight` keyword, placed inside a hyperedge's `attrs` dictionary, controls the **hyperedge weights**:
 
@@ -75,7 +75,7 @@ How it influences processing:
 - Hyperedges that do not declare a `weight` default to `1.0`. This also applies to the self-loop hyperedges that HyperTorch creates for isolated nodes.
 - Because `weight` is a numeric attribute, it is **also** collected as a column of the `hyperedge_attr` matrix. If you do not want the weight to double as a hyperedge feature, keep it out of `attrs` or account for it when consuming `hyperedge_attr`.
 
-### `label`
+### `label` keyword
 
 The `label` keyword, placed on a node's `attrs`, provides the supervised target for node-related tasks (e.g., node classification):
 
@@ -100,8 +100,8 @@ How it influences processing:
 HIF is the interchange format HyperTorch uses to represent hypergraphs, so it is the common entry point for loading data. The typical workflow is:
 
 1. **Load** a HIF file from a built-in dataset, a local path, or a URL.
-2. **Process** — the loader parses the HIF structure into an `HIFHypergraph` and converts it into an `HData` object of tensors ready for training.
-3. **Use** — pass the resulting `Dataset` to a trainer, sampler, or model.
+2. **Process**  the loader parses the HIF structure into an `HIFHypergraph` and converts it into an `HData` object of tensors ready for training.
+3. **Use** pass the resulting `Dataset` to a trainer, sampler, or model.
 
 ```python
 from hypertorch.data import Dataset
