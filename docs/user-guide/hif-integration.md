@@ -73,7 +73,7 @@ How it influences processing:
 
 - HyperTorch reads `attrs["weight"]` for every hyperedge and stores the result in the `hyperedge_weights` tensor of shape `[num_hyperedges]` on the `HData` object.
 - Hyperedges that do not declare a `weight` default to `1.0`. This also applies to the self-loop hyperedges that HyperTorch creates for isolated nodes.
-- Because `weight` is a numeric attribute, it is **also** collected as a column of the `hyperedge_attr` matrix. If you do not want the weight to double as a hyperedge feature, keep it out of `attrs` or account for it when consuming `hyperedge_attr`.
+- Because `weight` is a numeric attribute, it is **also** collected as a column of the `hyperedge_attr` matrix.
 
 ### `label` keyword
 
@@ -133,8 +133,6 @@ dataset = Dataset.from_path("path/to/hypergraph.json.zst")
 hif = dataset.hif_hypergraph
 print(hif.metadata)
 ```
-
-
 
 ## Next steps
 
